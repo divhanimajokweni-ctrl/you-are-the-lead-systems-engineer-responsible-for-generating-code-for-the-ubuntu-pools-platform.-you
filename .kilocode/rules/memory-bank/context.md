@@ -1,26 +1,48 @@
-# Active Context: Ubuntu Pools — Phase 4 Trust System
+# Active Context: Ubuntu Pools — Phase 3 Interactivity & Governance
 
 ## Current State
 
-**Phase 4 Status**: ✅ Complete — Trust as Permissions
+**Phase 3 Status**: 📋 In Progress — Human-Centric Interactivity & Trust Governance
 
-The system implements trust scores, decay, penalties, and appeals as gating mechanisms:
-- Trust scores (0-100) influence ability to submit proposals or trigger operations
-- Time-based decay algorithm with configurable intervals
-- Penalty system for governance infractions
-- Appeals/recovery process with audit trail
-- Clear separation from ledger (trust never affects balance math)
-- All tests passing
+The Phase 3 transformation roadmap has been documented, covering:
+- Real-time WebSocket feedback loops (contribution heatmaps, achievement pulses)
+- Empathetic UI with motion design and micro-interactions
+- Decentralized trust-based reputation system replacing top-down moderation
+- User-facing observability/transparency dashboard
+- Edge-caching and CI/CD optimization for universal dignity
+- Privacy-first security framework (zero-knowledge proofs, data sovereignty)
 
 ## Recently Completed
 
-- [x] **Phase 4: Trust System**
-  - Trust schema (`src/trust/config.ts`) - Zod validation for scores, decay, penalties
-  - Trust tables in DB schema (`src/db/schema.ts`) - trust_scores, infractions, appeals
-  - Trust service (`src/trust/service.ts`) - decay, penalty, recovery, appeals
-  - Trust gating middleware (`src/trust/gating.ts`) - action authorization
-  - Migration (`migrations/0002_trust.sql`) - DB triggers for immutability
-  - Tests (21 tests) - decay algorithm, config validation, ledger invariant preservation
+- [x] **Phase 3 Technical Roadmap Document** (`docs/phase3-ubuntu-transformation.md`)
+  - 12-week migration timeline with detailed deliverables
+  - WebSocket architecture for real-time community feedback
+  - Motion design specifications (trust flow animations, contribution ripples)
+  - Trust score algorithm and authority levels
+  - User-facing observability dashboard design
+  - CI/CD pipeline (GitHub Actions with security scanning)
+  - Edge-caching strategy for global <100ms TTFB
+  - Privacy-first security framework (ZK proofs, data rights)
+
+- [x] **5 Interactive Features for Collective Prosperity**
+  1. Trust Constellation - visual web of trust relationships
+  2. Contribution Resonance - ripple waves showing impact multiplier
+  3. The Ubuntu Circle - collaborative task adoption system
+  4. Timebank Harmony - mutual aid time-banking with circulation incentives
+  5. Collective Achievement Constellation - community milestones over individual badges
+
+- [x] **Trust-Based Governance Model**
+  - Three-layer architecture: Constitutional, Operational, Arbitration
+  - Trust circles as foundation (mutual vouching)
+  - Council of Elders (elected arbitrators)
+  - Archivist Council (protocol guardians)
+  - Quadratic + conviction voting mechanisms
+  - Dispute resolution flow (peer → mediation → elders → appeal)
+  - Complete comparison: Traditional moderation vs trust-based governance
+
+- [x] **Phase 4: Trust System** (previously completed)
+  - Trust scores, decay, penalties, and appeals as gating mechanisms
+
 - [x] PostgreSQL schema migration (`src/db/migrations/0001_phase1_foundation.sql`)
   - `events` table (append-only, immutability triggers)
   - `ledger_accounts` table (chart of accounts)
@@ -102,14 +124,12 @@ The system implements trust scores, decay, penalties, and appeals as gating mech
 | Trust Penalties | ✅ Infractions reduce score, emit events |
 | Appeals Process | ✅ Recovery workflow with audit trail |
 
-## What's NOT Included (Phase 2+)
+## What's NOT Included (Future Phases)
 
-- Governance logic
-- Permission system
-- Trust scoring / decay
-- Pool management
-- Member management
-- UX / UI
+- Real-time WebSocket implementation
+- UI/frontend components for interactivity
+- Community heatmap and visualization
+- Full governance execution logic
 
 ## Setup Requirements
 
@@ -124,3 +144,4 @@ The system implements trust scores, decay, penalties, and appeals as gating mech
 | Initial | Template created with base Next.js setup |
 | 2026-02-26 | Phase 1 foundation implemented: event log, double-entry ledger, posting engine, 130 tests |
 | 2026-02-27 | Phase 4 trust system: scores, decay, penalties, appeals, gating middleware |
+| 2026-02-27 | Phase 3 transformation: technical roadmap, 5 prosperity features, trust-based governance model |
