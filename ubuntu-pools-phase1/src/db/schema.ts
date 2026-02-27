@@ -59,3 +59,37 @@ export const ledgerEntries = pgTable("ledger_entries", {
   entryType: entryTypeEnum("type").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 });
+
+export const trustStatusEnum = pgEnum("trust_status", ["active", "frozen", "banned"]);
+export const infractionTypeEnum = pgEnum("infraction_type", ["failed_proposal", "governance_abuse", "spam", "rule_violation", "appeal_rejected"]);
+export const appealStatusEnum = pgEnum("appeal_status", ["pending", "approved", "rejected"]);
+
+export const trustScores = pgTable("trust_scores", {
+  actorId: uuid("actor_id").primaryKey(),
+  score: bigint("score", { mode: "number" }).notNull(),
+  status: trustStatusEnum("status").notNull().default("active"),
+  lastDecayAt: timestamp("last_decay_at", { withTimezone: true }).notNull().defaultNow(),
+  lastUpdatedAt: timestamp("last_updated_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const infractions = pgTable("infractions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  actorId: uuid("actor_id").notNull(),
+  type: infractionTypeEnum("type").notNull(),
+  amount: bigint("amount", { mode: "number" }).notNull(),
+  reason: text("reason").notNull(),
+  relatedEventId: bigint("related_event_id", { mode: "bigint" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const appeals = pgTable("appeals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  actorId: uuid("actor_id").notNull(),
+  infractionId: uuid("infraction_id").notNull().references(() => infractions.id),
+  status: appealStatusEnum("status").notNull().default("pending"),
+  reason: text("reason").notNull(),
+  reviewedBy: uuid("reviewed_by"),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+});

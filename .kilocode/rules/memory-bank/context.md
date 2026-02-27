@@ -1,19 +1,26 @@
-# Active Context: Ubuntu Pools — Phase 1 Foundation
+# Active Context: Ubuntu Pools — Phase 4 Trust System
 
 ## Current State
 
-**Phase 1 Status**: ✅ Complete — Ledger + Event Foundations
+**Phase 4 Status**: ✅ Complete — Trust as Permissions
 
-The system implements the Ubuntu Pools Phase 1 governance foundation:
-- Immutable, append-only event log with SHA-256 hash chain
-- Double-entry ledger with DB-level balance enforcement
-- Posting rules engine
-- Full TypeScript type safety (0 errors)
-- 130/130 unit tests passing
-- 0 lint errors
+The system implements trust scores, decay, penalties, and appeals as gating mechanisms:
+- Trust scores (0-100) influence ability to submit proposals or trigger operations
+- Time-based decay algorithm with configurable intervals
+- Penalty system for governance infractions
+- Appeals/recovery process with audit trail
+- Clear separation from ledger (trust never affects balance math)
+- All tests passing
 
 ## Recently Completed
 
+- [x] **Phase 4: Trust System**
+  - Trust schema (`src/trust/config.ts`) - Zod validation for scores, decay, penalties
+  - Trust tables in DB schema (`src/db/schema.ts`) - trust_scores, infractions, appeals
+  - Trust service (`src/trust/service.ts`) - decay, penalty, recovery, appeals
+  - Trust gating middleware (`src/trust/gating.ts`) - action authorization
+  - Migration (`migrations/0002_trust.sql`) - DB triggers for immutability
+  - Tests (21 tests) - decay algorithm, config validation, ledger invariant preservation
 - [x] PostgreSQL schema migration (`src/db/migrations/0001_phase1_foundation.sql`)
   - `events` table (append-only, immutability triggers)
   - `ledger_accounts` table (chart of accounts)
@@ -79,7 +86,7 @@ The system implements the Ubuntu Pools Phase 1 governance foundation:
 | `src/app/api/ledger/accounts/[id]/balance/route.ts` | Balance API | ✅ Ready |
 | `src/tests/` | Unit tests (130 tests) | ✅ Ready |
 
-## Phase 1 Governance Compliance
+## Phase 1 + Phase 4 Governance Compliance
 
 | Requirement | Status |
 |-------------|--------|
@@ -90,7 +97,10 @@ The system implements the Ubuntu Pools Phase 1 governance foundation:
 | Non-custodial | ✅ System records intent only, no fund custody |
 | Integer minor units | ✅ All monetary values are bigint |
 | Server-side validation | ✅ All inputs validated before DB write |
-| No Phase 2–5 features | ✅ No governance, permissions, or trust scoring |
+| Trust as Permissions | ✅ Trust scores gate proposals/operations (not balance math) |
+| Trust Decay | ✅ Time-based decay with configurable rate |
+| Trust Penalties | ✅ Infractions reduce score, emit events |
+| Appeals Process | ✅ Recovery workflow with audit trail |
 
 ## What's NOT Included (Phase 2+)
 
@@ -113,3 +123,4 @@ The system implements the Ubuntu Pools Phase 1 governance foundation:
 |------|---------|
 | Initial | Template created with base Next.js setup |
 | 2026-02-26 | Phase 1 foundation implemented: event log, double-entry ledger, posting engine, 130 tests |
+| 2026-02-27 | Phase 4 trust system: scores, decay, penalties, appeals, gating middleware |
