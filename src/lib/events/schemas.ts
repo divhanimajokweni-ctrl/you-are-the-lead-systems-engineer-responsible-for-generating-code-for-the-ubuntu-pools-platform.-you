@@ -16,7 +16,29 @@
  *   - ledger.transaction_posted — a balanced journal transaction was posted
  *   - ledger.transaction_failed — a posting attempt failed
  *
- * NO Phase 2–5 event types (governance, permissions, trust) are defined here.
+ * Phase 2 Event Types (Non-Custodial Enforcement):
+ *   - custody.intent_recorded    — an intent to act (non-custodial)
+ *   - custody.authorization_signed — external signature verification recorded
+ *   - custody.external_custody_linked — adapter registered for off-chain custody
+ *
+ * Phase 3 Event Types (Governance):
+ *   - governance.proposal_created — a governance proposal
+ *   - governance.proposal_approved — approval by a member
+ *   - governance.proposal_rejected — rejection by a member
+ *   - governance.proposal_executed — proposal passed and executed
+ *   - governance.constitution_amended — constitution version changed
+ *
+ * Phase 4 Event Types (Trust):
+ *   - trust.score_adjusted — trust score changed
+ *   - trust.infraction_recorded — trust penalty applied
+ *   - trust.appeal_filed — trust penalty appeal
+ *   - trust.appeal_resolved — appeal outcome
+ *
+ * Phase 5 Event Types (Audit):
+ *   - audit.chain_verified — hash chain integrity verified
+ *   - audit.orphan_detected — orphaned event detected
+ *   - audit.incident_created — compliance incident logged
+ *   - audit.incident_resolved — incident resolved
  */
 
 import { z } from "zod";
@@ -328,6 +350,273 @@ export type LedgerTransactionFailedPayload = z.infer<
 >;
 
 // =============================================================================
+// PHASE 2 EVENT PAYLOAD SCHEMAS (Non-Custodial Enforcement)
+// =============================================================================
+
+export const custodyIntentRecordedPayloadSchema = z.object({
+  intentType: z.enum([
+    "transfer",
+    "withdrawal",
+    "deposit",
+    "allocation",
+    "distribution",
+  ]),
+  sourceEntityId: uuidSchema,
+  sourceEntityType: z.string().min(1),
+  destinationEntityId: uuidSchema.optional(),
+  destinationEntityType: z.string().optional(),
+  amount: minorUnitAmountSchema,
+  currency: currencySchema,
+  intentHash: sha256HashSchema,
+  intentExpiresAt: z.iso.datetime().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type CustodyIntentRecordedPayload = z.infer<
+  typeof custodyIntentRecordedPayloadSchema
+>;
+
+export const custodyAuthorizationSignedPayloadSchema = z.object({
+  intentEventId: uuidSchema,
+  signerId: uuidSchema,
+  signerType: z.enum(["member", "custodian", "multisig"]),
+  signature: z.string().min(1),
+  signatureAlgorithm: z.enum(["ed25519", "secp256k1", "rsa4096"]),
+  signedAt: z.iso.datetime(),
+  expiresAt: z.iso.datetime().optional(),
+});
+
+export type CustodyAuthorizationSignedPayload = z.infer<
+  typeof custodyAuthorizationSignedPayloadSchema
+>;
+
+export const custodyExternalCustodyLinkedPayloadSchema = z.object({
+  adapterType: z.enum(["webhook", "callback", "multisig", "hsm"]),
+  adapterEndpoint: z.string().url().optional(),
+  adapterPublicKey: z.string().optional(),
+  linkedEntityId: uuidSchema,
+  linkedEntityType: z.string().min(1),
+  isActive: z.boolean().default(true),
+});
+
+export type CustodyExternalCustodyLinkedPayload = z.infer<
+  typeof custodyExternalCustodyLinkedPayloadSchema
+>;
+
+// =============================================================================
+// PHASE 3 EVENT PAYLOAD SCHEMAS (Governance)
+// =============================================================================
+
+export const governanceProposalCreatedPayloadSchema = z.object({
+  proposalType: z.enum([
+    "parameter_change",
+    "rule_amendment",
+    "membership_change",
+    "treasury_allocation",
+    "constitution_amendment",
+  ]),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  constitutionVersion: z.number().int().positive(),
+  votingPeriodEnd: z.iso.datetime(),
+  quorumThreshold: z.number().min(0).max(1),
+  approvalThreshold: z.number().min(0).max(1),
+  proposerId: uuidSchema,
+  targetEntityId: uuidSchema.optional(),
+  targetEntityType: z.string().optional(),
+  payload: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type GovernanceProposalCreatedPayload = z.infer<
+  typeof governanceProposalCreatedPayloadSchema
+>;
+
+export const governanceProposalApprovedPayloadSchema = z.object({
+  proposalId: uuidSchema,
+  voterId: uuidSchema,
+  voterType: z.enum(["member", "custodian", "governance"]),
+  voteWeight: z.number().int().positive().default(1),
+  signature: z.string().optional(),
+  signedAt: z.iso.datetime().optional(),
+});
+
+export type GovernanceProposalApprovedPayload = z.infer<
+  typeof governanceProposalApprovedPayloadSchema
+>;
+
+export const governanceProposalRejectedPayloadSchema = z.object({
+  proposalId: uuidSchema,
+  voterId: uuidSchema,
+  voterType: z.enum(["member", "custodian", "governance"]),
+  rejectionReason: z.string().optional(),
+});
+
+export type GovernanceProposalRejectedPayload = z.infer<
+  typeof governanceProposalRejectedPayloadSchema
+>;
+
+export const governanceProposalExecutedPayloadSchema = z.object({
+  proposalId: uuidSchema,
+  executedBy: uuidSchema,
+  executionResult: z.enum(["success", "partial", "failed"]),
+  executedAt: z.iso.datetime(),
+  resultPayload: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type GovernanceProposalExecutedPayload = z.infer<
+  typeof governanceProposalExecutedPayloadSchema
+>;
+
+export const governanceConstitutionAmendedPayloadSchema = z.object({
+  previousVersion: z.number().int().positive(),
+  newVersion: z.number().int().positive(),
+  amendmentType: z.enum(["parameter", "rule", "structure"]),
+  changedFields: z.array(z.string()),
+  approvedByProposalId: uuidSchema,
+  effectiveAt: z.iso.datetime(),
+});
+
+export type GovernanceConstitutionAmendedPayload = z.infer<
+  typeof governanceConstitutionAmendedPayloadSchema
+>;
+
+// =============================================================================
+// PHASE 4 EVENT PAYLOAD SCHEMAS (Trust)
+// =============================================================================
+
+export const trustScoreAdjustedPayloadSchema = z.object({
+  subjectId: uuidSchema,
+  subjectType: z.enum(["member", "custodian", "adapter"]),
+  previousScore: z.number().min(0).max(100),
+  newScore: z.number().min(0).max(100),
+  adjustmentReason: z.enum([
+    "approval",
+    "rejection",
+    "infraction",
+    "appeal_granted",
+    "appeal_denied",
+    "time_decay",
+    "manual_adjustment",
+  ]),
+  reasonDetails: z.string().optional(),
+  adjustedBy: uuidSchema,
+});
+
+export type TrustScoreAdjustedPayload = z.infer<
+  typeof trustScoreAdjustedPayloadSchema
+>;
+
+export const trustInfractionRecordedPayloadSchema = z.object({
+  subjectId: uuidSchema,
+  subjectType: z.enum(["member", "custodian", "adapter"]),
+  infractionType: z.enum([
+    "unauthorized_attempt",
+    "violation_of_rules",
+    "failed_custody_duty",
+    "misrepresentation",
+    "collusion",
+  ]),
+  severity: z.enum(["low", "medium", "high", "critical"]),
+  penaltyPoints: z.number().int().min(0).max(100),
+  description: z.string().min(1),
+  evidenceEventIds: z.array(uuidSchema).optional(),
+  recordedBy: uuidSchema,
+});
+
+export type TrustInfractionRecordedPayload = z.infer<
+  typeof trustInfractionRecordedPayloadSchema
+>;
+
+export const trustAppealFiledPayloadSchema = z.object({
+  appealId: uuidSchema,
+  infractionId: uuidSchema,
+  appellantId: uuidSchema,
+  grounds: z.string().min(1),
+  evidenceUrls: z.array(z.string().url()).optional(),
+  filedAt: z.iso.datetime(),
+});
+
+export type TrustAppealFiledPayload = z.infer<typeof trustAppealFiledPayloadSchema>;
+
+export const trustAppealResolvedPayloadSchema = z.object({
+  appealId: uuidSchema,
+  infractionId: uuidSchema,
+  resolution: z.enum(["upheld", "overturned", "reduced"]),
+  resolutionReason: z.string().min(1),
+  resolvedBy: uuidSchema,
+  resolvedAt: z.iso.datetime(),
+  newPenaltyPoints: z.number().int().min(0).optional(),
+});
+
+export type TrustAppealResolvedPayload = z.infer<typeof trustAppealResolvedPayloadSchema>;
+
+// =============================================================================
+// PHASE 5 EVENT PAYLOAD SCHEMAS (Audit)
+// =============================================================================
+
+export const auditChainVerifiedPayloadSchema = z.object({
+  entityId: uuidSchema,
+  entityType: z.string().min(1),
+  eventCount: z.number().int().positive(),
+  firstEventHash: sha256HashSchema,
+  lastEventHash: sha256HashSchema,
+  verificationResult: z.enum(["valid", "invalid", "inconclusive"]),
+  errors: z.array(z.object({
+    sequenceNo: z.number().int(),
+    errorType: z.string(),
+    expected: z.string().optional(),
+    actual: z.string().optional(),
+  })).optional(),
+  verifiedAt: z.iso.datetime(),
+  verifiedBy: z.string().min(1),
+});
+
+export type AuditChainVerifiedPayload = z.infer<typeof auditChainVerifiedPayloadSchema>;
+
+export const auditOrphanDetectedPayloadSchema = z.object({
+  orphanEventId: uuidSchema,
+  prevHash: sha256HashSchema.nullable(),
+  expectedPrevHash: sha256HashSchema,
+  detectedAt: z.iso.datetime(),
+  detectedBy: z.string().min(1),
+  resolution: z.enum(["linked", "rejected", "quarantined"]).optional(),
+});
+
+export type AuditOrphanDetectedPayload = z.infer<typeof auditOrphanDetectedPayloadSchema>;
+
+export const auditIncidentCreatedPayloadSchema = z.object({
+  incidentId: uuidSchema,
+  severity: z.enum(["low", "medium", "high", "critical"]),
+  incidentType: z.enum([
+    "hash_mismatch",
+    "orphan_event",
+    "quorum_failure",
+    "custody_breach",
+    "trust_violation",
+    "governance_violation",
+    "data_integrity",
+  ]),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  relatedEventIds: z.array(uuidSchema).optional(),
+  relatedEntityIds: z.array(uuidSchema).optional(),
+  createdAt: z.iso.datetime(),
+  assignee: z.string().optional(),
+});
+
+export type AuditIncidentCreatedPayload = z.infer<typeof auditIncidentCreatedPayloadSchema>;
+
+export const auditIncidentResolvedPayloadSchema = z.object({
+  incidentId: uuidSchema,
+  resolution: z.enum(["resolved", "false_positive", "accepted_risk"]),
+  resolutionNotes: z.string().min(1),
+  resolvedBy: uuidSchema,
+  resolvedAt: z.iso.datetime(),
+});
+
+export type AuditIncidentResolvedPayload = z.infer<typeof auditIncidentResolvedPayloadSchema>;
+
+// =============================================================================
 // TYPED EVENT SCHEMAS (full event with typed payload)
 // =============================================================================
 
@@ -367,6 +656,118 @@ export const ledgerTransactionFailedEventSchema = baseEventSchema.extend({
 });
 
 // =============================================================================
+// PHASE 2 TYPED EVENT SCHEMAS (Non-Custodial Enforcement)
+// =============================================================================
+
+export const custodyIntentRecordedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("custody.intent_recorded"),
+  entityType: z.literal("intent"),
+  payload: custodyIntentRecordedPayloadSchema,
+});
+
+export const custodyAuthorizationSignedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("custody.authorization_signed"),
+  entityType: z.literal("authorization"),
+  payload: custodyAuthorizationSignedPayloadSchema,
+});
+
+export const custodyExternalCustodyLinkedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("custody.external_custody_linked"),
+  entityType: z.literal("custody_adapter"),
+  payload: custodyExternalCustodyLinkedPayloadSchema,
+});
+
+// =============================================================================
+// PHASE 3 TYPED EVENT SCHEMAS (Governance)
+// =============================================================================
+
+export const governanceProposalCreatedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("governance.proposal_created"),
+  entityType: z.literal("proposal"),
+  payload: governanceProposalCreatedPayloadSchema,
+});
+
+export const governanceProposalApprovedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("governance.proposal_approved"),
+  entityType: z.literal("proposal_vote"),
+  payload: governanceProposalApprovedPayloadSchema,
+});
+
+export const governanceProposalRejectedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("governance.proposal_rejected"),
+  entityType: z.literal("proposal_vote"),
+  payload: governanceProposalRejectedPayloadSchema,
+});
+
+export const governanceProposalExecutedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("governance.proposal_executed"),
+  entityType: z.literal("proposal"),
+  payload: governanceProposalExecutedPayloadSchema,
+});
+
+export const governanceConstitutionAmendedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("governance.constitution_amended"),
+  entityType: z.literal("constitution"),
+  payload: governanceConstitutionAmendedPayloadSchema,
+});
+
+// =============================================================================
+// PHASE 4 TYPED EVENT SCHEMAS (Trust)
+// =============================================================================
+
+export const trustScoreAdjustedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("trust.score_adjusted"),
+  entityType: z.literal("trust_record"),
+  payload: trustScoreAdjustedPayloadSchema,
+});
+
+export const trustInfractionRecordedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("trust.infraction_recorded"),
+  entityType: z.literal("infraction"),
+  payload: trustInfractionRecordedPayloadSchema,
+});
+
+export const trustAppealFiledEventSchema = baseEventSchema.extend({
+  eventType: z.literal("trust.appeal_filed"),
+  entityType: z.literal("appeal"),
+  payload: trustAppealFiledPayloadSchema,
+});
+
+export const trustAppealResolvedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("trust.appeal_resolved"),
+  entityType: z.literal("appeal"),
+  payload: trustAppealResolvedPayloadSchema,
+});
+
+// =============================================================================
+// PHASE 5 TYPED EVENT SCHEMAS (Audit)
+// =============================================================================
+
+export const auditChainVerifiedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("audit.chain_verified"),
+  entityType: z.literal("audit_verification"),
+  payload: auditChainVerifiedPayloadSchema,
+});
+
+export const auditOrphanDetectedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("audit.orphan_detected"),
+  entityType: z.literal("orphan_event"),
+  payload: auditOrphanDetectedPayloadSchema,
+});
+
+export const auditIncidentCreatedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("audit.incident_created"),
+  entityType: z.literal("incident"),
+  payload: auditIncidentCreatedPayloadSchema,
+});
+
+export const auditIncidentResolvedEventSchema = baseEventSchema.extend({
+  eventType: z.literal("audit.incident_resolved"),
+  entityType: z.literal("incident"),
+  payload: auditIncidentResolvedPayloadSchema,
+});
+
+// =============================================================================
 // DISCRIMINATED UNION: all Phase 1 events
 // =============================================================================
 
@@ -383,6 +784,58 @@ export const phase1EventSchema = z.discriminatedUnion("eventType", [
 ]);
 
 export type Phase1Event = z.infer<typeof phase1EventSchema>;
+
+// =============================================================================
+// DISCRIMINATED UNION: all Phase 2 events
+// =============================================================================
+
+export const phase2EventSchema = z.discriminatedUnion("eventType", [
+  custodyIntentRecordedEventSchema,
+  custodyAuthorizationSignedEventSchema,
+  custodyExternalCustodyLinkedEventSchema,
+]);
+
+export type Phase2Event = z.infer<typeof phase2EventSchema>;
+
+// =============================================================================
+// DISCRIMINATED UNION: all Phase 3 events
+// =============================================================================
+
+export const phase3EventSchema = z.discriminatedUnion("eventType", [
+  governanceProposalCreatedEventSchema,
+  governanceProposalApprovedEventSchema,
+  governanceProposalRejectedEventSchema,
+  governanceProposalExecutedEventSchema,
+  governanceConstitutionAmendedEventSchema,
+]);
+
+export type Phase3Event = z.infer<typeof phase3EventSchema>;
+
+// =============================================================================
+// DISCRIMINATED UNION: all Phase 4 events
+// =============================================================================
+
+export const phase4EventSchema = z.discriminatedUnion("eventType", [
+  trustScoreAdjustedEventSchema,
+  trustInfractionRecordedEventSchema,
+  trustAppealFiledEventSchema,
+  trustAppealResolvedEventSchema,
+]);
+
+export type Phase4Event = z.infer<typeof phase4EventSchema>;
+
+// =============================================================================
+// DISCRIMINATED UNION: all Phase 5 events
+// =============================================================================
+
+export const phase5EventSchema = z.discriminatedUnion("eventType", [
+  auditChainVerifiedEventSchema,
+  auditOrphanDetectedEventSchema,
+  auditIncidentCreatedEventSchema,
+  auditIncidentResolvedEventSchema,
+]);
+
+export type Phase5Event = z.infer<typeof phase5EventSchema>;
 
 // =============================================================================
 // VALIDATION HELPERS
@@ -422,17 +875,36 @@ export function validatePayloadForEventType(
   payload: unknown
 ): { success: true; data: unknown } | { success: false; error: z.ZodError } {
   const schemaMap: Record<string, z.ZodSchema> = {
+    // Phase 1
     "system.initialized": systemInitializedPayloadSchema,
     "ledger.account_opened": ledgerAccountOpenedPayloadSchema,
     "ledger.posting_rule_created": ledgerPostingRuleCreatedPayloadSchema,
     "ledger.transaction_posted": ledgerTransactionPostedPayloadSchema,
     "ledger.transaction_failed": ledgerTransactionFailedPayloadSchema,
+    // Phase 2
+    "custody.intent_recorded": custodyIntentRecordedPayloadSchema,
+    "custody.authorization_signed": custodyAuthorizationSignedPayloadSchema,
+    "custody.external_custody_linked": custodyExternalCustodyLinkedPayloadSchema,
+    // Phase 3
+    "governance.proposal_created": governanceProposalCreatedPayloadSchema,
+    "governance.proposal_approved": governanceProposalApprovedPayloadSchema,
+    "governance.proposal_rejected": governanceProposalRejectedPayloadSchema,
+    "governance.proposal_executed": governanceProposalExecutedPayloadSchema,
+    "governance.constitution_amended": governanceConstitutionAmendedPayloadSchema,
+    // Phase 4
+    "trust.score_adjusted": trustScoreAdjustedPayloadSchema,
+    "trust.infraction_recorded": trustInfractionRecordedPayloadSchema,
+    "trust.appeal_filed": trustAppealFiledPayloadSchema,
+    "trust.appeal_resolved": trustAppealResolvedPayloadSchema,
+    // Phase 5
+    "audit.chain_verified": auditChainVerifiedPayloadSchema,
+    "audit.orphan_detected": auditOrphanDetectedPayloadSchema,
+    "audit.incident_created": auditIncidentCreatedPayloadSchema,
+    "audit.incident_resolved": auditIncidentResolvedPayloadSchema,
   };
 
   const schema = schemaMap[eventType];
   if (!schema) {
-    // Unknown event types are allowed in Phase 1 (open schema)
-    // but their payloads are not validated beyond being a valid object
     const result = z.record(z.string(), z.unknown()).safeParse(payload);
     return result;
   }

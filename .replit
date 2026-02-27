@@ -6,5 +6,29 @@ expertMode = true
 channel = "stable-25_05"
 
 [[ports]]
+localPort = 3000
+externalPort = 3000
+
+[[ports]]
 localPort = 24678
 externalPort = 80
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Dev Server"
+
+[[workflows.workflow]]
+name = "Dev Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ubuntu-pools-phase1 && bun run src/index.ts"

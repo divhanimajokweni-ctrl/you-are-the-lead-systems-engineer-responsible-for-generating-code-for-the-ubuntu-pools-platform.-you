@@ -462,3 +462,139 @@ export type NewPostingRule = typeof postingRules.$inferInsert;
 export type EventStatus = (typeof eventStatusEnum.enumValues)[number];
 export type AccountType = (typeof accountTypeEnum.enumValues)[number];
 export type EntrySide = (typeof entrySideEnum.enumValues)[number];
+
+// =============================================================================
+// GOVERNANCE SCHEMA (Phase 3)
+// =============================================================================
+
+export const proposalStatusEnum = pgEnum("proposal_status", [
+  "draft",
+  "active",
+  "executed",
+  "rejected",
+  "expired",
+]);
+
+export const voteTypeEnum = pgEnum("vote_type", [
+  "approved",
+  "rejected",
+]);
+
+export const voterTypeEnum = pgEnum("voter_type", [
+  "member",
+  "custodian",
+  "governance",
+]);
+
+export const governanceConstitutions = pgTable(
+  "governance_constitutions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    version: integer("version").notNull(),
+    params: jsonb("params").notNull(),
+    rules: jsonb("rules").notNull().default([]),
+    effectiveFrom: timestamptz("effective_from").notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    createdByEventId: uuid("created_by_event_id")
+      .notNull()
+      .references(() => events.id),
+  },
+  (table) => ({
+    versionUnique: uniqueIndex("governance_constitutions_version_unique").on(table.version),
+  })
+);
+
+export const governanceProposals = pgTable(
+  "governance_proposals",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    proposalType: text("proposal_type").notNull(),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    constitutionVersion: integer("constitution_version").notNull(),
+    proposerId: uuid("proposer_id").notNull(),
+    targetEntityId: uuid("target_entity_id"),
+    targetEntityType: text("target_entity_type"),
+    payload: jsonb("payload").notNull().default({}),
+    status: proposalStatusEnum("status").notNull().default("draft"),
+    quorumThreshold: integer("quorum_threshold").notNull(),
+    approvalThreshold: integer("approval_threshold").notNull(),
+    votingPeriodStart: timestamptz("voting_period_start").notNull().defaultNow(),
+    votingPeriodEnd: timestamptz("voting_period_end").notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    createdByEventId: uuid("created_by_event_id")
+      .notNull()
+      .references(() => events.id),
+    executedAt: timestamptz("executed_at"),
+    executedByEventId: uuid("executed_by_event_id"),
+  },
+  (table) => ({
+    statusIdx: index("idx_governance_proposals_status").on(table.status),
+    proposerIdx: index("idx_governance_proposals_proposer").on(table.proposerId),
+    constitutionIdx: index("idx_governance_proposals_constitution").on(table.constitutionVersion),
+  })
+);
+
+export const governanceVotes = pgTable(
+  "governance_votes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    proposalId: uuid("proposal_id")
+      .notNull()
+      .references(() => governanceProposals.id),
+    voterId: uuid("voter_id").notNull(),
+    voterType: voterTypeEnum("voter_type").notNull(),
+    vote: voteTypeEnum("vote").notNull(),
+    weight: integer("weight").notNull().default(1),
+    signature: text("signature"),
+    signedAt: timestamptz("signed_at"),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    createdByEventId: uuid("created_by_event_id")
+      .notNull()
+      .references(() => events.id),
+  },
+  (table) => ({
+    proposalIdx: index("idx_governance_votes_proposal").on(table.proposalId),
+    voterIdx: index("idx_governance_votes_voter").on(table.voterId),
+    voterProposalUnique: uniqueIndex("governance_votes_unique_voter_proposal").on(
+      table.proposalId,
+      table.voterId
+    ),
+  })
+);
+
+export const governanceEnforcementRules = pgTable(
+  "governance_enforcement_rules",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    action: text("action").notNull(),
+    requiresApproval: boolean("requires_approval").notNull().default(true),
+    quorumOverride: integer("quorum_override"),
+    thresholdOverride: integer("threshold_override"),
+    constitutionVersion: integer("constitution_version").notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    createdByEventId: uuid("created_by_event_id")
+      .notNull()
+      .references(() => events.id),
+  },
+  (table) => ({
+    actionActiveUnique: uniqueIndex("idx_governance_enforcement_rules_action").on(table.action, table.isActive),
+  })
+);
+
+export type GovernanceConstitution = typeof governanceConstitutions.$inferSelect;
+export type NewGovernanceConstitution = typeof governanceConstitutions.$inferInsert;
+
+export type GovernanceProposal = typeof governanceProposals.$inferSelect;
+export type NewGovernanceProposal = typeof governanceProposals.$inferInsert;
+
+export type GovernanceVote = typeof governanceVotes.$inferSelect;
+export type NewGovernanceVote = typeof governanceVotes.$inferInsert;
+
+export type GovernanceEnforcementRule = typeof governanceEnforcementRules.$inferSelect;
+export type NewGovernanceEnforcementRule = typeof governanceEnforcementRules.$inferInsert;
+
+export type ProposalStatus = (typeof proposalStatusEnum.enumValues)[number];
+export type VoteType = (typeof voteTypeEnum.enumValues)[number];
+export type VoterType = (typeof voterTypeEnum.enumValues)[number];
