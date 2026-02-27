@@ -1,0 +1,70 @@
+name: Database Snapshots
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to snapshot'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run database backup
+        run: |
+          TIMESTAMP=$(date -u +%Y%m%d_%H%M%S)
+          ENV=${{ github.event.inputs.environment || 'production' }}
+          
+          # Create backup (excluding PII tables)
+          docker compose exec -T postgres pg_dump -U app ledger \
+            --exclude-table=identities \
+            --exclude-table=encryption_keys \
+            --format=custom > backup_${TIMESTAMP}.dump
+
+      - name: Install age
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y age
+
+      - name: Generate snapshot encryption key
+        run: |
+          age-keygen -o snapshot-key.txt
+
+      - name: Encrypt snapshot
+        run: |
+          TIMESTAMP=$(date -u +%Y%m%d_%H%M%S)
+          age -R snapshot-key.txt -o snapshot_${TIMESTAMP}.tar.age backup_${TIMESTAMP}.dump
+
+      - name: Upload encrypted snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-snapshot-${{ github.event.inputs.environment || 'production' }}
+          path: snapshot_*.tar.age
+          retention-days: 30
+
+      - name: Upload encryption key (temporary)
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-key
+          path: snapshot-key.txt
+          retention-days: 7
+
+      - name: Clean up
+        run: |
+          rm -f backup_*.dump snapshot_*.tar.age snapshot-key.txt

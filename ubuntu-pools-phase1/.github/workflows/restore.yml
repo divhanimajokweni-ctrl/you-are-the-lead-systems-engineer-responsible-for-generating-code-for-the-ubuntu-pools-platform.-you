@@ -1,0 +1,88 @@
+name: Restore Database Snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      snapshot_date:
+        description: 'Date of snapshot to restore (YYYYMMDD)'
+        required: true
+      target_environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - development
+      approve_restore:
+        description: 'I understand this will overwrite existing data'
+        required: true
+        type: boolean
+
+jobs:
+  approval:
+    runs-on: ubuntu-latest
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+    steps:
+      - id: check
+        run: |
+          if [ "${{ github.event.inputs.approve_restore }}" == "true" ]; then
+            echo "approved=true" >> $GITHUB_OUTPUT
+          else
+            echo "approved=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+  restore:
+    needs: approval
+    if: needs.approval.outputs.approved == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.target_environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download snapshot artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: db-snapshot-${{ github.event.inputs.target_environment }}
+          path: .
+
+      - name: List files
+        run: ls -la
+
+      - name: Install age
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y age
+
+      - name: Decrypt snapshot
+        run: |
+          # Find the snapshot file
+          SNAPSHOT_FILE=$(ls snapshot_*_${{ github.event.inputs.snapshot_date }}_*.tar.age | head -1)
+          age -d -i snapshot-key.txt -o restore.dump "$SNAPSHOT_FILE"
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Stop application
+        run: docker compose stop app
+
+      - name: Restore database
+        run: |
+          docker compose stop postgres
+          # Warning: This destroys existing data
+          docker compose rm -f postgres
+          docker compose up -d postgres
+          sleep 10
+          docker compose exec -T postgres pg_restore -U app -d ledger -c restore.dump
+
+      - name: Restart application
+        run: docker compose up -d app
+
+      - name: Verify restore
+        run: |
+          docker compose exec -T postgres psql -U app -d ledger -c "SELECT COUNT(*) FROM events;"
+
+      - name: Cleanup
+        run: |
+          rm -f restore.dump snapshot_*.tar.age
