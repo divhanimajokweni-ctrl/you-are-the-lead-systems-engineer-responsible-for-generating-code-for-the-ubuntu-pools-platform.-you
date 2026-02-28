@@ -1,1 +1,150 @@
 @import "tailwindcss";
+
+@theme {
+  --color-earth: #606C38;
+  --color-earth-light: #7A8B4F;
+  --color-earth-dark: #4A5529;
+  --color-harvest: #D4AF37;
+  --color-harvest-light: #E5C76B;
+  --color-harvest-dark: #B8942E;
+  --color-clay: #9B4722;
+  --color-clay-light: #B85A32;
+  --color-clay-dark: #7A371B;
+  
+  --font-family-display: var(--font-geist-sans);
+  --font-family-body: var(--font-geist-sans);
+  
+  --animate-pulse-wave: pulse-wave 2s ease-out infinite;
+  --animate-spring: spring 0.5s ease-out;
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-wave {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes spring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px var(--color-harvest);
+  }
+  to {
+    box-shadow: 0 0 20px var(--color-harvest), 0 0 30px var(--color-harvest);
+  }
+}
+
+@layer base {
+  :root {
+    --color-earth: #606C38;
+    --color-harvest: #D4AF37;
+    --color-clay: #9B4722;
+  }
+  
+  body {
+    @apply bg-neutral-900 text-neutral-100;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+  
+  .font-bold-italic {
+    @apply font-bold italic;
+  }
+}
+
+@layer components {
+  .village-circle {
+    @apply relative rounded-full;
+    background: conic-gradient(from 0deg, var(--color-earth), var(--color-harvest), var(--color-clay), var(--color-earth));
+  }
+  
+  .hash-chain-indicator {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded bg-neutral-800 text-xs font-mono;
+    @apply hover:bg-neutral-700 transition-colors cursor-pointer;
+  }
+  
+  .integrity-verified {
+    @apply text-earth-light;
+  }
+  
+  .integrity-broken {
+    @apply text-red-500;
+  }
+  
+  .commons-vault-bar {
+    @apply h-3 rounded-full bg-neutral-800 overflow-hidden;
+  }
+  
+  .commons-vault-progress {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+    background: linear-gradient(90deg, var(--color-earth), var(--color-harvest));
+  }
+  
+  .privacy-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+    @apply bg-neutral-800 text-neutral-300 border border-neutral-700;
+  }
+  
+  .consent-card {
+    @apply p-3 rounded-lg bg-neutral-800/50 border border-neutral-700;
+  }
+  
+  .reversal-entry {
+    @apply relative pl-4 border-l-2 border-clay;
+  }
+  
+  .reversal-entry::before {
+    content: "↩";
+    @apply absolute -left-3 top-0 text-clay;
+  }
+  
+  .member-avatar {
+    @apply w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium;
+    @apply border-2 transition-all duration-300;
+  }
+  
+  .member-avatar-inactive {
+    @apply border-earth text-neutral-400;
+  }
+  
+  .member-avatar-active {
+    @apply border-harvest text-harvest;
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  .tribal-impact-metric {
+    @apply text-3xl font-bold italic;
+    color: var(--color-harvest);
+  }
+  
+  .dignity-notification {
+    @apply flex items-center gap-3 p-4 rounded-lg;
+    @apply bg-earth/10 border border-earth/30;
+  }
+  
+  .compliance-badge {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded text-xs;
+    @apply bg-neutral-800 text-neutral-400;
+  }
+}
