@@ -76,6 +76,19 @@ const routes: Record<string, (req: Request) => Promise<Response>> = {
 
   "GET /health": async () => {
     return Response.json({ status: "ok" });
+  },
+
+  "GET /": async () => {
+    return Response.json({
+      message: "Welcome to Ubuntu Pools API",
+      endpoints: [
+        "POST /events",
+        "POST /transactions",
+        "POST /transactions/:id/reverse",
+        "GET /balances",
+        "GET /health"
+      ]
+    });
   }
 };
 
