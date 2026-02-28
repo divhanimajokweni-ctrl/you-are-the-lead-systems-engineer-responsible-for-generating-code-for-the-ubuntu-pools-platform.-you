@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 export interface CollectivePulse {
@@ -42,6 +42,7 @@ interface UseCollectivePulseReturn {
 }
 
 export function useCollectivePulse(): UseCollectivePulseReturn {
+  const socketRef = useRef<Socket | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [pulses, setPulses] = useState<CollectivePulse[]>([]);
@@ -58,6 +59,8 @@ export function useCollectivePulse(): UseCollectivePulseReturn {
       path: '/api/socket',
       transports: ['websocket', 'polling'],
     });
+
+    socketRef.current = socketInstance;
 
     socketInstance.on('connect', () => {
       setIsConnected(true);
@@ -88,11 +91,15 @@ export function useCollectivePulse(): UseCollectivePulseReturn {
       setPulses(prev => [...prev.slice(-49), pulse]);
     });
 
-    setSocket(socketInstance);
-
     return () => {
       socketInstance.disconnect();
     };
+  }, []);
+
+  useEffect(() => {
+    if (socketRef.current) {
+      setSocket(socketRef.current);
+    }
   }, []);
 
   const subscribeToCollective = useCallback(() => {
