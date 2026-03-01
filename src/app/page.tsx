@@ -10,6 +10,13 @@ import { CircularProtocol } from '@/components/village/CircularProtocol';
 import { ImmutableLedger, LedgerEvent } from '@/components/ledger/ImmutableLedger';
 import { TechnicalDashboard } from '@/components/dashboard/TechnicalDashboard';
 import { PrivacyBadge, ConsentCard, ComplianceMeta } from '@/components/privacy/PrivacyComponents';
+import { WelcomeDashboard } from '@/components/home/WelcomeDashboard';
+import { VaultBalance } from '@/components/home/VaultBalance';
+import { ActivityFeed } from '@/components/home/ActivityFeed';
+import { QuickResources } from '@/components/home/QuickResources';
+import { FAQSection } from '@/components/home/FAQSection';
+import { ProsperityTiers } from '@/components/home/ProsperityTiers';
+import { UserProfile } from '@/components/home/UserProfile';
 
 type ViewType = 'pulse' | 'tribal' | 'ledger' | 'reputation' | 'vault' | 'dashboard';
 
@@ -177,21 +184,26 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-900">
+    <div className="min-h-screen bg-gradient-to-br from-midnight via-neutral-900 to-deep-forest">
       <VillageCircle onNavigate={(view) => setActiveView(view as ViewType)} />
       
-      <main className="ml-24 p-8">
-        <header className="mb-8">
+      <main className="ml-24 p-6 lg:p-8">
+        <header className="mb-6">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center justify-between"
           >
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-earth via-harvest to-clay bg-clip-text text-transparent">
-                Ubuntu Pools
-              </h1>
-              <p className="text-neutral-400 mt-1">&quot;I am because we are&quot; — Digital Ubuntu Platform</p>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-earth via-harvest to-clay flex items-center justify-center animate-float">
+                <span className="text-2xl">🌱</span>
+              </div>
+              <div>
+                <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-earth via-harvest to-clay bg-clip-text text-transparent">
+                  Ubuntu Pools
+                </h1>
+                <p className="text-neutral-400 text-sm">&quot;I am because we are&quot; — Digital Ubuntu Platform</p>
+              </div>
             </div>
             
             <div className="flex items-center gap-4">
@@ -201,8 +213,9 @@ export default function Home() {
               />
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-earth animate-pulse" />
-                <span className="text-sm text-neutral-400">Live</span>
+                <span className="text-sm text-neutral-400 hidden sm:inline">Live</span>
               </div>
+              <UserProfile userName="Ubuntu" trustScore={72} />
             </div>
           </motion.div>
         </header>
@@ -213,7 +226,43 @@ export default function Home() {
         />
 
         <div className="mt-6">
-          {renderContent()}
+          {activeView === 'pulse' ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-6"
+            >
+              <WelcomeDashboard userName="Ubuntu Member" />
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <div className="glass-card warm-glow p-6 mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h2 className="text-xl font-semibold text-white">The Pulse</h2>
+                        <p className="text-neutral-400 text-sm">Real-time global impact map — waves of community activity</p>
+                      </div>
+                    </div>
+                    <ThePulse autoGenerate={true} />
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  <VaultBalance balance="2,300.00" currency="R" />
+                  <ActivityFeed />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <QuickResources />
+                <ProsperityTiers />
+              </div>
+
+              <FAQSection />
+            </motion.div>
+          ) : (
+            renderContent()
+          )}
         </div>
       </main>
     </div>

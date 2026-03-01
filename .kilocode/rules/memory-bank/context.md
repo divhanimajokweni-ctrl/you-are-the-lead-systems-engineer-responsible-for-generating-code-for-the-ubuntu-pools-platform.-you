@@ -14,6 +14,20 @@ The Phase 3 transformation is now fully implemented with:
 
 ## Recently Completed
 
+- [x] **Home Screen Redesign** (2026-03-01)
+  - New humanistic UI with warm gradient background (`midnight` → `neutral-900` → `deep-forest`)
+  - Added components:
+    - `WelcomeDashboard.tsx` - Greeting, user stats (Ubuntu Score, Trust Circle, Contributions, Impact Points)
+    - `VaultBalance.tsx` - Commons Vault balance display with progress bar
+    - `ActivityFeed.tsx` - Recent community activities (contributions, badges, vouches, payments)
+    - `QuickResources.tsx` - Billing, Docs, FICA Status, Platform Audit links
+    - `FAQSection.tsx` - Expandable FAQ with categories (Philosophy & Trust, Payments & Liquidity, Security & Legal, Prosperity Tiers), AI Assistant CTA
+    - `ProsperityTiers.tsx` - Family Wealth Reserve, SME Bulk-Buying Circle, Youth Unity Fund
+    - `UserProfile.tsx` - Profile dropdown with settings, notifications, privacy controls
+  - New CSS components: glass-card, warm-glow, humanistic-card, stat-card, activity-item, resource-link, faq-item, tier-card
+  - New animations: float, breathe
+  - New colors: sage, warm-cream, terracotta, deep-forest, sunset, midnight
+
 - [x] **Phase 3 Implementation** (2026-02-27)
   - WebSocket server & client (`src/lib/websocket/`)
   - Trust-based reputation engine (`src/lib/reputation/engine.ts`)
@@ -165,3 +179,4 @@ The Phase 3 transformation is now fully implemented with:
 | 2026-02-26 | Phase 1 foundation implemented: event log, double-entry ledger, posting engine, 130 tests |
 | 2026-02-27 | Phase 4 trust system: scores, decay, penalties, appeals, gating middleware |
 | 2026-02-27 | Phase 3 transformation: technical roadmap, 5 prosperity features, trust-based governance model |
+| 2026-03-01 | Home screen redesign: humanistic UI, Welcome Dashboard, Vault Balance, Activity Feed, Quick Resources, FAQ, Prosperity Tiers, User Profile |
