@@ -1,255 +1,113 @@
 @import "tailwindcss";
 
+/*
+  Visual language inspired by your attached build:
+  - warm paper surface
+  - sage + gold + clay accents
+  - thick, bold typography
+  - soft borders, gentle glass
+*/
+
 @theme {
-  --color-earth: #606C38;
-  --color-earth-light: #7A8B4F;
-  --color-earth-dark: #4A5529;
-  --color-harvest: #D4AF37;
-  --color-harvest-light: #E5C76B;
-  --color-harvest-dark: #B8942E;
-  --color-clay: #9B4722;
-  --color-clay-light: #B85A32;
-  --color-clay-dark: #7A371B;
-  
-  --color-sage: #8FAE8B;
-  --color-warm-cream: #F5F0E6;
-  --color-terracotta: #C67B5C;
-  --color-deep-forest: #2D3A2D;
-  --color-sunset: #E8A87C;
-  --color-midnight: #1A1F2E;
-  
+  --surface: #FDFCFB;
+  --surface-2: #F9F9F8;
+  --text: #2D302E;
+  --muted: #6B706C;
+  --muted-2: #9EA39F;
+  --border: #F1F0EE;
+
+  --accent-sage: #8CA082;
+  --accent-gold: #D4AF37;
+  --accent-clay: #C07B5B;
+
+  --dark-surface: #1A1C1B;
+  --dark-surface-2: #252826;
+  --dark-text: #FDFCFB;
+  --dark-muted: #9EA39F;
+  --dark-border: #3A3D3B;
+
   --font-family-display: var(--font-geist-sans);
   --font-family-body: var(--font-geist-sans);
-  
-  --animate-pulse-wave: pulse-wave 2s ease-out infinite;
-  --animate-spring: spring 0.5s ease-out;
-  --animate-glow: glow 2s ease-in-out infinite alternate;
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-breathe: breathe 4s ease-in-out infinite;
-}
-
-@keyframes pulse-wave {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(2);
-    opacity: 0;
-  }
-}
-
-@keyframes spring {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes glow {
-  from {
-    box-shadow: 0 0 5px var(--color-harvest);
-  }
-  to {
-    box-shadow: 0 0 20px var(--color-harvest), 0 0 30px var(--color-harvest);
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes breathe {
-  0%, 100% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.02);
-  }
 }
 
 @layer base {
   :root {
-    --color-earth: #606C38;
-    --color-harvest: #D4AF37;
-    --color-clay: #9B4722;
+    color-scheme: light;
   }
-  
+
+  :root.dark {
+    color-scheme: dark;
+  }
+
+  html {
+    text-rendering: geometricPrecision;
+  }
+
   body {
-    @apply bg-gradient-to-br from-midnight via-neutral-900 to-deep-forest text-neutral-100;
-    background-attachment: fixed;
+    background: var(--surface);
+    color: var(--text);
   }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+
+  .dark body {
+    background: var(--dark-surface);
+    color: var(--dark-text);
   }
-  
-  .font-bold-italic {
-    @apply font-bold italic;
+
+  /* Typographic vibe: tight, bold, human */
+  h1, h2, h3, h4 {
+    letter-spacing: -0.04em;
+  }
+
+  ::selection {
+    background: #D6CFC7;
   }
 }
 
 @layer components {
-  .village-circle {
-    @apply relative rounded-full;
-    background: conic-gradient(from 0deg, var(--color-earth), var(--color-harvest), var(--color-clay), var(--color-earth));
-  }
-  
-  .hash-chain-indicator {
-    @apply inline-flex items-center gap-1 px-2 py-1 rounded bg-neutral-800 text-xs font-mono;
-    @apply hover:bg-neutral-700 transition-colors cursor-pointer;
-  }
-  
-  .integrity-verified {
-    @apply text-earth-light;
-  }
-  
-  .integrity-broken {
-    @apply text-red-500;
-  }
-  
-  .commons-vault-bar {
-    @apply h-3 rounded-full bg-neutral-800 overflow-hidden;
-  }
-  
-  .commons-vault-progress {
-    @apply h-full rounded-full transition-all duration-500 ease-out;
-    background: linear-gradient(90deg, var(--color-earth), var(--color-harvest));
-  }
-  
-  .privacy-badge {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
-    @apply bg-neutral-800 text-neutral-300 border border-neutral-700;
-  }
-  
-  .consent-card {
-    @apply p-3 rounded-lg bg-neutral-800/50 border border-neutral-700;
-  }
-  
-  .reversal-entry {
-    @apply relative pl-4 border-l-2 border-clay;
-  }
-  
-  .reversal-entry::before {
-    content: "↩";
-    @apply absolute -left-3 top-0 text-clay;
-  }
-  
-  .member-avatar {
-    @apply w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium;
-    @apply border-2 transition-all duration-300;
-  }
-  
-  .member-avatar-inactive {
-    @apply border-earth text-neutral-400;
-  }
-  
-  .member-avatar-active {
-    @apply border-harvest text-harvest;
-    animation: glow 2s ease-in-out infinite alternate;
-  }
-  
-  .tribal-impact-metric {
-    @apply text-3xl font-bold italic;
-    color: var(--color-harvest);
-  }
-  
-  .dignity-notification {
-    @apply flex items-center gap-3 p-4 rounded-lg;
-    @apply bg-earth/10 border border-earth/30;
-  }
-  
-  .compliance-badge {
-    @apply inline-flex items-center gap-1 px-2 py-1 rounded text-xs;
-    @apply bg-neutral-800 text-neutral-400;
+  .up-card {
+    @apply rounded-2xl border shadow-sm;
+    border-color: var(--border);
+    background: color-mix(in srgb, var(--surface) 92%, white 8%);
   }
 
-  .glass-card {
-    @apply bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl;
+  .dark .up-card {
+    border-color: var(--dark-border);
+    background: color-mix(in srgb, var(--dark-surface-2) 85%, black 15%);
   }
 
-  .warm-glow {
-    box-shadow: 0 0 40px rgba(212, 175, 55, 0.15);
+  .up-pill {
+    @apply px-4 py-2 rounded-full border text-[11px] font-black uppercase tracking-widest;
+    border-color: var(--border);
+    background: var(--surface-2);
+    color: var(--text);
   }
 
-  .humanistic-card {
-    @apply relative overflow-hidden;
-    background: linear-gradient(135deg, rgba(96, 108, 56, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%);
-    border: 1px solid rgba(212, 175, 55, 0.1);
+  .dark .up-pill {
+    border-color: var(--dark-border);
+    background: var(--dark-surface-2);
+    color: var(--dark-text);
   }
 
-  .humanistic-card::before {
-    content: '';
-    @apply absolute inset-0 opacity-0 transition-opacity duration-500;
-    background: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+  .up-kicker {
+    @apply text-[10px] font-black uppercase tracking-[0.35em];
+    color: var(--muted-2);
   }
 
-  .humanistic-card:hover::before {
-    @apply opacity-100;
+  .up-accent-gold {
+    color: var(--accent-gold);
   }
 
-  .stat-card {
-    @apply p-6 rounded-2xl bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 border border-neutral-700/50;
+  .up-border-gradient {
+    position: relative;
   }
 
-  .pulse-ring {
-    @apply absolute inset-0 rounded-2xl;
-    animation: pulse-ring 2s ease-out infinite;
-  }
-
-  @keyframes pulse-ring {
-    0% {
-      transform: scale(1);
-      opacity: 0.5;
-    }
-    100% {
-      transform: scale(1.05);
-      opacity: 0;
-    }
-  }
-
-  .activity-item {
-    @apply relative pl-6 border-l-2 border-earth/30;
-  }
-
-  .activity-item::before {
-    content: '';
-    @apply absolute left-[-5px] top-2 w-2 h-2 rounded-full bg-earth;
-  }
-
-  .resource-link {
-    @apply flex items-center gap-3 p-3 rounded-xl bg-neutral-800/30 border border-neutral-700/30;
-    @apply hover:bg-neutral-800/50 hover:border-harvest/30 transition-all duration-300;
-  }
-
-  .faq-item {
-    @apply p-4 rounded-xl bg-neutral-800/30 border border-neutral-700/30;
-    @apply hover:border-earth/50 transition-colors cursor-pointer;
-  }
-
-  .tier-card {
-    @apply relative p-5 rounded-2xl overflow-hidden;
-    background: linear-gradient(135deg, rgba(96, 108, 56, 0.2) 0%, rgba(155, 71, 34, 0.1) 100%);
-    border: 1px solid rgba(212, 175, 55, 0.15);
-  }
-
-  .tier-card::after {
-    content: '';
-    @apply absolute top-0 right-0 w-24 h-24;
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+  .up-border-gradient::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 1.1rem;
+    background: linear-gradient(90deg, rgba(140,160,130,0.35), rgba(212,175,55,0.35), rgba(192,123,91,0.35));
+    opacity: 0.55;
+    z-index: -1;
   }
 }
