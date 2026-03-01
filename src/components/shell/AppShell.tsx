@@ -13,22 +13,15 @@ type ThemeMode = 'light' | 'dark';
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [theme, setTheme] = useState<ThemeMode>('light');
-
-  useEffect(() => {
-    // Safe theme initialization (no external deps)
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof window === 'undefined') return 'light';
     try {
       const saved = window.localStorage.getItem('theme');
-      if (saved === 'light' || saved === 'dark') {
-        setTheme(saved);
-        return;
-      }
+      if (saved === 'light' || saved === 'dark') return saved;
+      if (window.matchMedia?.('(prefers-color-scheme: dark)')?.matches) return 'dark';
     } catch {}
-
-    try {
-      if (window.matchMedia?.('(prefers-color-scheme: dark)')?.matches) setTheme('dark');
-    } catch {}
-  }, []);
+    return 'light';
+  });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

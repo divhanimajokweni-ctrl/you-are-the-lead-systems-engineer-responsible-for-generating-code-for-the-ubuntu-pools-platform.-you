@@ -38,6 +38,52 @@ const mockLedgerEvents: LedgerEvent[] = [
   },
 ];
 
+const mockTribalImpact = {
+  userId: 'user-001',
+  displayName: 'Alex Chen',
+  trustScore: 87,
+  totalContributions: 156,
+  communityImpact: 2840,
+  shadowWorkRecognition: 12,
+  contributionsHistory: [
+    { type: 'knowledge' as const, amount: 50, timestamp: Date.now() - 86400000, description: 'Shared documentation on governance' },
+    { type: 'support' as const, amount: 25, timestamp: Date.now() - 172800000, description: 'Onboarded new community member' },
+    { type: 'curation' as const, amount: 15, timestamp: Date.now() - 259200000, description: 'Curated useful resources' },
+  ],
+};
+
+const mockMembers = [
+  {
+    id: 'member-1',
+    displayName: 'Sarah Kim',
+    trustScore: 92,
+    badges: [
+      { id: 'b1', name: 'Knowledge Keeper', awardedBy: 'member-2', timestamp: Date.now() - 86400000 },
+      { id: 'b2', name: 'Community Builder', awardedBy: 'member-3', timestamp: Date.now() - 172800000 },
+    ],
+    hasVoted: true,
+    isOnChain: true,
+  },
+  {
+    id: 'member-2',
+    displayName: 'Marcus Chen',
+    trustScore: 85,
+    badges: [
+      { id: 'b3', name: 'Truth Teller', awardedBy: 'member-1', timestamp: Date.now() - 259200000 },
+    ],
+    hasVoted: true,
+    isOnChain: false,
+  },
+  {
+    id: 'member-3',
+    displayName: 'Jordan Lee',
+    trustScore: 78,
+    badges: [],
+    hasVoted: false,
+    isOnChain: false,
+  },
+];
+
 export default function Home() {
   const [activeView, setActiveView] = useState<ViewType>('pulse');
 
@@ -59,7 +105,7 @@ export default function Home() {
       case 'pulse':
         return <ThePulse />;
       case 'tribal':
-        return <TribalImpactDashboard />;
+        return <TribalImpactDashboard {...mockTribalImpact} />;
       case 'ledger':
         return <ImmutableLedger events={mockLedgerEvents} />;
       case 'reputation':
@@ -72,7 +118,7 @@ export default function Home() {
                 Badges are peer-attested. No self-awarding. Trust is social—like it should be.
               </p>
               <div className="mt-6">
-                <VillageCircle members={[]} />
+                <VillageCircle onNavigate={(view) => setActiveView(view as ViewType)} />
               </div>
             </div>
             <div className="up-card p-6">
@@ -82,13 +128,13 @@ export default function Home() {
                 Governance flows in loops: propose → discuss → consent → record → learn.
               </p>
               <div className="mt-6">
-                <CircularProtocol />
+                <CircularProtocol members={mockMembers} currentUserId="user-001" />
               </div>
             </div>
           </div>
         );
       case 'vault':
-        return <CommonsVault />;
+        return <CommonsVault currentAmount={7500} maxAmount={10000} />;
       case 'dashboard':
         return <TechnicalDashboard />;
       default:
