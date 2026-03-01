@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
@@ -13,6 +13,13 @@ type ThemeMode = 'light' | 'dark';
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window === 'undefined') return 'light';
     try {
@@ -97,7 +104,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className="p-3 rounded-2xl border border-transparent hover:border-[color:var(--border)] hover:bg-[color:var(--surface-2)] transition-all"
                 aria-label="Toggle theme"
               >
-                {theme === 'light' ? (
+                {mounted && (theme === 'light' ? (
                   <svg className="w-5 h-5 text-[color:var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
@@ -115,7 +122,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.95 17.95l.707.707M7.05 7.05l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"
                     />
                   </svg>
-                )}
+                ))}
               </button>
 
               <div className="flex flex-col items-end px-6 py-2 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-2)]">
@@ -130,7 +137,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className="p-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-2)]"
                 aria-label="Toggle theme"
               >
-                <span className="text-xs font-black">{theme === 'light' ? '☾' : '☀︎'}</span>
+                {mounted && <span className="text-xs font-black">{theme === 'light' ? '☾' : '☀︎'}</span>}
               </button>
 
               <button
