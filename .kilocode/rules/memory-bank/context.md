@@ -1,18 +1,48 @@
-# Active Context: Ubuntu Pools — Phase 3 Complete
+# Active Context: Ubuntu Pools — Phase 6 Complete
 
 ## Current State
 
-**Phase 3 Status**: ✅ Complete — Human-Centric Interactivity & Trust Governance
+**Phase 6 Status**: ✅ Complete — Credit Facilities Implementation
 
-The Phase 3 transformation is now fully implemented with:
-- Real-time WebSocket infrastructure for collective pulses
-- Trust-based reputation system with authority levels
-- User-facing observability/transparency dashboard
-- Edge-caching and performance optimizations
-- Privacy-first security framework (data sovereignty, ZK proofs)
-- Interactive UI components with motion design
+The credit facilities system is now fully implemented with:
+- Phased credit rollout (Phase 1: Formation → Phase 2: Microcredit → Phase 3: Scaling)
+- Pool Health gates with configurable thresholds
+- Ubuntu Score-based credit limits
+- Safety Buffer requirements before lending activation
+- Interest rate modulation based on pool health
+- Full event-driven audit trail
 
 ## Recently Completed
+
+- [x] **Phase 6: Credit Facilities** (2026-03-02)
+  - Credit database schema (`src/db/schema-credit.ts`)
+    - `credit_pool_config` - Pool configuration and phase state
+    - `member_credit_profile` - Member credit limits and history
+    - `credit_loans` - Active loans with payment tracking
+    - `credit_payments` - Payment records
+    - `pool_health_history` - Historical health metrics
+  - Credit service (`src/lib/services/credit-service.ts`)
+    - Three-phase credit system with automatic transitions
+    - Pool health calculation with liquidity/asset/profitability/growth scores
+    - Credit eligibility checking with Ubuntu Score and contribution base
+    - Loan approval with exposure limits
+    - Payment processing and repayment tracking
+  - Credit event schemas (`src/lib/events/schemas-credit.ts`)
+    - `credit.pool_initialized`, `credit.capital_deposited`, `credit.phase_transition`
+    - `credit.eligibility_checked`, `credit.loan_requested`, `credit.loan_approved`
+    - `credit.loan_issued`, `credit.payment_received`, `credit.loan_repaid`
+    - `credit.loan_defaulted`, `credit.health_updated`
+  - API Routes:
+    - `POST/GET /api/credit/pools` - Pool configuration
+    - `POST /api/credit/eligibility` - Check credit eligibility
+    - `POST/GET /api/credit/loans` - Loan management
+    - `POST /api/credit/payments` - Process payments
+    - `GET /api/credit/health` - Pool health metrics
+  - UI Components:
+    - `CreditDashboard.tsx` - Credit facilities dashboard with phase indicators
+    - `PoolHealthGauge.tsx` - Visual pool health gauge with metrics
+  - Tests (15 tests, 100% pass):
+    - `src/tests/credit.test.ts` - Credit service unit tests
 
 - [x] **Home Screen Redesign** (2026-03-01)
   - New humanistic UI with warm gradient background (`midnight` → `neutral-900` → `deep-forest`)
@@ -129,21 +159,31 @@ The Phase 3 transformation is now fully implemented with:
 |----------------|---------|--------|
 | `src/db/migrations/0001_phase1_foundation.sql` | PostgreSQL schema | ✅ Ready |
 | `src/db/schema.ts` | Drizzle ORM schema | ✅ Ready |
+| `src/db/schema-credit.ts` | Credit facilities schema | ✅ Ready |
 | `src/db/client.ts` | DB connection | ✅ Ready |
 | `src/lib/events/schemas.ts` | Zod validators | ✅ Ready |
+| `src/lib/events/schemas-credit.ts` | Credit event schemas | ✅ Ready |
 | `src/lib/events/hasher.ts` | SHA-256 hashing | ✅ Ready |
 | `src/lib/events/emitter.ts` | Event emission | ✅ Ready |
 | `src/lib/ledger/posting-engine.ts` | Double-entry posting | ✅ Ready |
 | `src/lib/ledger/queries.ts` | Ledger queries | ✅ Ready |
 | `src/lib/services/event-service.ts` | EventService | ✅ Ready |
 | `src/lib/services/ledger-service.ts` | LedgerService | ✅ Ready |
+| `src/lib/services/credit-service.ts` | CreditService | ✅ Ready |
 | `src/app/api/events/route.ts` | Events API | ✅ Ready |
 | `src/app/api/events/[id]/route.ts` | Single event API | ✅ Ready |
 | `src/app/api/ledger/accounts/route.ts` | Accounts API | ✅ Ready |
 | `src/app/api/ledger/accounts/[id]/balance/route.ts` | Balance API | ✅ Ready |
-| `src/tests/` | Unit tests (130 tests) | ✅ Ready |
+| `src/app/api/credit/pools/route.ts` | Credit pool API | ✅ Ready |
+| `src/app/api/credit/eligibility/route.ts` | Credit eligibility API | ✅ Ready |
+| `src/app/api/credit/loans/route.ts` | Loans API | ✅ Ready |
+| `src/app/api/credit/payments/route.ts` | Payments API | ✅ Ready |
+| `src/app/api/credit/health/route.ts` | Health API | ✅ Ready |
+| `src/components/credit/CreditDashboard.tsx` | Credit dashboard UI | ✅ Ready |
+| `src/components/credit/PoolHealthGauge.tsx` | Health gauge UI | ✅ Ready |
+| `src/tests/` | Unit tests (280 tests) | ✅ Ready |
 
-## Phase 1 + Phase 4 Governance Compliance
+## Phase 1 + Phase 4 + Phase 6 Governance Compliance
 
 | Requirement | Status |
 |-------------|--------|
@@ -158,6 +198,9 @@ The Phase 3 transformation is now fully implemented with:
 | Trust Decay | ✅ Time-based decay with configurable rate |
 | Trust Penalties | ✅ Infractions reduce score, emit events |
 | Appeals Process | ✅ Recovery workflow with audit trail |
+| Credit Phases | ✅ Three-phase rollout with buffer-first design |
+| Pool Health Gates | ✅ Automatic credit freeze at health < 70% |
+| Ubuntu Score Limits | ✅ Credit tied to contribution reliability |
 
 ## What's NOT Included (Future Phases)
 
@@ -180,3 +223,4 @@ The Phase 3 transformation is now fully implemented with:
 | 2026-02-27 | Phase 4 trust system: scores, decay, penalties, appeals, gating middleware |
 | 2026-02-27 | Phase 3 transformation: technical roadmap, 5 prosperity features, trust-based governance model |
 | 2026-03-01 | Home screen redesign: humanistic UI, Welcome Dashboard, Vault Balance, Activity Feed, Quick Resources, FAQ, Prosperity Tiers, User Profile |
+| 2026-03-02 | Phase 6 credit facilities: phased credit system, Pool Health gates, Ubuntu Score limits, 15 tests |
