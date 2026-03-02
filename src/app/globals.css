@@ -1,113 +1,47 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/*
-  Visual language inspired by your attached build:
-  - warm paper surface
-  - sage + gold + clay accents
-  - thick, bold typography
-  - soft borders, gentle glass
-*/
-
-@theme {
+:root {
   --surface: #FDFCFB;
   --surface-2: #F9F9F8;
   --text: #2D302E;
   --muted: #6B706C;
   --muted-2: #9EA39F;
   --border: #F1F0EE;
-
   --accent-sage: #8CA082;
   --accent-gold: #D4AF37;
   --accent-clay: #C07B5B;
-
-  --dark-surface: #1A1C1B;
-  --dark-surface-2: #252826;
-  --dark-text: #FDFCFB;
-  --dark-muted: #9EA39F;
-  --dark-border: #3A3D3B;
-
-  --font-family-display: var(--font-geist-sans);
-  --font-family-body: var(--font-geist-sans);
 }
 
-@layer base {
+@media (prefers-color-scheme: dark) {
   :root {
-    color-scheme: light;
+    --surface: #1A1C1B;
+    --surface-2: #252826;
+    --text: #FDFCFB;
+    --muted: #9EA39F;
+    --border: #3A3D3B;
   }
+}
 
-  :root.dark {
-    color-scheme: dark;
-  }
-
-  html {
-    text-rendering: geometricPrecision;
-  }
-
-  body {
-    background: var(--surface);
-    color: var(--text);
-  }
-
-  .dark body {
-    background: var(--dark-surface);
-    color: var(--dark-text);
-  }
-
-  /* Typographic vibe: tight, bold, human */
-  h1, h2, h3, h4 {
-    letter-spacing: -0.04em;
-  }
-
-  ::selection {
-    background: #D6CFC7;
-  }
+body {
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
 @layer components {
   .up-card {
-    @apply rounded-2xl border shadow-sm;
-    border-color: var(--border);
-    background: color-mix(in srgb, var(--surface) 92%, white 8%);
-  }
-
-  .dark .up-card {
-    border-color: var(--dark-border);
-    background: color-mix(in srgb, var(--dark-surface-2) 85%, black 15%);
-  }
-
-  .up-pill {
-    @apply px-4 py-2 rounded-full border text-[11px] font-black uppercase tracking-widest;
-    border-color: var(--border);
-    background: var(--surface-2);
-    color: var(--text);
-  }
-
-  .dark .up-pill {
-    border-color: var(--dark-border);
-    background: var(--dark-surface-2);
-    color: var(--dark-text);
+    @apply bg-[var(--surface-2)] border border-[var(--border)] rounded-xl p-4;
   }
 
   .up-kicker {
-    @apply text-[10px] font-black uppercase tracking-[0.35em];
-    color: var(--muted-2);
-  }
-
-  .up-accent-gold {
-    color: var(--accent-gold);
+    @apply text-[var(--muted)] uppercase tracking-wider text-xs;
   }
 
   .up-border-gradient {
-    position: relative;
-  }
-
-  .up-border-gradient::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: 1.1rem;
-    background: linear-gradient(90deg, rgba(140,160,130,0.35), rgba(212,175,55,0.35), rgba(192,123,91,0.35));
-    opacity: 0.55;
-    z-index: -1;
+    @apply border border-transparent;
+    background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box,
+                linear-gradient(135deg, var(--accent-sage), var(--accent-gold)) border-box;
   }
 }
