@@ -81,6 +81,172 @@ export interface LoanApprovalResult {
   reason?: string;
 }
 
+export interface ContributionPeriod {
+  period: number;
+  required: number;
+  paid: number;
+  ontime: boolean;
+  missed: boolean;
+}
+
+export interface MemberContributionHistory {
+  memberId: string;
+  poolId: string;
+  periods: ContributionPeriod[];
+  windowDays: number;
+}
+
+export interface PoolHealthInput {
+  bufferBalance: number;
+  totalExposure: number;
+  defaultCount: number;
+  activeLoanCount: number;
+  supportSuccessRate?: number;
+}
+
+export interface UbuntuScoreResult {
+  score: number;
+  memberCore: number;
+  poolMultiplier: number;
+  components: {
+    coverage: number;
+    timeliness: number;
+    consistency: number;
+    stress: number;
+  };
+  poolHealth: number;
+  poolComponents: {
+    bufferStrength: number;
+    defaultStrength: number;
+    supportStrength?: number;
+  };
+}
+
+function clamp(x: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, x));
+}
+
+function weightedAvg(values: number[], weights: number[]): number {
+  const eps = 1e-9;
+  let sum = 0;
+  let weightSum = 0;
+  for (let i = 0; i < values.length; i++) {
+    sum += values[i] * weights[i];
+    weightSum += weights[i];
+  }
+  return sum / (weightSum + eps);
+}
+
+function stdDev(values: number[]): number {
+  if (values.length === 0) return 0;
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const squaredDiffs = values.map(v => Math.pow(v - mean, 2));
+  return Math.sqrt(squaredDiffs.reduce((a, b) => a + b, 0) / values.length);
+}
+
+export function calculatePoolHealthFromInput(input: PoolHealthInput): {
+  poolHealth: number;
+  bufferStrength: number;
+  defaultStrength: number;
+  supportStrength?: number;
+} {
+  const eps = 1e-9;
+  const targetBufferRatio = 0.20;
+  const targetDefaultRate = 0.05;
+
+  const bufferRatio = input.totalExposure > 0 
+    ? input.bufferBalance / (input.totalExposure + eps) 
+    : 1;
+  const bufferStrength = clamp(bufferRatio / targetBufferRatio, 0, 1);
+
+  const defaultRate = input.activeLoanCount > 0 
+    ? input.defaultCount / input.activeLoanCount 
+    : 0;
+  const defaultStrength = 1 - clamp(defaultRate / targetDefaultRate, 0, 1);
+
+  let poolHealth: number;
+  if (input.supportSuccessRate !== undefined) {
+    const supportStrength = clamp(input.supportSuccessRate, 0, 1);
+    poolHealth = weightedAvg(
+      [bufferStrength, defaultStrength, supportStrength],
+      [0.50, 0.40, 0.10]
+    );
+    return { poolHealth, bufferStrength, defaultStrength, supportStrength };
+  } else {
+    poolHealth = weightedAvg([bufferStrength, defaultStrength], [0.55, 0.45]);
+    return { poolHealth, bufferStrength, defaultStrength };
+  }
+}
+
+export function calculateUbuntuScore(
+  history: MemberContributionHistory,
+  poolHealthInput: PoolHealthInput
+): UbuntuScoreResult {
+  const eps = 1e-9;
+  const k = 2.0;
+
+  const periods = history.periods;
+  const W = periods.length;
+
+  if (W === 0) {
+    return {
+      score: 50,
+      memberCore: 0.5,
+      poolMultiplier: 1.0,
+      components: { coverage: 0.5, timeliness: 0.5, consistency: 0.5, stress: 0.5 },
+      poolHealth: 1.0,
+      poolComponents: { bufferStrength: 1.0, defaultStrength: 1.0 },
+    };
+  }
+
+  const sumRequired = periods.reduce((sum, p) => sum + p.required, 0);
+  const sumPaid = periods.reduce((sum, p) => sum + p.paid, 0);
+  const coverage = clamp(sumPaid / (sumRequired + eps), 0, 1);
+
+  const ontimeCount = periods.filter(p => p.ontime).length;
+  const timeliness = ontimeCount / (W + eps);
+
+  const ratios = periods.map(p => 
+    p.required > 0 ? p.paid / (p.required + eps) : 1
+  );
+  const volatility = stdDev(ratios);
+  const consistency = Math.exp(-k * volatility);
+
+  const missCount = periods.filter(p => p.missed).length;
+  const missRate = missCount / (W + eps);
+  const stress = 1 - clamp(missRate, 0, 1);
+
+  const memberCore = weightedAvg(
+    [coverage, timeliness, consistency, stress],
+    [0.35, 0.25, 0.20, 0.20]
+  );
+
+  const poolResult = calculatePoolHealthFromInput(poolHealthInput);
+  const poolMultiplier = 0.75 + 0.25 * poolResult.poolHealth;
+
+  const score = Math.round(100 * clamp(memberCore * poolMultiplier, 0, 1));
+
+  return {
+    score,
+    memberCore: Math.round(memberCore * 100) / 100,
+    poolMultiplier: Math.round(poolMultiplier * 100) / 100,
+    components: {
+      coverage: Math.round(coverage * 100) / 100,
+      timeliness: Math.round(timeliness * 100) / 100,
+      consistency: Math.round(consistency * 100) / 100,
+      stress: Math.round(stress * 100) / 100,
+    },
+    poolHealth: Math.round(poolResult.poolHealth * 100) / 100,
+    poolComponents: {
+      bufferStrength: Math.round(poolResult.bufferStrength * 100) / 100,
+      defaultStrength: Math.round(poolResult.defaultStrength * 100) / 100,
+      supportStrength: poolResult.supportStrength 
+        ? Math.round(poolResult.supportStrength * 100) / 100 
+        : undefined,
+    },
+  };
+}
+
 export class CreditService {
   private poolConfigs: Map<string, CreditPoolConfig> = new Map();
   private memberProfiles: Map<string, MemberCreditProfile> = new Map();
@@ -406,6 +572,64 @@ export class CreditService {
     const config = this.poolConfigs.get(poolId);
     return config?.poolHealthScore || 100;
   }
+
+  calculateUbuntuScoreForMember(
+    memberId: string,
+    poolId: string,
+    contributionHistory: ContributionPeriod[]
+  ): UbuntuScoreResult {
+    const config = this.poolConfigs.get(poolId);
+    if (!config) {
+      return {
+        score: 0,
+        memberCore: 0,
+        poolMultiplier: 0,
+        components: { coverage: 0, timeliness: 0, consistency: 0, stress: 0 },
+        poolHealth: 0,
+        poolComponents: { bufferStrength: 0, defaultStrength: 0 },
+      };
+    }
+
+    const memberLoans = this.loans.get(memberId) || [];
+    const defaultedLoans = memberLoans.filter(l => l.status === 'defaulted');
+    const activeLoans = memberLoans.filter(l => l.status === 'active');
+
+    const history: MemberContributionHistory = {
+      memberId,
+      poolId,
+      periods: contributionHistory,
+      windowDays: 90,
+    };
+
+    const poolHealthInput: PoolHealthInput = {
+      bufferBalance: config.safetyBuffer,
+      totalExposure: config.activeCreditExposure,
+      defaultCount: defaultedLoans.length,
+      activeLoanCount: activeLoans.length || 1,
+    };
+
+    return calculateUbuntuScore(history, poolHealthInput);
+  }
+
+  getPoolHealthInput(poolId: string): PoolHealthInput | null {
+    const config = this.poolConfigs.get(poolId);
+    if (!config) return null;
+
+    let defaultCount = 0;
+    for (const loans of this.loans.values()) {
+      defaultCount += loans.filter(l => l.status === 'defaulted').length;
+    }
+    const activeLoanCount = Array.from(this.loans.values())
+      .flat()
+      .filter(l => l.status === 'active').length;
+
+    return {
+      bufferBalance: config.safetyBuffer,
+      totalExposure: config.activeCreditExposure,
+      defaultCount,
+      activeLoanCount: activeLoanCount || 1,
+    };
+  }
 }
 
 export const creditService = new CreditService();
@@ -421,4 +645,11 @@ export function checkCreditEligibility(eligibility: z.infer<typeof CreditEligibi
 
 export function approveCreditRequest(request: z.infer<typeof CreditRequestSchema>): LoanApprovalResult {
   return creditService.approveLoan(request);
+}
+
+export function getUbuntuScore(
+  history: MemberContributionHistory,
+  poolHealthInput: PoolHealthInput
+): UbuntuScoreResult {
+  return calculateUbuntuScore(history, poolHealthInput);
 }

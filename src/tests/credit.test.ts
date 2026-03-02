@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { CreditService, creditService } from '@/lib/services/credit-service';
+import { CreditService, creditService, calculateUbuntuScore, calculatePoolHealthFromInput } from '@/lib/services/credit-service';
 import { randomUUID } from 'crypto';
 
 describe('CreditService', () => {
@@ -214,5 +214,140 @@ describe('Credit Service Singleton', () => {
   it('should return correct phase for non-existent pool', () => {
     const phase = creditService.getPoolPhase(randomUUID());
     expect(phase).toBe('phase1_formation');
+  });
+});
+
+describe('Ubuntu Score Calculation', () => {
+  let service: CreditService;
+  const testPoolId = randomUUID();
+  const testMemberId = randomUUID();
+
+  beforeEach(() => {
+    service = new CreditService();
+    service.initializePool({
+      poolId: testPoolId,
+      currency: 'USD',
+      phase1BufferTarget: 100000,
+      phase2Alpha: 5,
+      phase2MaxDurationDays: 90,
+      beta: 25,
+      gamma: 10,
+      healthGateLow: 70,
+      healthGateMedium: 85,
+      healthGateHigh: 90,
+      minContributionWindowDays: 90,
+    });
+    service.updatePoolCapital(testPoolId, 100000, 30000);
+  });
+
+  it('should calculate score for member with perfect payment history', () => {
+    const periods = Array.from({ length: 6 }, (_, i) => ({
+      period: i + 1,
+      required: 1000,
+      paid: 1000,
+      ontime: true,
+      missed: false,
+    }));
+
+    const result = service.calculateUbuntuScoreForMember(testMemberId, testPoolId, periods);
+
+    expect(result.score).toBeGreaterThan(80);
+    expect(result.components.coverage).toBe(1);
+    expect(result.components.timeliness).toBe(1);
+    expect(result.components.consistency).toBe(1);
+    expect(result.components.stress).toBe(1);
+  });
+
+  it('should penalize missed payments', () => {
+    const periods = [
+      { period: 1, required: 1000, paid: 1000, ontime: true, missed: false },
+      { period: 2, required: 1000, paid: 1000, ontime: true, missed: false },
+      { period: 3, required: 1000, paid: 0, ontime: false, missed: true },
+      { period: 4, required: 1000, paid: 1000, ontime: true, missed: false },
+      { period: 5, required: 1000, paid: 1000, ontime: true, missed: false },
+      { period: 6, required: 1000, paid: 1000, ontime: true, missed: false },
+    ];
+
+    const result = service.calculateUbuntuScoreForMember(testMemberId, testPoolId, periods);
+
+    expect(result.components.stress).toBeLessThan(1);
+    expect(result.components.timeliness).toBeLessThan(1);
+  });
+
+  it('should penalize late payments', () => {
+    const periods = Array.from({ length: 6 }, (_, i) => ({
+      period: i + 1,
+      required: 1000,
+      paid: 1000,
+      ontime: i !== 2,
+      missed: false,
+    }));
+
+    const result = service.calculateUbuntuScoreForMember(testMemberId, testPoolId, periods);
+
+    expect(result.components.timeliness).toBeLessThan(1);
+    expect(result.components.timeliness).toBeGreaterThan(0.5);
+  });
+
+  it('should apply pool health multiplier', () => {
+    const periods = Array.from({ length: 6 }, () => ({
+      period: 1,
+      required: 1000,
+      paid: 1000,
+      ontime: true,
+      missed: false,
+    }));
+
+    const result = service.calculateUbuntuScoreForMember(testMemberId, testPoolId, periods);
+
+    expect(result.poolMultiplier).toBeGreaterThan(0.75);
+    expect(result.poolMultiplier).toBeLessThanOrEqual(1);
+  });
+
+  it('should reflect buffer strength in pool health', () => {
+    const strongPool = {
+      bufferBalance: 50000,
+      totalExposure: 50000,
+      defaultCount: 0,
+      activeLoanCount: 10,
+    };
+    
+    const weakPool = {
+      bufferBalance: 500,
+      totalExposure: 5000,
+      defaultCount: 0,
+      activeLoanCount: 10,
+    };
+    
+    const strongResult = calculatePoolHealthFromInput(strongPool);
+    const weakResult = calculatePoolHealthFromInput(weakPool);
+
+    expect(strongResult.poolHealth).toBeGreaterThan(weakResult.poolHealth);
+    expect(strongResult.bufferStrength).toBe(1);
+    expect(weakResult.bufferStrength).toBeLessThan(strongResult.bufferStrength);
+  });
+
+  it('should handle empty contribution history', () => {
+    const result = service.calculateUbuntuScoreForMember(testMemberId, testPoolId, []);
+
+    expect(result.score).toBe(50);
+    expect(result.memberCore).toBe(0.5);
+  });
+
+  it('should combine member core with pool multiplier correctly', () => {
+    const periods = [
+      { period: 1, required: 1000, paid: 1000, ontime: true, missed: false },
+      { period: 2, required: 1000, paid: 900, ontime: true, missed: false },
+      { period: 3, required: 1000, paid: 1000, ontime: true, missed: false },
+      { period: 4, required: 1000, paid: 1000, ontime: true, missed: false },
+      { period: 5, required: 1000, paid: 1000, ontime: true, missed: false },
+      { period: 6, required: 1000, paid: 1000, ontime: true, missed: false },
+    ];
+
+    const result = service.calculateUbuntuScoreForMember(testMemberId, testPoolId, periods);
+
+    expect(result.score).toBeGreaterThan(0);
+    expect(result.score).toBeLessThanOrEqual(100);
+    expect(result.memberCore).toBeGreaterThan(0.8);
   });
 });

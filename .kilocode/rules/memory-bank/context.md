@@ -2,17 +2,31 @@
 
 ## Current State
 
-**Phase 6 Status**: ✅ Complete — Credit Facilities Implementation
+**Phase 6 Status**: ✅ Complete — Credit Facilities & Ubuntu Score Implementation
 
 The credit facilities system is now fully implemented with:
 - Phased credit rollout (Phase 1: Formation → Phase 2: Microcredit → Phase 3: Scaling)
 - Pool Health gates with configurable thresholds
-- Ubuntu Score-based credit limits
+- Ubuntu Score-based credit limits (forward-looking trust score)
 - Safety Buffer requirements before lending activation
 - Interest rate modulation based on pool health
 - Full event-driven audit trail
 
 ## Recently Completed
+
+- [x] **Phase 6.1: Ubuntu Score Implementation** (2026-03-02)
+  - Ubuntu Score calculation in credit service (`src/lib/services/credit-service.ts`)
+    - Member-level components: Coverage (35%), Timeliness (25%), Consistency (20%), Stress (20%)
+    - Pool Health: Buffer Coverage Ratio + Default Rate → Pool Multiplier [0.75, 1.0]
+    - Formula: `UbuntuScore = 100 * clamp(MemberCore * PoolMultiplier, 0, 1)`
+    - Rolling window: configurable (default 90 days)
+  - API Route: `POST/GET /api/credit/score` - Ubuntu Score calculation
+  - Tests (7 new tests):
+    - Perfect payment history → high score
+    - Missed payments → stress penalty
+    - Late payments → timeliness penalty
+    - Pool health multiplier effect
+    - Buffer strength impact
 
 - [x] **Phase 6: Credit Facilities** (2026-03-02)
   - Credit database schema (`src/db/schema-credit.ts`)
@@ -179,9 +193,10 @@ The credit facilities system is now fully implemented with:
 | `src/app/api/credit/loans/route.ts` | Loans API | ✅ Ready |
 | `src/app/api/credit/payments/route.ts` | Payments API | ✅ Ready |
 | `src/app/api/credit/health/route.ts` | Health API | ✅ Ready |
+| `src/app/api/credit/score/route.ts` | Ubuntu Score API | ✅ Ready |
 | `src/components/credit/CreditDashboard.tsx` | Credit dashboard UI | ✅ Ready |
 | `src/components/credit/PoolHealthGauge.tsx` | Health gauge UI | ✅ Ready |
-| `src/tests/` | Unit tests (280 tests) | ✅ Ready |
+| `src/tests/` | Unit tests (287 tests) | ✅ Ready |
 
 ## Phase 1 + Phase 4 + Phase 6 Governance Compliance
 
@@ -224,3 +239,4 @@ The credit facilities system is now fully implemented with:
 | 2026-02-27 | Phase 3 transformation: technical roadmap, 5 prosperity features, trust-based governance model |
 | 2026-03-01 | Home screen redesign: humanistic UI, Welcome Dashboard, Vault Balance, Activity Feed, Quick Resources, FAQ, Prosperity Tiers, User Profile |
 | 2026-03-02 | Phase 6 credit facilities: phased credit system, Pool Health gates, Ubuntu Score limits, 15 tests |
+| 2026-03-02 | Phase 6.1 Ubuntu Score: forward-looking trust score, Coverage/Timeliness/Consistency/Stress + Pool Multiplier, 22 tests |
