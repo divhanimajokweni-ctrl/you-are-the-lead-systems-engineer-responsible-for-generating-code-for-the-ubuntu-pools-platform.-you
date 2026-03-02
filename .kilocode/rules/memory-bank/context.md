@@ -1,18 +1,40 @@
-# Active Context: Ubuntu Pools — Phase 6 Complete
+# Active Context: Ubuntu Pools — Phase 7 Complete
 
 ## Current State
 
-**Phase 6 Status**: ✅ Complete — Credit Facilities & Ubuntu Score Implementation
+**Phase 7 Status**: ✅ Complete — Sovereignty Proxy & Matchmaker Implementation
 
-The credit facilities system is now fully implemented with:
-- Phased credit rollout (Phase 1: Formation → Phase 2: Microcredit → Phase 3: Scaling)
-- Pool Health gates with configurable thresholds
-- Ubuntu Score-based credit limits (forward-looking trust score)
-- Safety Buffer requirements before lending activation
-- Interest rate modulation based on pool health
-- Full event-driven audit trail
+The Sovereignty Toggle and Matchmaker system is now implemented:
+- Sovereignty Proxy (Trust Layer) with NER-based anonymization
+- User-controlled Sovereignty Toggle for data sharing control
+- Data Ephemerality with TTL-based intent tag expiration
+- Matchmaker Logic bridging social signals to financial outcomes
+- Social-Accord Synergy scoring
+- Personalized prosperity opportunities
 
 ## Recently Completed
+
+- [x] **Phase 7: Sovereignty & Matchmaker** (2026-03-02)
+  - Sovereignty Proxy Service (`src/lib/services/sovereignty-proxy.ts`)
+    - NER-based anonymization engine
+    - Intent Tag extraction from social content
+    - Profile types: blank, ESG-focused, Community Anchor, Entrepreneur, Mixed
+    - TTL-based data ephemerality (default 30 days)
+    - Category filtering: ESG, Community, Entrepreneur, Lifestyle
+  - Matchmaker Service (`src/lib/services/matchmaker.ts`)
+    - Signal-to-Asset algorithm
+    - Pool recommendations based on intent tags
+    - Social-Accord Synergy calculation
+    - Combined Score: UbuntuScore × 0.65 + Synergy × 0.35
+    - Personalized prosperity opportunities with discounted rates
+  - UI Components (`src/components/sovereignty/`)
+    - `SovereigntyToggle.tsx` - User-controlled data sharing switch
+    - `MatchmakerCard.tsx` - Pool recommendation cards
+    - `ProsperityOpportunityCard.tsx` - Personalized opportunity display
+  - API Routes:
+    - `POST/GET /api/sovereignty` - Toggle, configure, ingest, profile
+    - `POST/GET /api/matchmaker/opportunity` - Generate prosperity opportunities
+    - `POST/GET /api/matchmaker/recommendations` - Pool recommendations
 
 - [x] **Phase 6.1: Ubuntu Score Implementation** (2026-03-02)
   - Ubuntu Score calculation in credit service (`src/lib/services/credit-service.ts`)
@@ -184,6 +206,8 @@ The credit facilities system is now fully implemented with:
 | `src/lib/services/event-service.ts` | EventService | ✅ Ready |
 | `src/lib/services/ledger-service.ts` | LedgerService | ✅ Ready |
 | `src/lib/services/credit-service.ts` | CreditService | ✅ Ready |
+| `src/lib/services/sovereignty-proxy.ts` | Sovereignty Proxy | ✅ Ready |
+| `src/lib/services/matchmaker.ts` | Matchmaker Service | ✅ Ready |
 | `src/app/api/events/route.ts` | Events API | ✅ Ready |
 | `src/app/api/events/[id]/route.ts` | Single event API | ✅ Ready |
 | `src/app/api/ledger/accounts/route.ts` | Accounts API | ✅ Ready |
@@ -194,6 +218,8 @@ The credit facilities system is now fully implemented with:
 | `src/app/api/credit/payments/route.ts` | Payments API | ✅ Ready |
 | `src/app/api/credit/health/route.ts` | Health API | ✅ Ready |
 | `src/app/api/credit/score/route.ts` | Ubuntu Score API | ✅ Ready |
+| `src/app/api/sovereignty/route.ts` | Sovereignty API | ✅ Ready |
+| `src/app/api/matchmaker/route.ts` | Matchmaker API | ✅ Ready |
 | `src/components/credit/CreditDashboard.tsx` | Credit dashboard UI | ✅ Ready |
 | `src/components/credit/PoolHealthGauge.tsx` | Health gauge UI | ✅ Ready |
 | `src/tests/` | Unit tests (287 tests) | ✅ Ready |
@@ -240,3 +266,4 @@ The credit facilities system is now fully implemented with:
 | 2026-03-01 | Home screen redesign: humanistic UI, Welcome Dashboard, Vault Balance, Activity Feed, Quick Resources, FAQ, Prosperity Tiers, User Profile |
 | 2026-03-02 | Phase 6 credit facilities: phased credit system, Pool Health gates, Ubuntu Score limits, 15 tests |
 | 2026-03-02 | Phase 6.1 Ubuntu Score: forward-looking trust score, Coverage/Timeliness/Consistency/Stress + Pool Multiplier, 22 tests |
+| 2026-03-02 | Phase 7 Sovereignty & Matchmaker: NER anonymization, Sovereignty Toggle, TTL-based intent tags, Signal-to-Asset matching, 287 tests |
