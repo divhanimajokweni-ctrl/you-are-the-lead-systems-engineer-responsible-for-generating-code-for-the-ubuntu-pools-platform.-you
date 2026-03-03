@@ -1,18 +1,19 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { AppShell } from '@/components/shell/AppShell';
 
-// Existing platform components (already in your repo)
-import { ThePulse } from '@/components/village/ThePulse';
-import { TribalImpactDashboard } from '@/components/village/TribalImpactDashboard';
-import { CommonsVault } from '@/components/village/CommonsVault';
-import { ImmutableLedger, type LedgerEvent } from '@/components/ledger/ImmutableLedger';
-import { VillageCircle } from '@/components/village/VillageCircle';
-import { CircularProtocol } from '@/components/village/CircularProtocol';
-import { TechnicalDashboard } from '@/components/dashboard/TechnicalDashboard';
+// Lazy load heavy components for code splitting
+const ThePulse = lazy(() => import('@/components/village/ThePulse').then(m => ({ default: m.ThePulse })));
+const TribalImpactDashboard = lazy(() => import('@/components/village/TribalImpactDashboard').then(m => ({ default: m.TribalImpactDashboard })));
+const CommonsVault = lazy(() => import('@/components/village/CommonsVault').then(m => ({ default: m.CommonsVault })));
+const ImmutableLedger = lazy(() => import('@/components/ledger/ImmutableLedger').then(m => ({ default: m.ImmutableLedger })));
+const VillageCircle = lazy(() => import('@/components/village/VillageCircle').then(m => ({ default: m.VillageCircle })));
+const CircularProtocol = lazy(() => import('@/components/village/CircularProtocol').then(m => ({ default: m.CircularProtocol })));
+const TechnicalDashboard = lazy(() => import('@/components/dashboard/TechnicalDashboard').then(m => ({ default: m.TechnicalDashboard })));
 
+// Existing platform components
 import { WelcomeDashboard } from '@/components/home/WelcomeDashboard';
 import { VaultBalance } from '@/components/home/VaultBalance';
 import { ActivityFeed } from '@/components/home/ActivityFeed';
@@ -20,6 +21,8 @@ import { QuickResources } from '@/components/home/QuickResources';
 import { FAQSection } from '@/components/home/FAQSection';
 import { ProsperityTiers } from '@/components/home/ProsperityTiers';
 import { UserProfile } from '@/components/home/UserProfile';
+import { UbuntuCard } from '@/components/village/UbuntuCard';
+import type { LedgerEvent } from '@/components/ledger/ImmutableLedger';
 
 type ViewType = 'pulse' | 'tribal' | 'ledger' | 'reputation' | 'vault' | 'dashboard';
 
@@ -101,13 +104,19 @@ export default function Home() {
   );
 
   const renderContent = () => {
+    const loadingFallback = (
+      <div className="up-card p-8 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+
     switch (activeView) {
       case 'pulse':
-        return <ThePulse />;
+        return <Suspense fallback={loadingFallback}><ThePulse /></Suspense>;
       case 'tribal':
-        return <TribalImpactDashboard {...mockTribalImpact} />;
+        return <Suspense fallback={loadingFallback}><TribalImpactDashboard {...mockTribalImpact} /></Suspense>;
       case 'ledger':
-        return <ImmutableLedger events={mockLedgerEvents} />;
+        return <Suspense fallback={loadingFallback}><ImmutableLedger events={mockLedgerEvents} /></Suspense>;
       case 'reputation':
         return (
           <div className="grid gap-6 md:grid-cols-2">
@@ -118,7 +127,7 @@ export default function Home() {
                 Badges are peer-attested. No self-awarding. Trust is social—like it should be.
               </p>
               <div className="mt-6">
-                <VillageCircle onNavigate={(view) => setActiveView(view as ViewType)} />
+                <Suspense fallback={loadingFallback}><VillageCircle onNavigate={(view) => setActiveView(view as ViewType)} /></Suspense>
               </div>
             </div>
             <div className="up-card p-6">
@@ -128,15 +137,15 @@ export default function Home() {
                 Governance flows in loops: propose → discuss → consent → record → learn.
               </p>
               <div className="mt-6">
-                <CircularProtocol members={mockMembers} currentUserId="user-001" />
+                <Suspense fallback={loadingFallback}><CircularProtocol members={mockMembers} currentUserId="user-001" /></Suspense>
               </div>
             </div>
           </div>
         );
       case 'vault':
-        return <CommonsVault currentAmount={7500} maxAmount={10000} />;
+        return <Suspense fallback={loadingFallback}><CommonsVault currentAmount={7500} maxAmount={10000} /></Suspense>;
       case 'dashboard':
-        return <TechnicalDashboard />;
+        return <Suspense fallback={loadingFallback}><TechnicalDashboard /></Suspense>;
       default:
         return null;
     }
