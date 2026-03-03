@@ -15,6 +15,8 @@ interface PrivacyToggle {
 
 export default function PrivacyPage() {
   const [toggles, setToggles] = useState<PrivacyToggle[]>([
+    { id: 'matchmaker-instagram', label: 'Matchmaker → Instagram', description: 'Allow Matchmaker to see Instagram interests for financial suggestions', enabled: true, category: 'social' },
+    { id: 'matchmaker-spotify', label: 'Matchmaker → Spotify Mood', description: 'Allow The Vault to suggest stocks based on Spotify mood', enabled: false, category: 'social' },
     { id: 'instagram-interests', label: 'Instagram Interests', description: 'Allow algorithm to see Instagram interests', enabled: true, category: 'social' },
     { id: 'tiktok-metrics', label: 'TikTok Engagement', description: 'Hide TikTok engagement metrics', enabled: false, category: 'social' },
     { id: 'x-activity', label: 'X/Twitter Activity', description: 'Share X activity with matchmaker', enabled: true, category: 'social' },
@@ -23,7 +25,7 @@ export default function PrivacyPage() {
     { id: 'anonymized-analytics', label: 'Anonymized Analytics', description: 'Help improve the platform', enabled: true, category: 'analytics' },
   ]);
 
-  const [rtbfStatus, setRtbfStatus] = useState<'pending' | 'processing' | 'completed'>('completed');
+  const [rtbfStatus, setRtbfStatus] = useState<'idle' | 'pending' | 'processing' | 'completed'>('idle');
 
   const togglePrivacy = (id: string) => {
     setToggles(prev => prev.map(t => 
@@ -114,12 +116,31 @@ export default function PrivacyPage() {
             <p className="up-kicker">Data Subject Rights</p>
             <h3 className="mt-2 text-xl font-black tracking-tighter">Right to be Forgotten</h3>
             <p className="mt-3 text-sm text-[color:var(--muted)]">
-              Request complete deletion of your data from our systems. This includes all 
-              transaction history, social connections, and reputation badges.
+              Request complete deletion of your social cache while keeping financial records intact.
+              Your transaction history remains for compliance.
             </p>
-            <div className="mt-6">
-              <RTBFRequest status={rtbfStatus} requestedAt="2026-01-15T10:00:00Z" />
+            <div className="mt-6 flex gap-4">
+              <button
+                onClick={() => setRtbfStatus('processing')}
+                disabled={rtbfStatus === 'processing'}
+                className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Forget Social Cache
+              </button>
+              <button
+                onClick={() => setRtbfStatus('processing')}
+                disabled={rtbfStatus === 'processing'}
+                className="px-4 py-2 bg-[color:var(--accent-sage)]/20 hover:bg-[color:var(--accent-sage)]/30 text-[color:var(--accent-sage)] border border-[color:var(--accent-sage)]/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Wipe All Data
+              </button>
             </div>
+            {rtbfStatus === 'processing' && (
+              <div className="mt-4 flex items-center gap-2 text-sm text-amber-400">
+                <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                Processing your request...
+              </div>
+            )}
           </div>
         </div>
 

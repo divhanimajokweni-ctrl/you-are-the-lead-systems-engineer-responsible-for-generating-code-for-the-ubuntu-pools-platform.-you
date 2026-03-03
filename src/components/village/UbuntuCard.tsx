@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 export interface MemberCoreData {
@@ -9,6 +9,7 @@ export interface MemberCoreData {
   scoreChange: number;
   memberSince: string;
   contributionTier: 'bronze' | 'silver' | 'gold' | 'platinum';
+  socialInterests?: string[];
 }
 
 export interface VillagePulseData {
@@ -27,6 +28,7 @@ export interface PoolHealthData {
   targetBuffer: number;
   liquidity: number;
   status: 'thriving' | 'stable' | 'stressed' | 'critical';
+  compoundingValue?: number;
 }
 
 interface UbuntuCardProps {
@@ -35,26 +37,91 @@ interface UbuntuCardProps {
   poolHealth: PoolHealthData;
 }
 
+function HealthGaugeSVG({ score, status }: { score: number; status: string }) {
+  const radius = 36;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
+  
+  const getColor = () => {
+    switch (status) {
+      case 'thriving': return '#34d399';
+      case 'stable': return '#60a5fa';
+      case 'stressed': return '#fbbf24';
+      default: return '#f87171';
+    }
+  };
+
+  const color = getColor();
+
+  return (
+    <svg width="90" height="90" viewBox="0 0 90 90" className="transform -rotate-90">
+      <circle
+        cx="45"
+        cy="45"
+        r={radius}
+        fill="none"
+        stroke="#1e293b"
+        strokeWidth="6"
+      />
+      <motion.circle
+        cx="45"
+        cy="45"
+        r={radius}
+        fill="none"
+        stroke={color}
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        initial={{ strokeDashoffset: circumference }}
+        animate={{ strokeDashoffset: offset }}
+        transition={{ duration: 1, ease: "easeOut" }}
+      />
+      <text x="45" y="50" textAnchor="middle" fill={color} className="text-xl font-black">
+        {score}%
+      </text>
+    </svg>
+  );
+}
+
 export function UbuntuCard({ memberCore, villagePulse, poolHealth }: UbuntuCardProps) {
   const [isLoadingPulse, setIsLoadingPulse] = useState(true);
   const [pulseData, setPulseData] = useState<VillagePulseData | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (villagePulse) {
       const timer = setTimeout(() => {
         setPulseData(villagePulse);
         setIsLoadingPulse(false);
-      }, 500);
+      }, 600);
       return () => clearTimeout(timer);
     }
   }, [villagePulse]);
 
   const getTierColor = (tier: string) => {
     switch (tier) {
-      case 'platinum': return 'from-slate-400 to-slate-600';
-      case 'gold': return 'from-amber-300 to-amber-500';
-      case 'silver': return 'from-slate-300 to-slate-400';
-      default: return 'from-orange-400 to-orange-600';
+      case 'platinum': return 'from-slate-300 to-slate-500 border-slate-400';
+      case 'gold': return 'from-amber-300 to-amber-500 border-amber-400';
+      case 'silver': return 'from-slate-300 to-slate-400 border-slate-400';
+      default: return 'from-orange-400 to-orange-600 border-orange-500';
     }
   };
 
@@ -69,29 +136,41 @@ export function UbuntuCard({ memberCore, villagePulse, poolHealth }: UbuntuCardP
 
   const getHealthBg = (status: string) => {
     switch (status) {
-      case 'thriving': return 'bg-emerald-500/20 border-emerald-500/30';
-      case 'stable': return 'bg-blue-500/20 border-blue-500/30';
-      case 'stressed': return 'bg-amber-500/20 border-amber-500/30';
-      default: return 'bg-red-500/20 border-red-500/30';
+      case 'thriving': return 'bg-emerald-500/10 border-emerald-500/30';
+      case 'stable': return 'bg-blue-500/10 border-blue-500/30';
+      case 'stressed': return 'bg-amber-500/10 border-amber-500/30';
+      default: return 'bg-red-500/10 border-red-500/30';
     }
   };
 
+  const interestColors: Record<string, string> = {
+    'ESG': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    'Tech': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    'Artisan': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+    'Community': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+    'Sustainable': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    'default': 'bg-slate-500/20 text-slate-300 border-slate-500/30',
+  };
+
   return (
-    <div className="up-card up-border-gradient p-6 space-y-6">
-      <div className="flex items-start justify-between">
+    <div 
+      ref={cardRef}
+      className="ubuntu-card-expanded bg-[#1a1a1a] rounded-xl p-6 border border-[#333] text-white"
+    >
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="up-kicker">Member Core</p>
-          <h3 className="mt-1 text-xl font-black tracking-tighter">{memberCore.displayName}</h3>
-          <p className="text-xs text-[color:var(--muted)]">Member since {memberCore.memberSince}</p>
+          <p className="text-xs text-slate-500 uppercase tracking-wider">Member Core</p>
+          <h3 className="mt-1 text-xl font-black tracking-tight">{memberCore.displayName}</h3>
+          <p className="text-xs text-slate-500">Member since {memberCore.memberSince}</p>
         </div>
-        <div className={`px-3 py-1 rounded-full bg-gradient-to-r ${getTierColor(memberCore.contributionTier)} text-white text-xs font-bold uppercase`}>
+        <div className={`px-3 py-1 rounded-full bg-gradient-to-r ${getTierColor(memberCore.contributionTier)} text-white text-xs font-bold uppercase border`}>
           {memberCore.contributionTier}
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mb-6">
         <div className="relative">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <span className="text-3xl font-black text-white">{memberCore.ubuntuScore}</span>
           </div>
           {memberCore.scoreChange !== 0 && (
@@ -109,41 +188,73 @@ export function UbuntuCard({ memberCore, villagePulse, poolHealth }: UbuntuCardP
           )}
         </div>
         <div className="flex-1">
-          <p className="text-sm text-[color:var(--muted)]">Ubuntu Score</p>
-          <div className="mt-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+          <p className="text-sm text-slate-400">Ubuntu Score</p>
+          <div className="mt-1 h-2 bg-[#333] rounded-full overflow-hidden">
             <motion.div 
               className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500"
               initial={{ width: 0 }}
-              animate={{ width: `${memberCore.ubuntuScore}%` }}
+              animate={{ width: isVisible ? `${memberCore.ubuntuScore}%` : '0%' }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             />
           </div>
         </div>
       </div>
 
-      {poolHealth && (
+      <hr className="border-[#333] my-6" />
+
+      <div className="grid grid-cols-2 gap-4 mb-6">
         <div className={`p-4 rounded-lg border ${getHealthBg(poolHealth.status)}`}>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium">Pool Health</p>
-            <span className={`text-lg font-black ${getHealthColor(poolHealth.status)}`}>
-              {poolHealth.score}%
+            <p className="text-xs font-medium text-slate-400">Pool Health</p>
+          </div>
+          <div className="flex justify-center">
+            <HealthGaugeSVG score={poolHealth.score} status={poolHealth.status} />
+          </div>
+          <p className={`mt-2 text-xs text-center font-medium ${getHealthColor(poolHealth.status)}`}>
+            {poolHealth.status === 'thriving' ? 'Thriving' : 
+             poolHealth.status === 'stable' ? 'Stable' : 
+             poolHealth.status === 'stressed' ? 'Stressed' : 'Critical'}
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-medium text-slate-400">Safety Buffer</p>
+            <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded uppercase font-bold">
+              Compounding
             </span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-[color:var(--muted)]">
-            <span>Safety Buffer:</span>
-            <span className="font-bold">{(poolHealth.safetyBuffer / 100).toLocaleString()} / {(poolHealth.targetBuffer / 100).toLocaleString()}</span>
-          </div>
-          <div className="mt-2 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+          <p className="text-2xl font-black text-amber-400 mt-2">
+            ${(poolHealth.compoundingValue || poolHealth.safetyBuffer / 100).toLocaleString()}
+          </p>
+          <p className="text-xs text-slate-500 mt-1">
+            of ${(poolHealth.targetBuffer / 100).toLocaleString()} target
+          </p>
+          <div className="mt-2 h-1.5 bg-[#333] rounded-full overflow-hidden">
             <motion.div 
-              className={`h-full ${
-                poolHealth.status === 'thriving' ? 'bg-emerald-400' :
-                poolHealth.status === 'stable' ? 'bg-blue-400' :
-                poolHealth.status === 'stressed' ? 'bg-amber-400' : 'bg-red-400'
-              }`}
+              className="h-full bg-amber-400"
               initial={{ width: 0 }}
-              animate={{ width: `${(poolHealth.safetyBuffer / poolHealth.targetBuffer) * 100}%` }}
+              animate={{ width: isVisible ? `${(poolHealth.safetyBuffer / poolHealth.targetBuffer) * 100}%` : '0%' }}
               transition={{ duration: 0.6, ease: "easeOut" }}
             />
+          </div>
+        </div>
+      </div>
+
+      {memberCore.socialInterests && memberCore.socialInterests.length > 0 && (
+        <div className="mb-6">
+          <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Social Interests</p>
+          <div className="flex flex-wrap gap-2">
+            {memberCore.socialInterests.map((interest, i) => (
+              <span 
+                key={i} 
+                className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                  interestColors[interest] || interestColors.default
+                }`}
+              >
+                #{interest}
+              </span>
+            ))}
           </div>
         </div>
       )}
@@ -151,14 +262,14 @@ export function UbuntuCard({ memberCore, villagePulse, poolHealth }: UbuntuCardP
       {villagePulse && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="up-kicker">Village Pulse</p>
+            <p className="text-xs text-slate-500 uppercase tracking-wider">Village Pulse</p>
             {isLoadingPulse && (
               <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
             )}
           </div>
           
           {isLoadingPulse ? (
-            <div className="h-20 flex items-center justify-center text-sm text-[color:var(--muted)]">
+            <div className="h-16 flex items-center justify-center text-sm text-slate-500">
               Loading pulse...
             </div>
           ) : pulseData ? (
@@ -166,27 +277,16 @@ export function UbuntuCard({ memberCore, villagePulse, poolHealth }: UbuntuCardP
               <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
                 <p className="text-sm">
                   <span className="font-black text-emerald-400">{pulseData.peerMatches}</span>
-                  <span className="text-[color:var(--muted)]"> peers share your interests</span>
+                  <span className="text-slate-400"> peers share your interests</span>
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {pulseData.sharedInterests.slice(0, 3).map((interest, i) => (
+                  {pulseData.sharedInterests.slice(0, 4).map((interest, i) => (
                     <span key={i} className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-xs rounded-full">
                       #{interest}
                     </span>
                   ))}
                 </div>
               </div>
-
-              {pulseData.recentActivity.length > 0 && (
-                <div className="space-y-2">
-                  {pulseData.recentActivity.slice(0, 2).map((activity, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      <span className="text-[color:var(--muted)]">{activity.description}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </>
           ) : null}
         </div>
@@ -200,7 +300,7 @@ export function LazySocialEmbed({
   username,
   visible 
 }: { 
-  platform: 'instagram' | 'tiktok';
+  platform: 'instagram' | 'tiktok' | 'spotify' | 'x' | 'threads';
   username: string;
   visible: boolean;
 }) {
@@ -215,21 +315,39 @@ export function LazySocialEmbed({
 
   if (!visible) return null;
 
+  const platformIcons: Record<string, string> = {
+    instagram: '📸',
+    tiktok: '🎵',
+    spotify: '🎧',
+    x: '𝕏',
+    threads: '🧵',
+  };
+
+  const platformColors: Record<string, string> = {
+    instagram: 'from-pink-500 to-purple-500',
+    tiktok: 'from-cyan-400 to-pink-400',
+    spotify: 'from-green-400 to-green-600',
+    x: 'from-slate-400 to-slate-600',
+    threads: 'from-slate-600 to-slate-800',
+  };
+
   return (
-    <div className="up-card p-4">
+    <div className="p-4 rounded-lg bg-[#1a1a1a] border border-[#333]">
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-xl">{platform === 'instagram' ? '📸' : '🎵'}</span>
+        <span className={`text-xl bg-gradient-to-r ${platformColors[platform]} bg-clip-text text-transparent`}>
+          {platformIcons[platform]}
+        </span>
         <span className="font-medium">@{username}</span>
       </div>
       
       {isLoaded ? (
-        <div className="aspect-square bg-slate-800 rounded-lg flex items-center justify-center">
-          <p className="text-sm text-[color:var(--muted)]">
-            {platform === 'instagram' ? 'Instagram' : 'TikTok'} content would load here
+        <div className="aspect-square bg-[#222] rounded-lg flex items-center justify-center">
+          <p className="text-sm text-slate-500">
+            {platform.charAt(0).toUpperCase() + platform.slice(1)} content
           </p>
         </div>
       ) : (
-        <div className="aspect-square bg-slate-800/50 rounded-lg animate-pulse" />
+        <div className="aspect-square bg-[#222]/50 rounded-lg animate-pulse" />
       )}
     </div>
   );
