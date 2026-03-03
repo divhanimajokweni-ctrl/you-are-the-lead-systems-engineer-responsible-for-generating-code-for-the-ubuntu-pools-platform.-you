@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface FAQItem {
   id: string;
@@ -69,7 +69,6 @@ const categoryLabels: Record<string, string> = {
 };
 
 export function FAQSection() {
-  const [openId, setOpenId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
   const filteredItems = activeCategory === 'all'
@@ -117,42 +116,26 @@ export function FAQSection() {
       </div>
 
       <div className="space-y-2 max-h-80 overflow-y-auto">
-        <AnimatePresence>
-          {filteredItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 + index * 0.05 }}
-              className="faq-item"
-              onClick={() => setOpenId(openId === item.id ? null : item.id)}
-            >
-              <div className="flex items-center justify-between gap-2">
+        {filteredItems.map((item, index) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 + index * 0.05 }}
+          >
+            <details className="faq-item group">
+              <summary className="flex items-center justify-between gap-2 cursor-pointer list-none">
                 <p className="text-white text-sm font-medium">{item.question}</p>
-                <motion.span
-                  animate={{ rotate: openId === item.id ? 180 : 0 }}
-                  className="text-neutral-400"
-                >
+                <span className="text-neutral-400 transition-transform group-open:rotate-180">
                   ▼
-                </motion.span>
-              </div>
-              <AnimatePresence>
-                {openId === item.id && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <p className="text-neutral-400 text-sm mt-3 pt-3 border-t border-neutral-700">
-                      {item.answer}
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                </span>
+              </summary>
+              <p className="text-neutral-400 text-sm mt-3 pt-3 border-t border-neutral-700">
+                {item.answer}
+              </p>
+            </details>
+          </motion.div>
+        ))}
       </div>
 
       <div className="mt-4 p-4 rounded-xl bg-gradient-to-br from-terracotta/10 to-clay/10 border border-terracotta/20 flex items-center justify-between">

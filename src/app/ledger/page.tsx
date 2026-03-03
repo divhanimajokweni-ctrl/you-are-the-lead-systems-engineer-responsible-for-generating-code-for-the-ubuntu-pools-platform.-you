@@ -203,6 +203,23 @@ export default function LedgerPage() {
         </div>
 
         <div className="space-y-6">
+          <div className="up-card p-6 bg-gradient-to-br from-sage/20 to-transparent border-sage/30">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-sage/20 flex items-center justify-center">
+                <svg className="w-6 h-6 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div>
+                <p className="up-kicker">Safety Buffer</p>
+                <p className="text-2xl font-black text-sage">R 2,300.00</p>
+              </div>
+            </div>
+            <p className="text-xs text-[color:var(--muted)]">
+              Your protective reserve is fully funded. This shields your credit eligibility from market volatility.
+            </p>
+          </div>
+
           <div className="up-card p-6">
             <p className="up-kicker">Genesis Block</p>
             <h3 className="mt-2 text-lg font-black tracking-tighter">Chain Status</h3>
