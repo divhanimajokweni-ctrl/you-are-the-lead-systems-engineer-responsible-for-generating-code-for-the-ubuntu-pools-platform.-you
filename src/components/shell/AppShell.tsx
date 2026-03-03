@@ -33,8 +33,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const root = window.document.documentElement;
-    if (theme === 'dark') root.classList.add('dark');
-    else root.classList.remove('dark');
+    root.setAttribute('data-theme', theme);
 
     try {
       window.localStorage.setItem('theme', theme);
@@ -47,7 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       { name: 'Village', path: '/village' },
       { name: 'Ledger', path: '/ledger' },
       { name: 'Privacy', path: '/privacy' },
-      { name: 'FAQ', path: '/faq' },
+      { name: 'Settings', path: '/settings' },
     ],
     []
   );

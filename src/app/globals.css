@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 :root {
+  --bg-app: #f9fafb;
+  --bg-card: #ffffff;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --accent-ubuntu: #10b981;
+  --safety-buffer: #f59e0b;
   --surface: #FDFCFB;
   --surface-2: #F9F9F8;
   --text: #2D302E;
@@ -14,8 +20,22 @@
   --accent-clay: #C07B5B;
 }
 
+[data-theme='dark'] {
+  --bg-app: #0f172a;
+  --bg-card: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent-ubuntu: #34d399;
+  --safety-buffer: #fbbf24;
+  --surface: #1A1C1B;
+  --surface-2: #252826;
+  --text: #FDFCFB;
+  --muted: #9EA39F;
+  --border: #3A3D3B;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --surface: #1A1C1B;
     --surface-2: #252826;
     --text: #FDFCFB;
@@ -28,6 +48,7 @@ body {
   background: var(--surface);
   color: var(--text);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer components {
