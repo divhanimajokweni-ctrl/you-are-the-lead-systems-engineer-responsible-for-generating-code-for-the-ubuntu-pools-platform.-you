@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
     APP_NAME: "Ubuntu Pools",
     APP_VERSION: "1.0.0",
   },
+
+  // Force dynamic rendering for Clerk compatibility
+  experimental: {
+    ppr: false,
+  },
   
   async headers() {
     return [

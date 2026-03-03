@@ -32,30 +32,6 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-!.env.local.example
-!.env.example
-
-# NEVER commit these sensitive files
-*.env.local
-*.env.production
-*.env.development
-credentials.json
-service-account-key.json
-
-# Clerk keys (if manually set)
-CLERK_*
-
-# Supabase
-SUPABASE_*
-
-# Plaid
-PLAID_*
-
-# API Keys - General
-API_KEY*
-api_key*
-SECRET*
-PRIVATE_*
 
 # vercel
 .vercel
@@ -63,4 +39,3 @@ PRIVATE_*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.aider*
