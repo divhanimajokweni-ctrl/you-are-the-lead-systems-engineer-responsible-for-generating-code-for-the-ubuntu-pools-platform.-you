@@ -50,7 +50,72 @@ bun dev
 
 The app will be available at `http://localhost:3000`
 
-### 4. Run Tests
+---
+
+### Cloud Development (VS Code Online)
+
+#### Option 1: GitHub Codespaces (Recommended)
+
+1. Go to your repository on GitHub
+2. Click the green **Code** button
+3. Select the **Codespaces** tab
+4. Click **Create codespace on main**
+5. Wait for the container to build (~2-3 minutes)
+6. In the terminal, run:
+
+```bash
+bun run dev
+```
+
+7. Click the **Ports** tab in the bottom panel
+8. Click the localhost:3000 link to preview
+
+#### Option 2: VS Code for the Web (No Setup)
+
+1. Go to [vscode.dev](https://vscode.dev)
+2. Click **"Open Remote"** (bottom-left corner)
+3. Select **"Open GitHub Repository"**
+4. Paste your repo URL
+5. In the terminal:
+
+```bash
+bun install
+bun run dev
+```
+
+6. Click **Ports** → **localhost:3000** → **Open in Browser**
+
+#### Option 3: Gitpod
+
+1. Open:
+```
+https://gitpod.io/#https://github.com/divhanimajokweni-ctrl/you-are-the-lead-systems-engineer-responsible-for-generating-code-for-the-ubuntu-pools-platform.-you
+```
+
+2. Sign in with GitHub
+3. In terminal:
+
+```bash
+bun install
+bun run dev
+```
+
+4. Click **Open Browser** on port 3000
+
+---
+
+---
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Command not found: bun" | Run `curl -fsSL https://bun.sh/install \| bash` |
+| Port 3000 in use | `lsof -i :3000` then kill process, or use `bun run dev --port 3001` |
+| Dependencies missing | Run `bun install` |
+| TypeScript errors | Run `bun run typecheck` to see errors |
+
+### 5. Run Tests
 
 ```bash
 # Run all tests
@@ -63,7 +128,7 @@ bun test:watch
 bun test:coverage
 ```
 
-### 5. Type Checking & Linting
+### 6. Type Checking & Linting
 
 ```bash
 # Type check
@@ -73,7 +138,7 @@ bun typecheck
 bun lint
 ```
 
-### 6. Database (Optional - for full functionality)
+### 7. Database (Optional - for full functionality)
 
 ```bash
 # Generate Drizzle client
