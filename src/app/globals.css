@@ -71,4 +71,12 @@ body {
     background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box,
                 linear-gradient(135deg, var(--accent-sage), var(--accent-gold)) border-box;
   }
+
+  .up-pill {
+    @apply px-4 py-2 rounded-full border border-[color:var(--border)] text-xs font-black uppercase tracking-widest transition-all;
+  }
+
+  .transform-gpu {
+    transform: translateZ(0);
+  }
 }
