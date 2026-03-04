@@ -6,18 +6,18 @@
   --bg-app: #f9fafb;
   --bg-card: #ffffff;
   --text-main: #111827;
-  --text-muted: #6b7280;
-  --accent-ubuntu: #10b981;
-  --safety-buffer: #f59e0b;
-  --surface: #FDFCFB;
-  --surface-2: #F9F9F8;
-  --text: #2D302E;
-  --muted: #6B706C;
-  --muted-2: #9EA39F;
-  --border: #F1F0EE;
-  --accent-sage: #8CA082;
-  --accent-gold: #D4AF37;
-  --accent-clay: #C07B5B;
+  --text-muted: #575f69;
+  --accent-ubuntu: #059669;
+  --safety-buffer: #d97706;
+  --surface: #ffffff;
+  --surface-2: #f3f4f6;
+  --text: #1f2937;
+  --muted: #4b5563;
+  --muted-2: #6b7280;
+  --border: #e5e7eb;
+  --accent-sage: #5a7a5a;
+  --accent-gold: #a18027;
+  --accent-clay: #b5694e;
 }
 
 [data-theme='dark'] {
@@ -32,6 +32,9 @@
   --text: #FDFCFB;
   --muted: #9EA39F;
   --border: #3A3D3B;
+  --accent-sage: #8CA082;
+  --accent-gold: #fbbf24;
+  --accent-clay: #C07B5B;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -41,6 +44,9 @@
     --text: #FDFCFB;
     --muted: #9EA39F;
     --border: #3A3D3B;
+    --accent-sage: #8CA082;
+    --accent-gold: #fbbf24;
+    --accent-clay: #C07B5B;
   }
 }
 
@@ -48,7 +54,7 @@ body {
   background: var(--surface);
   color: var(--text);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 @layer components {

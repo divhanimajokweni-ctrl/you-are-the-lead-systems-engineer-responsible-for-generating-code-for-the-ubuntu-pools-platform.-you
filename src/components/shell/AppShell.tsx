@@ -21,13 +21,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   const [theme, setTheme] = useState<ThemeMode>(() => {
-    if (typeof window === 'undefined') return 'light';
+    if (typeof window === 'undefined') return 'dark';
     try {
       const saved = window.localStorage.getItem('theme');
       if (saved === 'light' || saved === 'dark') return saved;
       if (window.matchMedia?.('(prefers-color-scheme: dark)')?.matches) return 'dark';
     } catch {}
-    return 'light';
+    return 'dark';
   });
 
   useEffect(() => {
