@@ -8,6 +8,7 @@ const eslintConfig = [
       "ubuntu-pools-phase1/**",
       ".next/**",
       ".cache/**",
+      "quickstart/**",
     ],
   },
 ];

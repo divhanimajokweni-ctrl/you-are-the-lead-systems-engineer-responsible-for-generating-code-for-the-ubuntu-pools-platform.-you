@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
-    "ubuntu-pools-phase1"
+    "ubuntu-pools-phase1",
+    "quickstart"
   ]
 }
