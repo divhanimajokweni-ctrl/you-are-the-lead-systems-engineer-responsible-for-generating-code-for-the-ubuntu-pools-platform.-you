@@ -40,4 +40,4 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd ubuntu-pools-phase1 && bun run src/index.ts"
+args = "bun run src/index.ts"
