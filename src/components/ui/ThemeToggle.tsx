@@ -1,30 +1,36 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 type Theme = 'light' | 'dark';
 
-export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('dark');
-  const [mounted, setMounted] = useState(false);
+const emptySubscribe = () => () => {};
 
-  useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem('theme') as Theme | null;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initial = saved || (prefersDark ? 'dark' : 'light');
-    setTheme(initial);
-    document.documentElement.setAttribute('data-theme', initial);
-  }, []);
+function getServerSnapshot(): Theme {
+  return 'dark';
+}
+
+function getClientSnapshot(): Theme {
+  if (typeof window === 'undefined') return 'dark';
+  const saved = localStorage.getItem('theme') as Theme | null;
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return saved || (prefersDark ? 'dark' : 'light');
+}
+
+export function ThemeToggle() {
+  const theme = useSyncExternalStore(emptySubscribe, getClientSnapshot, getServerSnapshot);
+  const [, setTick] = useState(0);
 
   const toggle = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
     localStorage.setItem('theme', next);
     document.documentElement.setAttribute('data-theme', next);
+    setTick(t => t + 1);
   };
 
-  if (!mounted) return null;
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   return (
     <button

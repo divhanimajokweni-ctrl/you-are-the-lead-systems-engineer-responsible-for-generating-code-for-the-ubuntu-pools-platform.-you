@@ -4,7 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["undollar"]
+packages = ["lms", "undollar"]
 
 [[ports]]
 localPort = 1455

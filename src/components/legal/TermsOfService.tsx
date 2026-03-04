@@ -41,7 +41,7 @@ export function TermsOfService({ entityName = 'Ubuntu Pools' }: TermsOfServicePr
         <section>
           <h3 className="font-medium text-[color:var(--text)] mb-2">4. User Data & Privacy</h3>
           <p>
-            Your data is governed by our Privacy Policy. The "Sovereignty Toggle" gives you granular 
+            Your data is governed by our Privacy Policy. The &quot;Sovereignty Toggle&quot; gives you granular 
             control over what social data is used for financial recommendations.
           </p>
         </section>
@@ -49,7 +49,7 @@ export function TermsOfService({ entityName = 'Ubuntu Pools' }: TermsOfServicePr
         <section>
           <h3 className="font-medium text-[color:var(--text)] mb-2">5. Limitation of Liability</h3>
           <p>
-            {entityName} is provided "as is" without warranty of any kind. Financial decisions 
+            {entityName} is provided &quot;as is&quot; without warranty of any kind. Financial decisions 
             should be made with due diligence.
           </p>
         </section>
