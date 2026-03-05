@@ -20,7 +20,7 @@ export default function PrivacyPage() {
     { id: 'instagram-interests', label: 'Instagram Interests', description: 'Allow algorithm to see Instagram interests', enabled: true, category: 'social' },
     { id: 'tiktok-metrics', label: 'TikTok Engagement', description: 'Hide TikTok engagement metrics', enabled: false, category: 'social' },
     { id: 'x-activity', label: 'X/Twitter Activity', description: 'Share X activity with matchmaker', enabled: true, category: 'social' },
-    { id: 'plaid-transactions', label: 'Plaid Transactions', description: 'Share transaction data for financial goals', enabled: true, category: 'financial' },
+    { id: 'stitch-transactions', label: 'Stitch Transactions', description: 'Share transaction data for financial goals', enabled: true, category: 'financial' },
     { id: 'spending-patterns', label: 'Spending Patterns', description: 'Allow lifestyle tag matching', enabled: false, category: 'financial' },
     { id: 'anonymized-analytics', label: 'Anonymized Analytics', description: 'Help improve the platform', enabled: true, category: 'analytics' },
   ]);

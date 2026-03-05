@@ -15,7 +15,7 @@ const toggleSchema = z.object({
 const ingestSchema = z.object({
   memberId: z.string().uuid(),
   content: z.string().min(1).max(5000),
-  source: z.enum(['instagram', 'tiktok', 'plaid', 'manual']),
+  source: z.enum(['instagram', 'tiktok', 'stitch', 'manual']),
 });
 
 const configureSchema = SovereigntySettingsSchema;

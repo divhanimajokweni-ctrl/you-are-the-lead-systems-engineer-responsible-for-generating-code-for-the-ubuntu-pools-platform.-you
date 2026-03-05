@@ -16,7 +16,7 @@ export interface IntentTag {
   id: string;
   category: string;
   value: string;
-  source: 'instagram' | 'tiktok' | 'plaid' | 'manual';
+  source: 'instagram' | 'tiktok' | 'stitch' | 'manual';
   strength: number;
   createdAt: Date;
   expiresAt: Date;
@@ -35,7 +35,7 @@ export interface SanitizedProfile {
 export interface SovereigntySettings {
   memberId: string;
   sovereigntyEnabled: boolean;
-  allowedSources: ('instagram' | 'tiktok' | 'plaid' | 'manual')[];
+  allowedSources: ('instagram' | 'tiktok' | 'stitch' | 'manual')[];
   tagCategories: {
     esg: boolean;
     community: boolean;
@@ -48,7 +48,7 @@ export interface SovereigntySettings {
 export const SovereigntySettingsSchema = z.object({
   memberId: z.string().uuid(),
   sovereigntyEnabled: z.boolean(),
-  allowedSources: z.array(z.enum(['instagram', 'tiktok', 'plaid', 'manual'])),
+  allowedSources: z.array(z.enum(['instagram', 'tiktok', 'stitch', 'manual'])),
   tagCategories: z.object({
     esg: z.boolean(),
     community: z.boolean(),
@@ -95,7 +95,7 @@ const INTENT_KEYWORDS: Record<string, { category: string; keywords: string[] }> 
 
 export function extractIntentTags(
   content: string,
-  source: 'instagram' | 'tiktok' | 'plaid' | 'manual',
+  source: 'instagram' | 'tiktok' | 'stitch' | 'manual',
   ttlDays: number = 30
 ): IntentTag[] {
   const normalizedContent = content.toLowerCase();
@@ -241,7 +241,7 @@ export class SovereigntyProxy {
     return this.getSanitizedProfile(memberId);
   }
 
-  ingestData(memberId: string, content: string, source: 'instagram' | 'tiktok' | 'plaid' | 'manual'): IntentTag[] {
+  ingestData(memberId: string, content: string, source: 'instagram' | 'tiktok' | 'stitch' | 'manual'): IntentTag[] {
     const settings = this.settings.get(memberId);
     if (!settings) {
       throw new Error('Member not configured');

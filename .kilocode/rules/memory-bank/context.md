@@ -1,18 +1,31 @@
-# Active Context: Ubuntu Pools — Phase 7 Complete
+# Active Context: Ubuntu Pools — Phase 8 Complete
 
 ## Current State
 
-**Phase 7 Status**: ✅ Complete — Sovereignty Proxy & Matchmaker Implementation
+**Phase 8 Status**: ✅ Complete — Plaid → Stitch Pivot (Local Open Banking)
 
-The Sovereignty Toggle and Matchmaker system is now implemented:
-- Sovereignty Proxy (Trust Layer) with NER-based anonymization
-- User-controlled Sovereignty Toggle for data sharing control
-- Data Ephemerality with TTL-based intent tag expiration
-- Matchmaker Logic bridging social signals to financial outcomes
-- Social-Accord Synergy scoring
-- Personalized prosperity opportunities
+The financial data provider has been migrated from Plaid (global) to Stitch (South African local). This maintains the Adapter Pattern architecture to allow future provider swaps without breaking MemberCore or UbuntuScore logic.
 
 ## Recently Completed
+
+- [x] **Phase 8: Plaid → Stitch Pivot** (2026-03-05)
+  - Bank Provider Adapter Pattern (`src/lib/bank-provider/`)
+    - Abstract interfaces: `BankProvider`, `BankAccount`, `BankTransaction`, `BankConnection`
+    - `types.ts` - Normalized data models (provider-agnostic)
+    - `stitch.ts` - Stitch provider implementation with full SA bank coverage
+    - `index.ts` - Provider factory with environment config
+  - Stitch Integration
+    - `StitchLink.tsx` - React component replacing PlaidLink
+    - API Routes (`/api/stitch/`):
+      - `create-link-token` - Initialize bank connection flow
+      - `exchange-token` - Exchange public token for access token
+      - `transactions` - Fetch normalized transactions
+      - `connection` - Manage bank connections (refresh/disconnect)
+  - Removed: All Plaid SDKs, components, and API routes
+  - Updated: Sovereignty system uses 'stitch' source instead of 'plaid'
+  - Updated: Privacy page toggle renamed to 'Stitch Transactions'
+  - Environment: Added `STITCH_CLIENT_ID`, `STITCH_CLIENT_SECRET`, `STITCH_ENV`, `BANK_PROVIDER`
+  - Build: ✅ Zero TypeScript regressions
 
 - [x] **Phase 7: Sovereignty & Matchmaker** (2026-03-02)
   - Sovereignty Proxy Service (`src/lib/services/sovereignty-proxy.ts`)
@@ -222,6 +235,10 @@ The Sovereignty Toggle and Matchmaker system is now implemented:
 | `src/app/api/matchmaker/route.ts` | Matchmaker API | ✅ Ready |
 | `src/components/credit/CreditDashboard.tsx` | Credit dashboard UI | ✅ Ready |
 | `src/components/credit/PoolHealthGauge.tsx` | Health gauge UI | ✅ Ready |
+| `src/components/stitch/StitchLink.tsx` | Bank connection UI | ✅ Ready |
+| `src/lib/bank-provider/types.ts` | Bank provider interfaces | ✅ Ready |
+| `src/lib/bank-provider/stitch.ts` | Stitch implementation | ✅ Ready |
+| `src/lib/bank-provider/index.ts` | Provider factory | ✅ Ready |
 | `src/tests/` | Unit tests (287 tests) | ✅ Ready |
 
 ## Phase 1 + Phase 4 + Phase 6 Governance Compliance
@@ -267,3 +284,4 @@ The Sovereignty Toggle and Matchmaker system is now implemented:
 | 2026-03-02 | Phase 6 credit facilities: phased credit system, Pool Health gates, Ubuntu Score limits, 15 tests |
 | 2026-03-02 | Phase 6.1 Ubuntu Score: forward-looking trust score, Coverage/Timeliness/Consistency/Stress + Pool Multiplier, 22 tests |
 | 2026-03-02 | Phase 7 Sovereignty & Matchmaker: NER anonymization, Sovereignty Toggle, TTL-based intent tags, Signal-to-Asset matching, 287 tests |
+| 2026-03-05 | Phase 8 Plaid → Stitch Pivot: Adapter Pattern, Stitch integration, removed Plaid deps, zero regressions |
