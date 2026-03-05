@@ -38,6 +38,7 @@
   "exclude": [
     "node_modules",
     "ubuntu-pools-phase1",
-    "quickstart"
+    "quickstart",
+    "openclaw-skills"
   ]
 }

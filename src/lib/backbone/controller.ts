@@ -4,6 +4,7 @@ import { generateProsperityOpportunity, type MatchmakerInput } from '../services
 import { sovereigntyProxy, type SanitizedProfile } from '../services/sovereignty-proxy';
 import { getStitchProvider } from '../bank-provider/stitch';
 import type { BankTransaction } from '../bank-provider/types';
+import { openClawGateway, type OpenClawNotification } from '../openclaw/gateway';
 
 export interface BackboneConfig {
   safetyBufferTarget: number;
@@ -165,6 +166,9 @@ export class UbuntuBackbone {
     this.state.lastRegulation = new Date();
     this.state.regulationCount++;
 
+    const previousMode = this.auditTrail.length > 0 ? this.auditTrail[this.auditTrail.length - 1].mode : null;
+    const modeChanged = previousMode !== this.state.currentMode;
+
     this.recordAuditEntry({
       trigger: 'automatic_regulation',
       reasoning: reasoning.reasoning,
@@ -173,6 +177,25 @@ export class UbuntuBackbone {
       thresholdAfter,
       mode: this.state.currentMode,
     });
+
+    if (modeChanged) {
+      const notification: OpenClawNotification = {
+        type: this.state.currentMode === 'shield' ? 'SHIELD' : 
+              this.state.currentMode === 'emergency' ? 'EMERGENCY' :
+              this.state.currentMode === 'prosperity' ? 'PROSPERITY' : 'MODE_CHANGE',
+        mode: this.state.currentMode,
+        buffer: {
+          current: this.state.safetyBuffer.currentBalance,
+          target: this.state.safetyBuffer.targetBalance,
+          healthRatio: this.state.safetyBuffer.healthRatio,
+        },
+        reasoning: reasoning.reasoning,
+        riskFlags: reasoning.riskFlags,
+        confidence: reasoning.confidence,
+        timestamp: new Date().toISOString(),
+      };
+      this.notifyOpenClaw(notification);
+    }
 
     return reasoning;
   }
@@ -289,6 +312,24 @@ export class UbuntuBackbone {
     });
 
     lindiweAI.applyLearning('failure', 'buffer_weight');
+
+    this.notifyOpenClaw({
+      type: 'EMERGENCY',
+      mode: 'emergency',
+      buffer: {
+        current: this.state.safetyBuffer.currentBalance,
+        target: this.state.safetyBuffer.targetBalance,
+        healthRatio: this.state.safetyBuffer.healthRatio,
+      },
+      reasoning: 'Safety Buffer dropped below critical threshold',
+      riskFlags: ['CRITICAL_BUFFER', 'EMERGENCY_TRIGGERED'],
+      confidence: 0.95,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  private async notifyOpenClaw(notification: OpenClawNotification): Promise<void> {
+    await openClawGateway.notifyStateChange(notification);
   }
 
   private recordAuditEntry(entry: Omit<BackboneAuditEntry, 'id' | 'timestamp' | 'bufferState'>): void {

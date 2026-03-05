@@ -284,6 +284,114 @@ src/
 - **Prosperity Tiers**: Family Wealth Reserve, SME Bulk-Buying Circles
 - **FAQ & AI Assistant**: Lindiwe chatbot for support
 
+---
+
+## OpenClaw Integration: The Executive Shadow
+
+The Ubuntu Pools platform integrates with **OpenClaw** to provide real-time alerts and command-and-control capabilities for the Founder.
+
+### System Architecture
+
+| Component | Role |
+|-----------|------|
+| **Lindiwe AI** | Financial Matriarch - autonomous governance |
+| **Stitch** | Financial Sensor - South African banking integration |
+| **OpenClaw** | Executive Shadow - your personal command center |
+| **Ubuntu Backbone** | Central nervous system connecting all components |
+
+### How It Works
+
+1. **Lindiwe** monitors the Ubuntu Backbone (safety buffer, member scores, pool health)
+2. When Lindiwe triggers **Shield/Prosperity/Emergency** modes, the Backbone notifies **OpenClaw**
+3. **OpenClaw** sends WhatsApp/Signal alerts to your personal device
+4. You can issue commands back to the system via OpenClaw
+
+### Production Setup
+
+#### 1. Environment Variables
+
+Add these to your `.env.local`:
+
+```env
+# OpenClaw Integration (Executive Shadow)
+OPENCLAW_ENABLED=true
+OPENCLAW_GATEWAY_URL=http://localhost:18789
+OPENCLAW_API_KEY=your_openclaw_api_key
+```
+
+#### 2. Install OpenClaw (on your local machine)
+
+```bash
+# Install globally using Bun
+bun add -g openclaw@latest
+
+# Run the onboarding wizard
+openclaw onboard --install-daemon
+
+# Set up WhatsApp/Signal channel
+openclaw channel add whatsapp
+```
+
+#### 3. Install the Ubuntu Monitor Skill
+
+Copy the skill file to your OpenClaw workspace:
+
+```bash
+# Default location
+cp openclaw-skills/ubuntu-monitor.ts ~/.openclaw/workspaces/default/skills/
+```
+
+#### 4. Verify Installation
+
+```bash
+# Check if Gateway is alive
+openclaw doctor
+
+# List installed skills
+openclaw skill list | grep ubuntu-monitor
+```
+
+### OpenClaw Commands
+
+#### Give OpenClaw its directive:
+
+> "OpenClaw, load the ubuntu-monitor skill. You are now synced with Lindiwe. If Lindiwe triggers SHIELD mode, I want a WhatsApp notification immediately. Once a day at 18:00, use your 'Live Canvas' to show me a summary of the total Village $S_u$ growth. If you detect a Stitch Shield fraud alert, bypass Lindiwe and call me directly."
+
+#### Useful Commands:
+
+```bash
+# Test the integration
+openclaw message send --message "TEST: Lindiwe signaling Shield Mode" --thinking low
+
+# Check Gateway port (should show listening on 18789)
+lsof -i :18789
+
+# Get system status via OpenClaw
+openclaw message send --message "ubuntu-monitor getSystemStatus"
+```
+
+### Heartbeat Monitoring
+
+The system includes automatic health checks. To enable periodic heartbeats:
+
+```typescript
+import { openClawGateway } from '@/lib/openclaw/gateway';
+
+// Call in your server cron job
+await openClawGateway.performSystemHandshake('online', 'ready');
+```
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Gateway unreachable | Ensure `OPENCLAW_ENABLED=true` and port 18789 is open |
+| No messages received | Check DM pairing is approved in WhatsApp |
+| Skill not loaded | Copy skill file to `~/.openclaw/workspaces/default/skills/` |
+| TypeScript errors in skill | Skill runs in OpenClaw's environment, not this project |
+
+---
+
 ## License
 
 MIT
