@@ -1,30 +1,31 @@
-# Active Context: Ubuntu Pools — Phase 8 Complete
+# Active Context: Ubuntu Pools — Phase 9 Complete
 
 ## Current State
 
-**Phase 8 Status**: ✅ Complete — Plaid → Stitch Pivot (Local Open Banking)
+**Phase 9 Status**: ✅ Complete — Ubuntu Backbone (Lindiwe + Ubuntu Score + Matchmaker Consolidation)
 
-The financial data provider has been migrated from Plaid (global) to Stitch (South African local). This maintains the Adapter Pattern architecture to allow future provider swaps without breaking MemberCore or UbuntuScore logic.
+The three core components (Lindiwe AI, Ubuntu Score, Matchmaker) have been consolidated into a self-regulating "Ubuntu Backbone" that operates autonomously without third-party intervention.
 
 ## Recently Completed
 
-- [x] **Phase 8: Plaid → Stitch Pivot** (2026-03-05)
-  - Bank Provider Adapter Pattern (`src/lib/bank-provider/`)
-    - Abstract interfaces: `BankProvider`, `BankAccount`, `BankTransaction`, `BankConnection`
-    - `types.ts` - Normalized data models (provider-agnostic)
-    - `stitch.ts` - Stitch provider implementation with full SA bank coverage
-    - `index.ts` - Provider factory with environment config
-  - Stitch Integration
-    - `StitchLink.tsx` - React component replacing PlaidLink
-    - API Routes (`/api/stitch/`):
-      - `create-link-token` - Initialize bank connection flow
-      - `exchange-token` - Exchange public token for access token
-      - `transactions` - Fetch normalized transactions
-      - `connection` - Manage bank connections (refresh/disconnect)
-  - Removed: All Plaid SDKs, components, and API routes
-  - Updated: Sovereignty system uses 'stitch' source instead of 'plaid'
-  - Updated: Privacy page toggle renamed to 'Stitch Transactions'
-  - Environment: Added `STITCH_CLIENT_ID`, `STITCH_CLIENT_SECRET`, `STITCH_ENV`, `BANK_PROVIDER`
+- [x] **Phase 9: Ubuntu Backbone Consolidation** (2026-03-05)
+  - **Lindiwe AI** (`src/lib/backbone/lindiwe.ts`)
+    - Village Pulse analysis (anxiety, excitement, stability)
+    - Safety Buffer monitoring with autonomous reasoning
+    - Transaction pattern behavioral scoring
+    - Risk assessment (low/medium/high/critical)
+    - Learning weights that self-improve
+  - **Backbone Controller** (`src/lib/backbone/controller.ts`)
+    - Central orchestrator connecting all three components
+    - Stitch data sync to Ubuntu Score mapping
+    - Autonomous threshold adjustment (Lindiwe controls Matchmaker)
+    - Hard stop logic: Emergency mode when buffer < R 500
+    - Audit trail for all self-regulation events
+    - Member eligibility checking
+  - **API Routes** (`/api/backbone`):
+    - `GET /api/backbone` - Get system state, config, audit trail
+    - `POST /api/backbone` - Sync member data, regulate, update buffer
+  - **Modes**: prosperity, expansion, stability, shield, emergency
   - Build: ✅ Zero TypeScript regressions
 
 - [x] **Phase 7: Sovereignty & Matchmaker** (2026-03-02)
@@ -239,6 +240,10 @@ The financial data provider has been migrated from Plaid (global) to Stitch (Sou
 | `src/lib/bank-provider/types.ts` | Bank provider interfaces | ✅ Ready |
 | `src/lib/bank-provider/stitch.ts` | Stitch implementation | ✅ Ready |
 | `src/lib/bank-provider/index.ts` | Provider factory | ✅ Ready |
+| `src/lib/backbone/lindiwe.ts` | Lindiwe AI reasoning engine | ✅ Ready |
+| `src/lib/backbone/controller.ts` | Backbone controller | ✅ Ready |
+| `src/lib/backbone/index.ts` | Backbone exports | ✅ Ready |
+| `src/app/api/backbone/route.ts` | Backbone API | ✅ Ready |
 | `src/tests/` | Unit tests (287 tests) | ✅ Ready |
 
 ## Phase 1 + Phase 4 + Phase 6 Governance Compliance
@@ -285,3 +290,4 @@ The financial data provider has been migrated from Plaid (global) to Stitch (Sou
 | 2026-03-02 | Phase 6.1 Ubuntu Score: forward-looking trust score, Coverage/Timeliness/Consistency/Stress + Pool Multiplier, 22 tests |
 | 2026-03-02 | Phase 7 Sovereignty & Matchmaker: NER anonymization, Sovereignty Toggle, TTL-based intent tags, Signal-to-Asset matching, 287 tests |
 | 2026-03-05 | Phase 8 Plaid → Stitch Pivot: Adapter Pattern, Stitch integration, removed Plaid deps, zero regressions |
+| 2026-03-05 | Phase 9 Ubuntu Backbone: Lindiwe AI + Ubuntu Score + Matchmaker consolidated, autonomous self-regulation, hard stops |
