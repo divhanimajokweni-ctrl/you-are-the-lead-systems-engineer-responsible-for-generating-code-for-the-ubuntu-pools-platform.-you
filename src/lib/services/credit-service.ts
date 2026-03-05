@@ -634,11 +634,6 @@ export class CreditService {
 
 export const creditService = new CreditService();
 
-export function calculatePoolHealth(config: CreditPoolConfig): PoolHealthMetrics {
-  const service = new CreditService();
-  return service.calculatePoolHealth(config);
-}
-
 export function checkCreditEligibility(eligibility: z.infer<typeof CreditEligibilitySchema>): CreditLimitResult {
   return creditService.checkEligibility(eligibility);
 }

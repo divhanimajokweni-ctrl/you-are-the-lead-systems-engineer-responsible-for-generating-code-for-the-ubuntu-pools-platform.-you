@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { ubuntuBackbone } from '@/lib/backbone';
 
+async function getClerkUserId(): Promise<string | null> {
+  const { userId } = await auth();
+  return userId;
+}
+
+function isValidLimit(limit: string | null): number {
+  const parsed = parseInt(limit || '50', 10);
+  if (isNaN(parsed) || parsed < 1) return 50;
+  if (parsed > 500) return 500;
+  return parsed;
+}
+
 export async function GET(request: NextRequest) {
+  const userId = await getClerkUserId();
+  
   try {
     const searchParams = request.nextUrl.searchParams;
     const action = searchParams.get('action');
@@ -15,12 +30,18 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(ubuntuBackbone.getConfig());
 
       case 'audit':
-        const limit = parseInt(searchParams.get('limit') || '50');
+        const limit = isValidLimit(searchParams.get('limit'));
         return NextResponse.json(ubuntuBackbone.getAuditTrail(limit));
 
       case 'member':
         if (!memberId) {
           return NextResponse.json({ error: 'memberId required' }, { status: 400 });
+        }
+        if (!userId) {
+          return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+        }
+        if (memberId !== userId) {
+          return NextResponse.json({ error: 'Unauthorized: cannot access other member profiles' }, { status: 403 });
         }
         const profile = ubuntuBackbone.getMemberProfile(memberId);
         if (!profile) {
@@ -32,9 +53,18 @@ export async function GET(request: NextRequest) {
         if (!memberId) {
           return NextResponse.json({ error: 'memberId required' }, { status: 400 });
         }
+        if (!userId) {
+          return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+        }
+        if (memberId !== userId) {
+          return NextResponse.json({ error: 'Unauthorized: cannot check eligibility for other members' }, { status: 403 });
+        }
         return NextResponse.json(ubuntuBackbone.checkMemberEligibility(memberId));
 
       case 'all-members':
+        if (!userId) {
+          return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+        }
         return NextResponse.json(ubuntuBackbone.getAllMemberProfiles());
 
       default:
@@ -57,9 +87,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const userId = await getClerkUserId();
+  
+  if (!userId) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
-    const { action, memberId, accessToken, bufferAmount, socialActivity, contributionRate } = body;
+    const { action, memberId, accessToken } = body;
 
     switch (action) {
       case 'sync':
@@ -69,56 +105,53 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
+        if (memberId !== userId) {
+          return NextResponse.json(
+            { error: 'Unauthorized: can only sync your own data' },
+            { status: 403 }
+          );
+        }
         const profile = await ubuntuBackbone.syncMemberData(memberId, accessToken);
         return NextResponse.json(profile);
 
       case 'regulate':
-        const reasoning = ubuntuBackbone.regulate();
-        return NextResponse.json({
-          reasoning,
-          newState: ubuntuBackbone.getState(),
-        });
+        return NextResponse.json(
+          { error: 'Unauthorized: admin only action' },
+          { status: 403 }
+        );
 
       case 'update-buffer':
-        if (typeof bufferAmount !== 'number') {
-          return NextResponse.json(
-            { error: 'bufferAmount required' },
-            { status: 400 }
-          );
-        }
-        ubuntuBackbone.updateSafetyBuffer(bufferAmount);
-        return NextResponse.json({
-          success: true,
-          newState: ubuntuBackbone.getState(),
-        });
+        return NextResponse.json(
+          { error: 'Unauthorized: admin only action' },
+          { status: 403 }
+        );
 
       case 'update-pulse':
-        if (typeof socialActivity !== 'number' || typeof contributionRate !== 'number') {
-          return NextResponse.json(
-            { error: 'socialActivity and contributionRate required' },
-            { status: 400 }
-          );
-        }
-        ubuntuBackbone.updateVillagePulse(socialActivity, contributionRate);
-        return NextResponse.json({
-          success: true,
-          newState: ubuntuBackbone.getState(),
-        });
+        return NextResponse.json(
+          { error: 'Unauthorized: admin only action' },
+          { status: 403 }
+        );
 
       case 'check-eligibility':
         if (!memberId) {
+          return NextResponse.json({ error: 'memberId required' }, { status: 400 });
+        }
+        if (memberId !== userId) {
           return NextResponse.json(
-            { error: 'memberId required' },
-            { status: 400 }
+            { error: 'Unauthorized: cannot check eligibility for other members' },
+            { status: 403 }
           );
         }
         return NextResponse.json(ubuntuBackbone.checkMemberEligibility(memberId));
 
       case 'matchmaker-input':
         if (!memberId) {
+          return NextResponse.json({ error: 'memberId required' }, { status: 400 });
+        }
+        if (memberId !== userId) {
           return NextResponse.json(
-            { error: 'memberId required' },
-            { status: 400 }
+            { error: 'Unauthorized: can only access your own matchmaker data' },
+            { status: 403 }
           );
         }
         const input = ubuntuBackbone.generateMatchmakerInput(memberId);

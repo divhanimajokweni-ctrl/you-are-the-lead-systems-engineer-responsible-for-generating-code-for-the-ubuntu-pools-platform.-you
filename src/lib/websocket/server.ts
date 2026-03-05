@@ -56,12 +56,24 @@ class UbuntuWebSocketServer {
     governanceParticipation: 0,
     collectiveProsperity: 0,
   };
+  private connectedUsers: Map<string, string> = new Map();
+  private readonly MAX_CONNECTED_USERS = 10000;
+
+  private getAllowedOrigins(): string[] {
+    const envOrigins = process.env.ALLOWED_ORIGINS;
+    if (!envOrigins) {
+      console.warn('WARNING: ALLOWED_ORIGINS not set - defaulting to localhost. Set ALLOWED_ORIGINS in production!');
+      return ['http://localhost:3000'];
+    }
+    return envOrigins.split(',').map(o => o.trim());
+  }
 
   initialize(httpServer: HTTPServer): SocketIOServer {
     this.io = new SocketIOServer(httpServer, {
       cors: {
-        origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+        origin: this.getAllowedOrigins(),
         methods: ['GET', 'POST'],
+        credentials: true,
       },
       path: '/api/socket',
     });
@@ -73,12 +85,17 @@ class UbuntuWebSocketServer {
         socket.join('collective');
         socket.emit('collective:init', {
           pulses: this.pulseHistory.slice(-50),
-          metrics: this.metrics,
+          metrics: this.getMetricsSnapshot(),
         });
       });
 
       socket.on('subscribe:trust', (userId: string) => {
+        if (!userId || typeof userId !== 'string' || userId.length > 128) {
+          socket.emit('error', { message: 'Invalid userId' });
+          return;
+        }
         socket.join(`trust:${userId}`);
+        this.connectedUsers.set(socket.id, userId);
       });
 
       socket.on('subscribe:governance', () => {
@@ -87,10 +104,25 @@ class UbuntuWebSocketServer {
 
       socket.on('disconnect', () => {
         console.log(`Client disconnected: ${socket.id}`);
+        this.connectedUsers.delete(socket.id);
       });
     });
 
     return this.io;
+  }
+
+  private getMetricsSnapshot(): CommunityMetrics {
+    const oneHourAgo = Date.now() - 3600000;
+    const recentPulses = this.pulseHistory.filter(p => p.timestamp > oneHourAgo);
+    const uniqueActors = new Set(recentPulses.map(p => p.actorId)).size;
+    
+    return {
+      totalContributions: this.metrics.totalContributions,
+      activeMembers: Math.min(uniqueActors, this.metrics.activeMembers),
+      trustCircles: this.metrics.trustCircles,
+      governanceParticipation: this.metrics.governanceParticipation,
+      collectiveProsperity: this.metrics.collectiveProsperity,
+    };
   }
 
   emitPulse(pulse: Omit<CollectivePulse, 'id'>): CollectivePulse {
@@ -113,10 +145,6 @@ class UbuntuWebSocketServer {
 
   emitContribution(event: ContributionEvent): void {
     this.metrics.totalContributions += event.amount;
-    this.metrics.activeMembers = Math.max(
-      this.metrics.activeMembers,
-      this.pulseHistory.filter(p => p.timestamp > Date.now() - 3600000).length
-    );
 
     const pulse = this.emitPulse({
       type: 'contribution',
@@ -137,7 +165,7 @@ class UbuntuWebSocketServer {
     });
 
     if (this.io) {
-      this.io.to('collective').emit('metrics:update', this.metrics);
+      this.io.to('collective').emit('metrics:update', this.getMetricsSnapshot());
     }
   }
 
@@ -182,12 +210,13 @@ class UbuntuWebSocketServer {
 
     if (this.io) {
       this.io.emit('milestone:achieved', pulse);
-      this.io.to('collective').emit('metrics:update', this.metrics);
+      this.io.to('collective').emit('metrics:update', this.getMetricsSnapshot());
     }
   }
 
   emitGovernanceUpdate(proposalId: string, voteCount: { approve: number; reject: number }): void {
-    this.metrics.governanceParticipation += voteCount.approve + voteCount.reject;
+    const voteDelta = voteCount.approve + voteCount.reject;
+    this.metrics.governanceParticipation += voteDelta;
 
     const pulse = this.emitPulse({
       type: 'governance_vote',
@@ -195,7 +224,7 @@ class UbuntuWebSocketServer {
       actorId: proposalId,
       actorType: 'system',
       payload: voteCount,
-      communityImpact: voteCount.approve + voteCount.reject,
+      communityImpact: voteDelta,
       visualization: {
         color: '#8B5CF6',
         intensity: 'moderate',
@@ -211,12 +240,12 @@ class UbuntuWebSocketServer {
   updateMetrics(metrics: Partial<CommunityMetrics>): void {
     this.metrics = { ...this.metrics, ...metrics };
     if (this.io) {
-      this.io.to('collective').emit('metrics:update', this.metrics);
+      this.io.to('collective').emit('metrics:update', this.getMetricsSnapshot());
     }
   }
 
   getMetrics(): CommunityMetrics {
-    return { ...this.metrics };
+    return this.getMetricsSnapshot();
   }
 
   getPulseHistory(limit = 50): CollectivePulse[] {

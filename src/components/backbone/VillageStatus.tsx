@@ -144,11 +144,11 @@ function ProsperityStatus({ state, compact = false }: { state: BackboneState; co
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
           </svg>
-          Lindiwe's Reasoning:
+          Lindiwe&apos;s Reasoning:
         </h4>
         <p className="text-white text-sm mt-2 leading-relaxed">
-          "The Village Vault is overflowing with abundance. I have lowered the entry barriers by {Math.abs(state.entryThreshold - 650)} points. 
-          This is the season to invite new seekers to the Matchmaker. Collective prosperity awaits!"
+          &quot;The Village Vault is overflowing with abundance. I have lowered the entry barriers by {Math.abs(state.entryThreshold - 650)} points. 
+          This is the season to invite new seekers to the Matchmaker. Collective prosperity awaits!&quot;
         </p>
       </div>
 
@@ -216,12 +216,12 @@ function ShieldStatus({ state, compact = false }: { state: BackboneState; compac
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
           </svg>
-          Lindiwe's Reasoning:
+          Lindiwe&apos;s Reasoning:
         </h4>
         <p className="text-white text-sm mt-2 leading-relaxed">
-          "I have detected external volatility in the collective. I have activated Shield Mode to protect the existing pools. 
+          &quot;I have detected external volatility in the collective. I have activated Shield Mode to protect the existing pools. 
           New pool formation now requires a Village Elder status (Ubuntu Score {'>'} {state.entryThreshold}). 
-          Together we will weather this storm."
+          Together we will weather this storm.&quot;
         </p>
       </div>
 
@@ -287,12 +287,12 @@ function EmergencyStatus({ state, compact = false }: { state: BackboneState; com
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
             <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
           </svg>
-          Lindiwe's Reasoning:
+          Lindiwe&apos;s Reasoning:
         </h4>
         <p className="text-white text-sm mt-2 leading-relaxed">
-          "CRITICAL: The Safety Buffer has fallen below the critical threshold. I have locked all pool formations 
+          &quot;CRITICAL: The Safety Buffer has fallen below the critical threshold. I have locked all pool formations 
           and only Village Elders (Ubuntu Score {'>'} {state.entryThreshold}) may participate. 
-          We must rebuild our collective strength before resuming normal operations."
+          We must rebuild our collective strength before resuming normal operations.&quot;
         </p>
       </div>
 
