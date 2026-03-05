@@ -22,6 +22,7 @@ import { FAQSection } from '@/components/home/FAQSection';
 import { ProsperityTiers } from '@/components/home/ProsperityTiers';
 import { UserProfile } from '@/components/home/UserProfile';
 import { UbuntuCard } from '@/components/village/UbuntuCard';
+import { VillageStatus, VillageStatusCompact } from '@/components/backbone/VillageStatus';
 import type { LedgerEvent } from '@/components/ledger/ImmutableLedger';
 
 type ViewType = 'pulse' | 'tribal' | 'ledger' | 'reputation' | 'vault' | 'dashboard';
@@ -157,6 +158,9 @@ export default function Home() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 up-card up-border-gradient p-6">
           <WelcomeDashboard />
+        </div>
+        <div className="up-card p-6">
+          <VillageStatus />
         </div>
         <div className="up-card p-6">
           <VaultBalance />
