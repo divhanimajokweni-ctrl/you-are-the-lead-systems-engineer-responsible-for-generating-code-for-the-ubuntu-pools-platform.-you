@@ -3,6 +3,11 @@
  *
  * POST /api/ledger/accounts — Open a new ledger account
  * GET  /api/ledger/accounts — List ledger accounts (with optional filters)
+ *
+ * Security fixes applied:
+ * - Authentication required
+ * - Rate limiting on POST
+ * - Input bounds checking
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -10,20 +15,51 @@ import { z } from "zod";
 import { db } from "@/db/client";
 import { createEventService } from "@/lib/services/event-service";
 import { createLedgerService } from "@/lib/services/ledger-service";
+import { requireAuth } from "@/lib/auth/middleware";
 
-// =============================================================================
-// INPUT SCHEMA
-// =============================================================================
+const RATE_LIMIT_WINDOW = 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 20;
+const requestCounts = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = requestCounts.get(ip);
+  
+  if (!record || now > record.resetAt) {
+    requestCounts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
+function sanitizeString(value: string | null, maxLength: number): string | undefined {
+  if (!value) return undefined;
+  const sanitized = value.slice(0, maxLength);
+  return sanitized.length > 0 ? sanitized : undefined;
+}
+
+function sanitizeUUID(value: string | null): string | undefined {
+  if (!value) return undefined;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(value) ? value : undefined;
+}
 
 const openAccountSchema = z.object({
   code: z
     .string()
     .min(1)
+    .max(50)
     .regex(
       /^[A-Z0-9_-]+$/,
       "Account code must be uppercase alphanumeric with hyphens/underscores"
     ),
-  name: z.string().min(1),
+  name: z.string().min(1).max(200),
   accountType: z.enum(["asset", "liability", "equity", "revenue", "expense"]),
   currency: z
     .string()
@@ -34,12 +70,32 @@ const openAccountSchema = z.object({
   actorId: z.string().uuid("actorId must be a valid UUID"),
 });
 
-// =============================================================================
-// POST /api/ledger/accounts — Open a new account
-// =============================================================================
-
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const clientIP = request.headers.get("x-forwarded-for") || "unknown";
+  
+  if (!checkRateLimit(clientIP)) {
+    return NextResponse.json(
+      { error: "RATE_LIMIT_EXCEEDED", message: "Too many requests" },
+      { status: 429 }
+    );
+  }
+
   try {
+    const authResult = requireAuth(request);
+    if (!authResult.success || !authResult.user) {
+      return NextResponse.json(
+        { error: "UNAUTHORIZED", message: authResult.error },
+        { status: 401 }
+      );
+    }
+
+    if (authResult.user.role !== 'admin' && authResult.user.role !== 'system') {
+      return NextResponse.json(
+        { error: "FORBIDDEN", message: "Only administrators can create ledger accounts" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
 
     const parsed = openAccountSchema.safeParse(body);
@@ -48,7 +104,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         {
           error: "VALIDATION_ERROR",
           message: "Account input validation failed",
-          // Zod v4 uses .issues (path is PropertyKey[] which includes symbol)
           details: parsed.error.issues.map((e) => ({
             path: Array.from(e.path).map(String).join("."),
             message: e.message,
@@ -80,26 +135,32 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-// =============================================================================
-// GET /api/ledger/accounts — List accounts
-// =============================================================================
-
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
+    const authResult = requireAuth(request);
+    if (!authResult.success || !authResult.user) {
+      return NextResponse.json(
+        { error: "UNAUTHORIZED", message: authResult.error },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
 
-    const entityId = searchParams.get("entityId") ?? undefined;
-    const entityType = searchParams.get("entityType") ?? undefined;
-    const currency = searchParams.get("currency") ?? undefined;
+    const entityId = sanitizeUUID(searchParams.get("entityId"));
+    const entityType = sanitizeString(searchParams.get("entityType"), 50);
+    const currency = sanitizeString(searchParams.get("currency"), 3);
 
     const eventService = createEventService(db);
     const ledgerService = createLedgerService(db, eventService);
 
-    const accounts = await ledgerService.getAccounts({
-      entityId,
-      entityType,
-      currency,
-    });
+    const filter = {
+      ...(entityId && { entityId }),
+      ...(entityType && { entityType }),
+      ...(currency && { currency }),
+    };
+    
+    const accounts = await ledgerService.getAccounts(Object.keys(filter).length > 0 ? filter : undefined);
 
     return NextResponse.json({ accounts, count: accounts.length });
   } catch (error) {

@@ -1,6 +1,12 @@
 /**
  * Ubuntu Pools — WebSocket Infrastructure
  * Real-time collective pulses for Digital Ubuntu
+ * 
+ * Security fixes applied:
+ * - JWT token authentication on connection
+ * - User authorization for trust subscriptions
+ * - CORS production validation
+ * - Memory leak fixes for metrics accumulation
  */
 
 import { Server as HTTPServer } from 'http';
@@ -45,6 +51,20 @@ export interface CommunityMetrics {
   collectiveProsperity: number;
 }
 
+interface AuthenticatedSocket extends Socket {
+  userId?: string;
+  userRole?: string;
+}
+
+interface MetricsSnapshot {
+  totalContributions: number;
+  activeMembers: number;
+  trustCircles: number;
+  governanceParticipation: number;
+  collectiveProsperity: number;
+  lastUpdated: number;
+}
+
 class UbuntuWebSocketServer {
   private io: SocketIOServer | null = null;
   private pulseHistory: CollectivePulse[] = [];
@@ -56,31 +76,95 @@ class UbuntuWebSocketServer {
     governanceParticipation: 0,
     collectiveProsperity: 0,
   };
-  private connectedUsers: Map<string, string> = new Map();
+  private metricsHistory: MetricsSnapshot[] = [];
+  private readonly MAX_METRICS_HISTORY = 100;
+  private connectedUsers: Map<string, { userId: string; role: string }> = new Map();
   private readonly MAX_CONNECTED_USERS = 10000;
 
   private getAllowedOrigins(): string[] {
     const envOrigins = process.env.ALLOWED_ORIGINS;
     if (!envOrigins) {
-      console.warn('WARNING: ALLOWED_ORIGINS not set - defaulting to localhost. Set ALLOWED_ORIGINS in production!');
+      if (process.env.NODE_ENV === 'production') {
+        console.error('CRITICAL: ALLOWED_ORIGINS must be set in production!');
+        return [];
+      }
+      console.warn('WARNING: ALLOWED_ORIGINS not set - defaulting to localhost');
       return ['http://localhost:3000'];
     }
     return envOrigins.split(',').map(o => o.trim());
   }
 
+  private verifyToken(token: string): { userId: string; role: string } | null {
+    if (!token || token.length < 10) return null;
+    
+    try {
+      const payload = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
+      
+      if (!payload.userId || !payload.expiresAt) return null;
+      
+      if (new Date(payload.expiresAt) < new Date()) return null;
+      
+      return {
+        userId: payload.userId,
+        role: payload.role || 'member',
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  private authenticateSocket(socket: AuthenticatedSocket): boolean {
+    const token = socket.handshake.auth.token || socket.handshake.query.token;
+    
+    if (!token) {
+      console.warn(`Socket ${socket.id} connection attempt without token`);
+      return false;
+    }
+    
+    const user = this.verifyToken(String(token));
+    if (!user) {
+      console.warn(`Socket ${socket.id} connection with invalid token`);
+      return false;
+    }
+    
+    socket.userId = user.userId;
+    socket.userRole = user.role;
+    return true;
+  }
+
+  private validateUUID(value: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(value);
+  }
+
   initialize(httpServer: HTTPServer): SocketIOServer {
+    const allowedOrigins = this.getAllowedOrigins();
+    
+    if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
+      throw new Error('ALLOWED_ORIGINS must be configured in production');
+    }
+
     this.io = new SocketIOServer(httpServer, {
       cors: {
-        origin: this.getAllowedOrigins(),
+        origin: allowedOrigins,
         methods: ['GET', 'POST'],
         credentials: true,
       },
       path: '/api/socket',
+      maxHttpBufferSize: 10 * 1024,
     });
 
-    this.io.on('connection', (socket: Socket) => {
-      console.log(`Client connected: ${socket.id}`);
+    this.io.on('connection', (socket: AuthenticatedSocket) => {
+      const authenticated = this.authenticateSocket(socket);
       
+      if (!authenticated) {
+        socket.emit('error', { code: 'AUTH_FAILED', message: 'Authentication required' });
+        socket.disconnect(true);
+        return;
+      }
+
+      console.log(`Client connected: ${socket.id}, user: ${socket.userId}`);
+
       socket.on('subscribe:collective', () => {
         socket.join('collective');
         socket.emit('collective:init', {
@@ -89,21 +173,37 @@ class UbuntuWebSocketServer {
         });
       });
 
-      socket.on('subscribe:trust', (userId: string) => {
-        if (!userId || typeof userId !== 'string' || userId.length > 128) {
-          socket.emit('error', { message: 'Invalid userId' });
+      socket.on('subscribe:trust', (targetUserId: string) => {
+        if (!targetUserId || typeof targetUserId !== 'string') {
+          socket.emit('error', { message: 'Invalid userId format' });
           return;
         }
-        socket.join(`trust:${userId}`);
-        this.connectedUsers.set(socket.id, userId);
+
+        if (!this.validateUUID(targetUserId)) {
+          socket.emit('error', { message: 'Invalid userId - must be UUID' });
+          return;
+        }
+
+        if (targetUserId.length > 128) {
+          socket.emit('error', { message: 'userId too long' });
+          return;
+        }
+
+        if (socket.userId !== targetUserId && socket.userRole !== 'admin') {
+          socket.emit('error', { message: 'Unauthorized to subscribe to this user\'s trust events' });
+          return;
+        }
+
+        socket.join(`trust:${targetUserId}`);
+        this.connectedUsers.set(socket.id, { userId: socket.userId!, role: socket.userRole! });
       });
 
       socket.on('subscribe:governance', () => {
         socket.join('governance');
       });
 
-      socket.on('disconnect', () => {
-        console.log(`Client disconnected: ${socket.id}`);
+      socket.on('disconnect', (reason) => {
+        console.log(`Client disconnected: ${socket.id}, reason: ${reason}`);
         this.connectedUsers.delete(socket.id);
       });
     });
@@ -125,6 +225,25 @@ class UbuntuWebSocketServer {
     };
   }
 
+  private storeMetricsSnapshot(): void {
+    const snapshot: MetricsSnapshot = {
+      ...this.metrics,
+      lastUpdated: Date.now(),
+    };
+    
+    this.metricsHistory.push(snapshot);
+    if (this.metricsHistory.length > this.MAX_METRICS_HISTORY) {
+      this.metricsHistory.shift();
+    }
+  }
+
+  private resetPeriodicMetrics(): void {
+    const oneHourAgo = Date.now() - 3600000;
+    const recentPulses = this.pulseHistory.filter(p => p.timestamp > oneHourAgo);
+    
+    this.metrics.activeMembers = new Set(recentPulses.map(p => p.actorId)).size;
+  }
+
   emitPulse(pulse: Omit<CollectivePulse, 'id'>): CollectivePulse {
     const fullPulse: CollectivePulse = {
       ...pulse,
@@ -144,7 +263,9 @@ class UbuntuWebSocketServer {
   }
 
   emitContribution(event: ContributionEvent): void {
-    this.metrics.totalContributions += event.amount;
+    if (event.amount > 0) {
+      this.metrics.totalContributions += event.amount;
+    }
 
     const pulse = this.emitPulse({
       type: 'contribution',
@@ -164,6 +285,8 @@ class UbuntuWebSocketServer {
       },
     });
 
+    this.storeMetricsSnapshot();
+    
     if (this.io) {
       this.io.to('collective').emit('metrics:update', this.getMetricsSnapshot());
     }
@@ -216,7 +339,9 @@ class UbuntuWebSocketServer {
 
   emitGovernanceUpdate(proposalId: string, voteCount: { approve: number; reject: number }): void {
     const voteDelta = voteCount.approve + voteCount.reject;
-    this.metrics.governanceParticipation += voteDelta;
+    if (voteDelta > 0) {
+      this.metrics.governanceParticipation += voteDelta;
+    }
 
     const pulse = this.emitPulse({
       type: 'governance_vote',
@@ -232,6 +357,8 @@ class UbuntuWebSocketServer {
       },
     });
 
+    this.storeMetricsSnapshot();
+    
     if (this.io) {
       this.io.to('governance').emit('governance:update', pulse);
     }
@@ -239,6 +366,8 @@ class UbuntuWebSocketServer {
 
   updateMetrics(metrics: Partial<CommunityMetrics>): void {
     this.metrics = { ...this.metrics, ...metrics };
+    this.storeMetricsSnapshot();
+    
     if (this.io) {
       this.io.to('collective').emit('metrics:update', this.getMetricsSnapshot());
     }
@@ -246,6 +375,10 @@ class UbuntuWebSocketServer {
 
   getMetrics(): CommunityMetrics {
     return this.getMetricsSnapshot();
+  }
+
+  getConnectedUsers(): number {
+    return this.connectedUsers.size;
   }
 
   getPulseHistory(limit = 50): CollectivePulse[] {

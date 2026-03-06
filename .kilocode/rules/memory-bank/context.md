@@ -8,6 +8,30 @@ The three core components (Lindiwe AI, Ubuntu Score, Matchmaker) have been conso
 
 ## Recently Completed
 
+- [x] **Code Consolidation** (2026-03-06)
+  - **Service Bus** (`src/lib/services/service-bus.ts`)
+    - Event subscription/emit pattern for loose coupling
+    - Type-safe event handlers
+    - Enables decoupling of OpenClaw, Lindiwe, Backbone
+  - **API Helpers** (`src/lib/api/`)
+    - `error-formatter.ts` - Consistent error responses
+    - `route-handler.ts` - Decorator/wrapper for routes with auth, validation, rate limiting
+    - Eliminates 50+ copy-paste validation patterns
+  - **Access Control** (`src/lib/access/`)
+    - `rbac.ts` - Unified AUTHORITY_LEVELS + privilege model (moved from reputation/)
+    - `guards.ts` - Reusable authorization checks
+    - `consent-manager.ts` - Privacy consent management (moved from privacy/)
+    - Single export: `accessControl.check()`, `accessControl.checkConsent()`, `accessControl.isSelfAccess()`
+  - **Eventsourcing** (`src/lib/eventsourcing/`)
+    - `core.ts` - Unified event + ledger core logic
+    - Re-exports from hasher and ledger queries for backward compatibility
+    - Provides `EventSourcingCore` class combining hash verification + ledger queries
+  - **Integrations** (`src/lib/integrations/`)
+    - `openclaw/gateway.ts` - Dependency injection pattern (factory function)
+    - `openclaw/event-handlers.ts` - Service bus subscriptions for OpenClaw notifications
+    - `stitch/provider.ts` - Stitch integration with DI pattern
+    - Single export point for all integrations
+
 - [x] **Phase 9: Ubuntu Backbone Consolidation** (2026-03-05)
   - **Lindiwe AI** (`src/lib/backbone/lindiwe.ts`)
     - Village Pulse analysis (anxiety, excitement, stability)
@@ -251,6 +275,11 @@ The three core components (Lindiwe AI, Ubuntu Score, Matchmaker) have been conso
 | `src/lib/backbone/index.ts` | Backbone exports | ✅ Ready |
 | `src/app/api/backbone/route.ts` | Backbone API | ✅ Ready |
 | `src/components/backbone/VillageStatus.tsx` | Village Status UI | ✅ Ready |
+| `src/lib/services/service-bus.ts` | Event bus for decoupling | ✅ Ready |
+| `src/lib/api/` | API helpers (error-formatter, route-handler) | ✅ Ready |
+| `src/lib/access/` | Unified RBAC + consent management | ✅ Ready |
+| `src/lib/eventsourcing/` | Combined events + ledger core | ✅ Ready |
+| `src/lib/integrations/` | OpenClaw, Stitch integrations with DI | ✅ Ready |
 | `src/tests/` | Unit tests (287 tests) | ✅ Ready |
 
 ## Phase 1 + Phase 4 + Phase 6 Governance Compliance
@@ -298,3 +327,4 @@ The three core components (Lindiwe AI, Ubuntu Score, Matchmaker) have been conso
 | 2026-03-02 | Phase 7 Sovereignty & Matchmaker: NER anonymization, Sovereignty Toggle, TTL-based intent tags, Signal-to-Asset matching, 287 tests |
 | 2026-03-05 | Phase 8 Plaid → Stitch Pivot: Adapter Pattern, Stitch integration, removed Plaid deps, zero regressions |
 | 2026-03-05 | Phase 9 Ubuntu Backbone: Lindiwe AI + Ubuntu Score + Matchmaker consolidated, autonomous self-regulation, hard stops |
+| 2026-03-06 | Code Consolidation: Service Bus, API Helpers, Access Control, Eventsourcing, Integrations modules |

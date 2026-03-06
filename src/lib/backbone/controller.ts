@@ -394,24 +394,28 @@ export class UbuntuBackbone {
     return date.toISOString().split('T')[0];
   }
 
-  private deriveContributionHistory(transactions: BankTransaction[]): MemberContributionHistory {
+  private deriveContributionHistory(transactions: BankTransaction[], memberId?: string): MemberContributionHistory {
     const periods: { period: number; required: number; paid: number; ontime: boolean; missed: boolean }[] = [];
     
     const sortedTransactions = transactions.sort((a, b) => a.date.localeCompare(b.date));
     const incomeTransactions = sortedTransactions.filter(t => t.amount > 0);
     
     if (incomeTransactions.length === 0) {
-      return { memberId: '', poolId: '', periods: [], windowDays: 90 };
+      return { memberId: memberId || '', poolId: '', periods: [], windowDays: 90 };
     }
 
     const totalIncome = incomeTransactions.reduce((sum, t) => sum + t.amount, 0);
     const monthlyIncome = totalIncome / 3;
     const monthlyContribution = Math.min(monthlyIncome * 0.1, 500);
 
+    const deterministicRandom = this.createSeededRandom(memberId || 'default');
+    const baseRandomValue = deterministicRandom();
+    
     for (let i = 0; i < 6; i++) {
-      const hasContribution = Math.random() > 0.15;
+      const periodSeed = (baseRandomValue * 1000 + i) % 100;
+      const hasContribution = periodSeed > 15;
       const paid = hasContribution ? monthlyContribution : 0;
-      const ontime = hasContribution && Math.random() > 0.1;
+      const ontime = hasContribution && (periodSeed % 10) > 1;
       const missed = !hasContribution;
 
       periods.push({
@@ -424,10 +428,25 @@ export class UbuntuBackbone {
     }
 
     return {
-      memberId: '',
+      memberId: memberId || '',
       poolId: '',
       periods,
       windowDays: 90,
+    };
+  }
+
+  private createSeededRandom(seed?: string): () => number {
+    let hash = 0;
+    const seedStr = seed || Date.now().toString();
+    for (let i = 0; i < seedStr.length; i++) {
+      const char = seedStr.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    
+    return function() {
+      hash = (hash * 1103515245 + 12345) & 0x7fffffff;
+      return hash / 0x7fffffff;
     };
   }
 
