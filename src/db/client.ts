@@ -11,15 +11,20 @@
  *   - No secrets committed to source.
  *   - Connection string read from environment only.
  *   - SSL enforced in production (NODE_ENV=production).
+ *
+ * Connection Pooling:
+ *   - max: Maximum concurrent connections (10 for serverless, adjust for dedicated)
+ *   - idle_timeout: Close idle connections after 20s
+ *   - connect_timeout: Fail fast if connection takes > 10s
  */
 
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
+import * as schemaCredit from "./schema-credit";
 
-// ---------------------------------------------------------------------------
-// Connection string validation (lazy - only when db is actually used)
-// ---------------------------------------------------------------------------
+const isProduction = process.env.NODE_ENV === "production";
+const isVercel = !!process.env.VERCEL;
 
 let sql: postgres.Sql<{}> | undefined;
 
@@ -32,11 +37,22 @@ function getSqlClient() {
           "Set it in .env.local for development or as a secret in production."
       );
     }
+
+    const poolConfig = isVercel
+      ? {
+          max: 20,
+          idle_timeout: 30,
+          connect_timeout: 10,
+        }
+      : {
+          max: 10,
+          idle_timeout: 20,
+          connect_timeout: 10,
+        };
+
     sql = postgres(connectionString, {
-      max: 10,
-      idle_timeout: 20,
-      connect_timeout: 10,
-      ssl: process.env.NODE_ENV === "production" ? "require" : false,
+      ...poolConfig,
+      ssl: isProduction ? "require" : false,
       onnotice: () => {},
     });
   }
@@ -45,14 +61,10 @@ function getSqlClient() {
 
 function getDb() {
   return drizzle(getSqlClient(), {
-    schema,
+    schema: { ...schema, ...schemaCredit },
     logger: process.env.NODE_ENV === "development",
   });
 }
-
-// ---------------------------------------------------------------------------
-// Lazy-loaded database client
-// ---------------------------------------------------------------------------
 
 export const db = new Proxy(
   {} as ReturnType<typeof getDb>,
@@ -71,3 +83,12 @@ export const pgClient = {
 };
 
 export type Database = ReturnType<typeof getDb>;
+
+export function getPoolStats() {
+  const client = getSqlClient();
+  return {
+    totalConnections: client.options.max,
+    idleTimeout: client.options.idle_timeout,
+    connectTimeout: client.options.connect_timeout,
+  };
+}
