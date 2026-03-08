@@ -106,7 +106,7 @@ function decryptDEKWithKEK(encryptedDEK: { ciphertext: string; iv: string; authT
   const authTag = Buffer.from(encryptedDEK.authTag, "hex");
   const ciphertext = Buffer.from(encryptedDEK.ciphertext, "hex");
   
-  const decipher = createDecipheriv(ALGORITHM, kek, iv);
+  const decipher = createDecipheriv(ALGORITHM, kek, iv, { authTagLength: AUTH_TAG_LENGTH });
   decipher.setAuthTag(authTag);
   
   return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
