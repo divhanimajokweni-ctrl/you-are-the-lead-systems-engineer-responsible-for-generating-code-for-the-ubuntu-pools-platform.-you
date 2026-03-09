@@ -13,9 +13,7 @@ const nextConfig: NextConfig = {
   },
 
   // Force dynamic rendering for Clerk compatibility
-  experimental: {
-    ppr: true,
-  },
+  cacheComponents: true,
   
   async headers() {
     return [
