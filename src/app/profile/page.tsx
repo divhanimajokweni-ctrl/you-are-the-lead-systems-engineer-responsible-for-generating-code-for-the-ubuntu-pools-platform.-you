@@ -125,7 +125,7 @@ function Avatar({ user, size = 'md', className = '' }: { user: User; size?: 'sm'
   const initial = user.displayName.charAt(0).toUpperCase();
   
   return (
-    <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black flex-shrink-0 ${className}`}>
+    <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black flex-shrink-0 relative ${className}`}>
       {user.avatarUrl ? (
         <Image src={user.avatarUrl} alt={user.displayName} fill className="rounded-full object-cover" />
       ) : (
@@ -183,7 +183,7 @@ function PostCard({ post, onLike, onBookmark }: { post: Post; onLike: (id: strin
           <p className="mt-3 text-[color:var(--text)] whitespace-pre-wrap">{post.content}</p>
           
           {post.mediaUrl && (
-            <div className="mt-4 rounded-xl overflow-hidden border border-[color:var(--border)]">
+            <div className="mt-4 rounded-xl overflow-hidden border border-[color:var(--border)] relative aspect-video">
               <Image src={post.mediaUrl} alt="Post media" fill className="object-cover" />
             </div>
           )}
@@ -466,7 +466,7 @@ export default function ProfilePage() {
             <p className="up-kicker">Photos & Videos</p>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {posts.filter(p => p.mediaUrl).slice(0, 6).map((post) => (
-                <div key={post.id} className="aspect-square rounded-lg overflow-hidden bg-[color:var(--surface-2)]">
+                <div key={post.id} className="aspect-square rounded-lg overflow-hidden bg-[color:var(--surface-2)] relative">
                   <Image src={post.mediaUrl!} alt="" fill className="object-cover" />
                 </div>
               ))}

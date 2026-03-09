@@ -60,6 +60,12 @@ body {
 @layer components {
   .up-card {
     @apply bg-[var(--surface-2)] border border-[var(--border)] rounded-xl p-4;
+    aspect-ratio: auto;
+    min-width: 0;
+  }
+
+  .up-card img {
+    @apply object-cover w-full h-full;
   }
 
   .up-kicker {

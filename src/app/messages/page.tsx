@@ -97,7 +97,7 @@ function Avatar({ user, size = 'md', showOnline }: { user: User; size?: 'sm' | '
   
   return (
     <div className="relative">
-      <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black`}>
+      <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black relative`}>
         {user.avatarUrl ? (
           <Image src={user.avatarUrl} alt={user.displayName} fill className="rounded-full object-cover" />
         ) : (
@@ -246,7 +246,7 @@ export default function MessagesPage() {
         </div>
         
         <div className="lg:col-span-2">
-          <div className="up-card up-border-gradient h-[600px] flex flex-col">
+          <div className="up-card up-border-gradient min-h-[400px] h-[calc(100vh-16rem)] max-h-[700px] flex flex-col">
             {selectedConversation ? (
               <>
                 <div className="flex items-center gap-4 p-4 border-b border-[color:var(--border)]">

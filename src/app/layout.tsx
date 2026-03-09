@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import {
@@ -8,20 +8,26 @@ import {
   SignedOut,
   UserButton,
 } from '@clerk/nextjs';
-
-const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 import './globals.css';
 
-const geistSans = Geist({ 
-  variable: '--font-geist-sans', 
+const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+const geistSans = Geist({
+  variable: '--font-geist-sans',
   subsets: ['latin'],
   display: 'swap',
 });
-const geistMono = Geist_Mono({ 
-  variable: '--font-geist-mono', 
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
   subsets: ['latin'],
   display: 'swap',
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://ubuntupools.com'),
@@ -78,21 +84,21 @@ export const metadata: Metadata = {
 
 function AuthHeader() {
   return (
-    <header className="flex items-center justify-end gap-4 p-4">
+    <header className="sticky top-0 z-50 flex items-center justify-end gap-4 p-4 bg-[var(--surface)]/80 backdrop-blur-md border-b border-[var(--border)]">
       <SignedOut>
         <SignInButton mode="modal">
-          <button className="px-4 py-2 text-sm font-medium text-white bg-[color:var(--accent-sage)] hover:bg-[color:var(--accent-sage)]/80 rounded-lg transition-colors">
+          <button className="px-4 py-2 text-sm font-medium text-white bg-[color:var(--accent-sage)] hover:bg-[color:var(--accent-sage)]/80 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-sage)]">
             Sign In
           </button>
         </SignInButton>
         <SignUpButton mode="modal">
-          <button className="px-4 py-2 text-sm font-medium text-white bg-[color:var(--accent-gold)] hover:bg-[color:var(--accent-gold)]/80 rounded-lg transition-colors">
+          <button className="px-4 py-2 text-sm font-medium text-white bg-[color:var(--accent-gold)] hover:bg-[color:var(--accent-gold)]/80 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-gold)]">
             Sign Up
           </button>
         </SignUpButton>
       </SignedOut>
       <SignedIn>
-        <UserButton 
+        <UserButton
           afterSignOutUrl="/"
           appearance={{
             elements: {
@@ -107,10 +113,12 @@ function AuthHeader() {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const content = (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+    <html lang="en" suppressHydrationWarning className="h-full scroll-smooth">
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen flex flex-col overflow-x-hidden`}>
         {clerkPubKey && <AuthHeader />}
-        {children}
+        <main className="flex-grow w-full">
+          {children}
+        </main>
       </body>
     </html>
   );

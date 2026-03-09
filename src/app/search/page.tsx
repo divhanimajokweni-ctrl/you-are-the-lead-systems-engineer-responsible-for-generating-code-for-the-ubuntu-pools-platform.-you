@@ -85,7 +85,7 @@ function Avatar({ user, size = 'md' }: { user: User; size?: 'sm' | 'md' | 'lg' }
   const initial = user.displayName.charAt(0).toUpperCase();
   
   return (
-    <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black flex-shrink-0`}>
+    <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black flex-shrink-0 relative`}>
     {user.avatarUrl ? (
       <Image src={user.avatarUrl} alt={user.displayName} fill className="rounded-full object-cover" />
     ) : (
@@ -167,7 +167,9 @@ function PostCard({ post }: { post: Post }) {
           </div>
           <p className="mt-2 text-sm">{post.content}</p>
           {post.mediaUrl && (
-            <Image src={post.mediaUrl} alt="Post media" fill className="mt-3 rounded-lg object-cover" />
+            <div className="mt-3 relative aspect-video rounded-lg overflow-hidden">
+              <Image src={post.mediaUrl} alt="Post media" fill className="object-cover" />
+            </div>
           )}
           <div className="mt-3 flex gap-6 text-xs text-[color:var(--muted)]">
             <span className="flex items-center gap-1">

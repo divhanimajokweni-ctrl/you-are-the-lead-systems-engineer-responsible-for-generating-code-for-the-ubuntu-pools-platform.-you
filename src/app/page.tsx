@@ -127,7 +127,7 @@ function Avatar({ user, size = 'md' }: { user: User; size?: 'sm' | 'md' | 'lg' }
   const initial = user.displayName.charAt(0).toUpperCase();
   
   return (
-    <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black`}>
+    <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black relative flex-shrink-0`}>
       {user.avatarUrl ? (
         <Image src={user.avatarUrl} alt={user.displayName} fill className="rounded-full object-cover" />
       ) : (
@@ -205,7 +205,7 @@ function PostCard({ post, onLike, onComment, onBookmark }: { post: Post; onLike:
           <p className="mt-3 text-[color:var(--text)] whitespace-pre-wrap">{post.content}</p>
           
           {post.mediaUrl && (
-            <div className="mt-4 rounded-xl overflow-hidden border border-[color:var(--border)]">
+            <div className="mt-4 rounded-xl overflow-hidden border border-[color:var(--border)] relative aspect-video">
               {post.mediaType === 'image' ? (
                 <Image src={post.mediaUrl} alt="Post media" fill className="object-cover" />
               ) : (
