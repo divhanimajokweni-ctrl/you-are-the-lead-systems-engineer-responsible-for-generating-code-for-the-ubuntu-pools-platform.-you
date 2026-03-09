@@ -8,6 +8,8 @@ import {
   SignedOut,
   UserButton,
 } from '@clerk/nextjs';
+
+const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 import './globals.css';
 
 const geistSans = Geist({ 
@@ -104,14 +106,18 @@ function AuthHeader() {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-          <AuthHeader />
-          {children}
-        </body>
-      </html>
-    </ClerkProvider>
+  const content = (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+        {clerkPubKey && <AuthHeader />}
+        {children}
+      </body>
+    </html>
   );
+
+  if (!clerkPubKey) {
+    return content;
+  }
+
+  return <ClerkProvider>{content}</ClerkProvider>;
 }
