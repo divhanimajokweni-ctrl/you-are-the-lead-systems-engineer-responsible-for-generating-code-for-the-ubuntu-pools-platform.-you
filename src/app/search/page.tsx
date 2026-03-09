@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { AppShell } from '@/components/shell/AppShell';
 import Link from 'next/link';
 
@@ -85,9 +86,9 @@ function Avatar({ user, size = 'md' }: { user: User; size?: 'sm' | 'md' | 'lg' }
   
   return (
     <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black flex-shrink-0`}>
-      {user.avatarUrl ? (
-        <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full rounded-full object-cover" />
-      ) : (
+    {user.avatarUrl ? (
+      <Image src={user.avatarUrl} alt={user.displayName} fill className="rounded-full object-cover" />
+    ) : (
         <span className={size === 'lg' ? 'text-lg' : size === 'sm' ? 'text-xs' : 'text-sm'}>{initial}</span>
       )}
     </div>
@@ -166,7 +167,7 @@ function PostCard({ post }: { post: Post }) {
           </div>
           <p className="mt-2 text-sm">{post.content}</p>
           {post.mediaUrl && (
-            <img src={post.mediaUrl} alt="Post media" className="mt-3 rounded-lg max-h-48 object-cover" />
+            <Image src={post.mediaUrl} alt="Post media" fill className="mt-3 rounded-lg object-cover" />
           )}
           <div className="mt-3 flex gap-6 text-xs text-[color:var(--muted)]">
             <span className="flex items-center gap-1">

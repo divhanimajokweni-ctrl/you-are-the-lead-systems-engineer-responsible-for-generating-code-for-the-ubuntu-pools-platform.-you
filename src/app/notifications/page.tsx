@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { AppShell } from '@/components/shell/AppShell';
 
 interface User {
@@ -110,7 +111,7 @@ function Avatar({ user, size = 'md' }: { user: User; size?: 'sm' | 'md' | 'lg' }
   return (
     <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black`}>
       {user.avatarUrl ? (
-        <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full rounded-full object-cover" />
+        <Image src={user.avatarUrl} alt={user.displayName} fill className="rounded-full object-cover" />
       ) : (
         <span className={size === 'lg' ? 'text-lg' : size === 'sm' ? 'text-xs' : 'text-sm'}>{initial}</span>
       )}

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { AppShell } from '@/components/shell/AppShell';
 import Link from 'next/link';
 
@@ -126,7 +127,7 @@ function Avatar({ user, size = 'md', className = '' }: { user: User; size?: 'sm'
   return (
     <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black flex-shrink-0 ${className}`}>
       {user.avatarUrl ? (
-        <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full rounded-full object-cover" />
+        <Image src={user.avatarUrl} alt={user.displayName} fill className="rounded-full object-cover" />
       ) : (
         <span className={size === 'xl' ? 'text-3xl' : size === 'lg' ? 'text-xl' : size === 'sm' ? 'text-xs' : 'text-sm'}>{initial}</span>
       )}
@@ -183,7 +184,7 @@ function PostCard({ post, onLike, onBookmark }: { post: Post; onLike: (id: strin
           
           {post.mediaUrl && (
             <div className="mt-4 rounded-xl overflow-hidden border border-[color:var(--border)]">
-              <img src={post.mediaUrl} alt="Post media" className="w-full h-64 object-cover" />
+              <Image src={post.mediaUrl} alt="Post media" fill className="object-cover" />
             </div>
           )}
           
@@ -466,7 +467,7 @@ export default function ProfilePage() {
             <div className="mt-4 grid grid-cols-3 gap-2">
               {posts.filter(p => p.mediaUrl).slice(0, 6).map((post) => (
                 <div key={post.id} className="aspect-square rounded-lg overflow-hidden bg-[color:var(--surface-2)]">
-                  <img src={post.mediaUrl} alt="" className="w-full h-full object-cover" />
+                  <Image src={post.mediaUrl!} alt="" fill className="object-cover" />
                 </div>
               ))}
             </div>

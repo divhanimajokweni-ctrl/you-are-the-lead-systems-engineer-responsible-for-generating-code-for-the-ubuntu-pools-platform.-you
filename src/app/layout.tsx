@@ -10,14 +10,69 @@ import {
 } from '@clerk/nextjs';
 import './globals.css';
 
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
-const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
+const geistSans = Geist({ 
+  variable: '--font-geist-sans', 
+  subsets: ['latin'],
+  display: 'swap',
+});
+const geistMono = Geist_Mono({ 
+  variable: '--font-geist-mono', 
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Ubuntu Pools',
-  description: 'Collective financial coordination rooted in Ubuntu — "I am because we are."',
+  title: {
+    default: 'Ubuntu Pools | Collective Prosperity',
+    template: '%s | Ubuntu Pools',
+  },
+  description: 'Distributed governance and ethical financial pools. Coordinate collective wealth with Ubuntu principles — "I am because we are."',
+  keywords: ['Ubuntu Pools', 'collective finance', 'governance', 'ethical pools', 'decentralized finance', 'community wealth'],
+  authors: [{ name: 'Ubuntu Pools' }],
+  creator: 'Ubuntu Pools',
+  publisher: 'Ubuntu Pools',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://ubuntupools.com',
+    siteName: 'Ubuntu Pools',
+    title: 'Ubuntu Pools | Collective Prosperity',
+    description: 'Distributed governance and ethical financial pools. Coordinate collective wealth with Ubuntu principles.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Ubuntu Pools - Collective Prosperity',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Ubuntu Pools | Collective Prosperity',
+    description: 'Distributed governance and ethical financial pools. Coordinate collective wealth with Ubuntu principles.',
+    images: ['/og-image.png'],
+    creator: '@ubuntupools',
+  },
+  alternates: {
+    canonical: 'https://ubuntupools.com',
+    languages: {
+      en: 'https://ubuntupools.com',
+    },
+  },
 };
 
 function AuthHeader() {

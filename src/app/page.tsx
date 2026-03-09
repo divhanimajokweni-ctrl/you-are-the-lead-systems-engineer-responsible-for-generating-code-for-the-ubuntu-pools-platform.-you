@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { AppShell } from '@/components/shell/AppShell';
 
 interface User {
@@ -128,7 +129,7 @@ function Avatar({ user, size = 'md' }: { user: User; size?: 'sm' | 'md' | 'lg' }
   return (
     <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[color:var(--accent-sage)] to-[color:var(--accent-gold)] flex items-center justify-center text-white font-black`}>
       {user.avatarUrl ? (
-        <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full rounded-full object-cover" />
+        <Image src={user.avatarUrl} alt={user.displayName} fill className="rounded-full object-cover" />
       ) : (
         <span className={size === 'lg' ? 'text-lg' : 'text-sm'}>{initial}</span>
       )}
@@ -206,7 +207,7 @@ function PostCard({ post, onLike, onComment, onBookmark }: { post: Post; onLike:
           {post.mediaUrl && (
             <div className="mt-4 rounded-xl overflow-hidden border border-[color:var(--border)]">
               {post.mediaType === 'image' ? (
-                <img src={post.mediaUrl} alt="Post media" className="w-full h-64 object-cover" />
+                <Image src={post.mediaUrl} alt="Post media" fill className="object-cover" />
               ) : (
                 <video src={post.mediaUrl} className="w-full" controls />
               )}
@@ -332,10 +333,12 @@ function CreatePost() {
           />
           {media && (
             <div className="mt-3 relative inline-block">
-              <img
+              <Image
                 src={URL.createObjectURL(media)}
                 alt="Preview"
-                className="max-h-32 rounded-lg border border-[color:var(--border)]"
+                width={128}
+                height={128}
+                className="rounded-lg border border-[color:var(--border)]"
               />
               <button
                 type="button"
