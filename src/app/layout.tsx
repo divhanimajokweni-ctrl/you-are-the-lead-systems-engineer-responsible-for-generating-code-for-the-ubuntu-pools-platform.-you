@@ -21,9 +21,8 @@ const geistMono = Geist_Mono({
   display: 'swap',
 });
 
-export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = {
+  metadataBase: new URL('https://ubuntupools.com'),
   title: {
     default: 'Ubuntu Pools | Collective Prosperity',
     template: '%s | Ubuntu Pools',

@@ -12,9 +12,6 @@ const nextConfig: NextConfig = {
     APP_VERSION: "1.0.0",
   },
 
-  // Force dynamic rendering for Clerk compatibility
-  cacheComponents: true,
-  
   async headers() {
     return [
       {
