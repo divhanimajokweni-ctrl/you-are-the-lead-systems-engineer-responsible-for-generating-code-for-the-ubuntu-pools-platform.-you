@@ -61,8 +61,30 @@ export interface ShieldConfirmation {
   windowMs: number;
 }
 
+export interface LindiweExplanation {
+  id: string;
+  ts: number;
+  inputs: {
+    bufferRatio: number;
+    anxiety: number;
+    stability: number;
+    excitement: number;
+    poolHealthScore: number;
+    recentOutcomes: 'success' | 'failure' | 'mixed';
+  };
+  decisions: Array<{
+    mode: 'emergency' | 'tighten' | 'expand' | 'maintain';
+    activated: boolean;
+    requiresApproval: boolean;
+    reason: string;
+    thresholds: Record<string, number>;
+  }>;
+  humanApproval?: { approved: boolean; approverId: string; ts: number };
+}
+
 export class LindiweAI {
   private reasoningHistory: LindiweReasoningResult[] = [];
+  private explanationLog: LindiweExplanation[] = [];
   private learningWeights: Map<string, number> = new Map();
   /** Pending shield/emergency escalation awaiting confirmation */
   private pendingShieldConfirmation: ShieldConfirmation | null = null;
@@ -188,6 +210,8 @@ export class LindiweAI {
         insight: 'Lindiwe detected stress signals but is waiting for confirmation before escalating. This prevents false shield triggers.',
       };
 
+      this.recordExplanation(bufferRatio, villagePulse, poolHealthContext, recentOutcomes, holdResult);
+
       this.reasoningHistory.push(holdResult);
       if (this.reasoningHistory.length > 100) {
         this.reasoningHistory.shift();
@@ -206,6 +230,8 @@ export class LindiweAI {
       // Conditions improved — cancel any pending escalation
       this.pendingShieldConfirmation = null;
     }
+
+    this.recordExplanation(bufferRatio, villagePulse, poolHealthContext, recentOutcomes, result);
 
     this.reasoningHistory.push(result);
     if (this.reasoningHistory.length > 100) {
@@ -346,6 +372,57 @@ export class LindiweAI {
     const stdDev = Math.sqrt(variance);
 
     return mean !== 0 ? Math.abs(stdDev / mean) : 0;
+  }
+
+  private recordExplanation(
+    bufferRatio: number,
+    pulse: VillagePulse,
+    poolHealth: PoolHealthContext,
+    recentOutcomes: 'success' | 'failure' | 'mixed',
+    result: LindiweReasoningResult
+  ): void {
+    const explanation: LindiweExplanation = {
+      id: randomUUID(),
+      ts: Date.now(),
+      inputs: {
+        bufferRatio,
+        anxiety: pulse.anxiety,
+        stability: pulse.stability,
+        excitement: pulse.excitement,
+        poolHealthScore: poolHealth.poolHealthScore,
+        recentOutcomes,
+      },
+      decisions: [
+        {
+          mode: result.recommendedAction,
+          activated: result.recommendedAction !== 'maintain',
+          requiresApproval: result.recommendedAction === 'emergency',
+          reason: result.reasoning,
+          thresholds: {
+            emergencyBuffer: 0.1,
+            emergencyAnxiety: 0.7,
+            shieldBuffer: 0.25,
+            shieldAnxiety: 0.5,
+            prosperityBuffer: 1.0,
+            prosperityStability: 0.7,
+            prosperityMaxAnxiety: 0.3,
+          },
+        },
+      ],
+    };
+
+    this.explanationLog.push(explanation);
+    if (this.explanationLog.length > 200) {
+      this.explanationLog.shift();
+    }
+  }
+
+  getExplanationLog(): LindiweExplanation[] {
+    return [...this.explanationLog];
+  }
+
+  getLatestExplanation(): LindiweExplanation | null {
+    return this.explanationLog[this.explanationLog.length - 1] || null;
   }
 
   getPendingShieldConfirmation(): ShieldConfirmation | null {
