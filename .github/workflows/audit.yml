@@ -133,6 +133,23 @@ jobs:
           COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
         continue-on-error: true
 
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: [hash-chain-verification, compliance-gates, cosign-signature]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+
   audit-summary:
     name: Audit Summary
     needs: [hash-chain-verification, compliance-gates, incident-check]

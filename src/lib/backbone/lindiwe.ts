@@ -52,11 +52,25 @@ const REASONING_SCHEMA = z.object({
   recentOutcomes: z.enum(['success', 'failure', 'mixed']).default('mixed'),
 });
 
+export interface ShieldConfirmation {
+  /** The initial analysis that triggered shield consideration */
+  pendingResult: LindiweReasoningResult;
+  /** Timestamp when the confirmation window opened */
+  requestedAt: Date;
+  /** Confirmation window duration in milliseconds (default: 30s) */
+  windowMs: number;
+}
+
 export class LindiweAI {
   private reasoningHistory: LindiweReasoningResult[] = [];
   private learningWeights: Map<string, number> = new Map();
+  /** Pending shield/emergency escalation awaiting confirmation */
+  private pendingShieldConfirmation: ShieldConfirmation | null = null;
+  /** Confirmation window duration in ms — configurable for testing */
+  private confirmationWindowMs: number;
 
-  constructor() {
+  constructor(confirmationWindowMs: number = 30_000) {
+    this.confirmationWindowMs = confirmationWindowMs;
     this.initializeLearningWeights();
   }
 
@@ -153,6 +167,45 @@ export class LindiweAI {
       riskFlags,
       insight,
     };
+
+    // Dual-validation: escalation to tighten/emergency requires confirmation
+    const isEscalation = recommendedAction === 'tighten' || recommendedAction === 'emergency';
+
+    if (isEscalation && this.pendingShieldConfirmation === null) {
+      // First signal — open confirmation window, return maintain instead
+      this.pendingShieldConfirmation = {
+        pendingResult: result,
+        requestedAt: new Date(),
+        windowMs: this.confirmationWindowMs,
+      };
+
+      const holdResult: LindiweReasoningResult = {
+        reasoning: `[CONFIRMATION PENDING] ${reasoning}`,
+        confidence: confidence * 0.5,
+        recommendedAction: 'maintain',
+        thresholdAdjustment: 0,
+        riskFlags: [...riskFlags, 'AWAITING_CONFIRMATION'],
+        insight: 'Lindiwe detected stress signals but is waiting for confirmation before escalating. This prevents false shield triggers.',
+      };
+
+      this.reasoningHistory.push(holdResult);
+      if (this.reasoningHistory.length > 100) {
+        this.reasoningHistory.shift();
+      }
+
+      return holdResult;
+    }
+
+    if (isEscalation && this.pendingShieldConfirmation !== null) {
+      // Second signal confirms — clear pending and allow escalation
+      this.pendingShieldConfirmation = null;
+      result.riskFlags.push('DUAL_VALIDATED');
+    }
+
+    if (!isEscalation) {
+      // Conditions improved — cancel any pending escalation
+      this.pendingShieldConfirmation = null;
+    }
 
     this.reasoningHistory.push(result);
     if (this.reasoningHistory.length > 100) {
@@ -293,6 +346,14 @@ export class LindiweAI {
     const stdDev = Math.sqrt(variance);
 
     return mean !== 0 ? Math.abs(stdDev / mean) : 0;
+  }
+
+  getPendingShieldConfirmation(): ShieldConfirmation | null {
+    return this.pendingShieldConfirmation;
+  }
+
+  clearPendingConfirmation(): void {
+    this.pendingShieldConfirmation = null;
   }
 
   getReasoningHistory(): LindiweReasoningResult[] {

@@ -1,7 +1,11 @@
+import { createHmac } from "crypto";
+
 export interface OpenClawConfig {
   gatewayUrl: string;
   apiKey: string;
   enabled: boolean;
+  /** HMAC signing secret for request integrity. Falls back to apiKey if not set. */
+  signingSecret?: string;
 }
 
 export interface OpenClawNotification {
@@ -22,11 +26,40 @@ export class OpenClawGateway {
   private gatewayUrl: string;
   private apiKey: string;
   private enabled: boolean;
+  private signingSecret: string;
 
   constructor(config: OpenClawConfig) {
     this.gatewayUrl = config.gatewayUrl;
     this.apiKey = config.apiKey;
     this.enabled = config.enabled;
+    this.signingSecret = config.signingSecret || config.apiKey;
+  }
+
+  /**
+   * Compute HMAC-SHA256 signature over the request body for request integrity.
+   * The signature is sent as X-Signature header so the receiving gateway
+   * can verify the request originated from an authorized source.
+   */
+  private signRequest(body: string): { signature: string; timestamp: string } {
+    const timestamp = Date.now().toString();
+    const payload = `${timestamp}.${body}`;
+    const signature = createHmac("sha256", this.signingSecret)
+      .update(payload)
+      .digest("hex");
+    return { signature, timestamp };
+  }
+
+  /**
+   * Build standard headers including HMAC signature for outbound requests.
+   */
+  private buildSignedHeaders(body: string): Record<string, string> {
+    const { signature, timestamp } = this.signRequest(body);
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.apiKey}`,
+      "X-Signature": signature,
+      "X-Timestamp": timestamp,
+    };
   }
 
   static fromEnv(): OpenClawGateway {
@@ -34,6 +67,7 @@ export class OpenClawGateway {
       gatewayUrl: process.env.OPENCLAW_GATEWAY_URL || "http://localhost:18789",
       apiKey: process.env.OPENCLAW_API_KEY || "",
       enabled: process.env.OPENCLAW_ENABLED === "true",
+      signingSecret: process.env.OPENCLAW_SIGNING_SECRET || undefined,
     });
   }
 
@@ -46,20 +80,19 @@ export class OpenClawGateway {
     try {
       const endpoint = `${this.gatewayUrl}/api/skills/ubuntu-monitor/onStateChange`;
 
+      const body = JSON.stringify({
+        mode: notification.mode.toUpperCase(),
+        buffer: notification.buffer.current,
+        reason: notification.reasoning,
+        riskFlags: notification.riskFlags,
+        confidence: notification.confidence,
+        timestamp: notification.timestamp,
+      });
+
       const response = await fetch(endpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          mode: notification.mode.toUpperCase(),
-          buffer: notification.buffer.current,
-          reason: notification.reasoning,
-          riskFlags: notification.riskFlags,
-          confidence: notification.confidence,
-          timestamp: notification.timestamp,
-        }),
+        headers: this.buildSignedHeaders(body),
+        body,
       });
 
       if (!response.ok) {
@@ -87,16 +120,15 @@ export class OpenClawGateway {
     try {
       const endpoint = `${this.gatewayUrl}/api/channels/send`;
 
+      const body = JSON.stringify({
+        message,
+        channel: "whatsapp",
+      });
+
       const response = await fetch(endpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          message,
-          channel: "whatsapp",
-        }),
+        headers: this.buildSignedHeaders(body),
+        body,
       });
 
       return response.ok;
@@ -196,6 +228,7 @@ export function createOpenClawGateway(config?: Partial<OpenClawConfig>): OpenCla
     gatewayUrl: config?.gatewayUrl || process.env.OPENCLAW_GATEWAY_URL || "http://localhost:18789",
     apiKey: config?.apiKey || process.env.OPENCLAW_API_KEY || "",
     enabled: config?.enabled ?? process.env.OPENCLAW_ENABLED === "true",
+    signingSecret: config?.signingSecret || process.env.OPENCLAW_SIGNING_SECRET || undefined,
   };
   return new OpenClawGateway(finalConfig);
 }
