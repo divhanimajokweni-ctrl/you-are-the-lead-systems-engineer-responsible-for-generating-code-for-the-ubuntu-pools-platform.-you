@@ -1,4 +1,5 @@
 import { createHmac } from "crypto";
+import { io, Socket } from "socket.io-client";
 
 export interface OpenClawConfig {
   gatewayUrl: string;
@@ -27,6 +28,8 @@ export class OpenClawGateway {
   private apiKey: string;
   private enabled: boolean;
   private signingSecret: string;
+  private socket: Socket | null = null;
+  private connected = false;
 
   constructor(config: OpenClawConfig) {
     this.gatewayUrl = config.gatewayUrl;
@@ -35,31 +38,46 @@ export class OpenClawGateway {
     this.signingSecret = config.signingSecret || config.apiKey;
   }
 
-  /**
-   * Compute HMAC-SHA256 signature over the request body for request integrity.
-   * The signature is sent as X-Signature header so the receiving gateway
-   * can verify the request originated from an authorized source.
-   */
-  private signRequest(body: string): { signature: string; timestamp: string } {
+  private signPayload(data: Record<string, unknown>): Record<string, unknown> {
     const timestamp = Date.now().toString();
+    const body = JSON.stringify(data);
     const payload = `${timestamp}.${body}`;
     const signature = createHmac("sha256", this.signingSecret)
       .update(payload)
       .digest("hex");
-    return { signature, timestamp };
+    return { ...data, _signature: signature, _timestamp: timestamp };
   }
 
-  /**
-   * Build standard headers including HMAC signature for outbound requests.
-   */
-  private buildSignedHeaders(body: string): Record<string, string> {
-    const { signature, timestamp } = this.signRequest(body);
-    return {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${this.apiKey}`,
-      "X-Signature": signature,
-      "X-Timestamp": timestamp,
-    };
+  private ensureConnected(): boolean {
+    if (!this.enabled) return false;
+    if (this.socket?.connected) return true;
+
+    if (!this.socket) {
+      this.socket = io(this.gatewayUrl, {
+        auth: { apiKey: this.apiKey },
+        transports: ["websocket"],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
+
+      this.socket.on("connect", () => {
+        this.connected = true;
+        console.log("[OpenClaw] WebSocket connected");
+      });
+
+      this.socket.on("disconnect", () => {
+        this.connected = false;
+        console.log("[OpenClaw] WebSocket disconnected");
+      });
+
+      this.socket.on("connect_error", (err) => {
+        this.connected = false;
+        console.error("[OpenClaw] Connection error:", err.message);
+      });
+    }
+
+    return this.socket.connected;
   }
 
   static fromEnv(): OpenClawGateway {
@@ -78,9 +96,12 @@ export class OpenClawGateway {
     }
 
     try {
-      const endpoint = `${this.gatewayUrl}/api/skills/ubuntu-monitor/onStateChange`;
+      if (!this.ensureConnected() || !this.socket) {
+        console.error("[OpenClaw] Not connected, cannot send notification");
+        return false;
+      }
 
-      const body = JSON.stringify({
+      const data = this.signPayload({
         mode: notification.mode.toUpperCase(),
         buffer: notification.buffer.current,
         reason: notification.reasoning,
@@ -89,17 +110,7 @@ export class OpenClawGateway {
         timestamp: notification.timestamp,
       });
 
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: this.buildSignedHeaders(body),
-        body,
-      });
-
-      if (!response.ok) {
-        console.error("[OpenClaw] Failed to send notification:", response.statusText);
-        return false;
-      }
-
+      this.socket.emit("stateChange", data);
       console.log("[OpenClaw] Notification sent successfully:", notification.type);
       return true;
     } catch (error) {
@@ -118,20 +129,17 @@ export class OpenClawGateway {
     }
 
     try {
-      const endpoint = `${this.gatewayUrl}/api/channels/send`;
+      if (!this.ensureConnected() || !this.socket) {
+        return false;
+      }
 
-      const body = JSON.stringify({
+      const data = this.signPayload({
         message,
         channel: "whatsapp",
       });
 
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: this.buildSignedHeaders(body),
-        body,
-      });
-
-      return response.ok;
+      this.socket.emit("message", data);
+      return true;
     } catch (error) {
       console.error(
         "[OpenClaw] Failed to send message:",
@@ -147,22 +155,15 @@ export class OpenClawGateway {
     }
 
     try {
-      const response = await fetch(`${this.gatewayUrl}/api/health`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return { connected: true, lastHeartbeat: data.lastHeartbeat };
+      if (!this.ensureConnected() || !this.socket) {
+        return { connected: false };
       }
+
+      const response = await this.socket.emitWithAck("getHealth");
+      return { connected: true, lastHeartbeat: response?.lastHeartbeat };
     } catch {
       return { connected: false };
     }
-
-    return { connected: false };
   }
 
   async sendHeartbeat(
@@ -214,6 +215,15 @@ export class OpenClawGateway {
 
     const message = `🚨 *PRIORITY ALERT*\n\n${alert}\n\n_Immediate attention required._`;
     return this.sendMessage(message);
+  }
+
+  disconnect(): void {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+      this.connected = false;
+      console.log("[OpenClaw] Disconnected");
+    }
   }
 
   isEnabled(): boolean {
