@@ -3,6 +3,8 @@
  * Pure functions to detect and penalize score manipulation
  */
 
+import { SignatureVerifier } from "@/lib/events/signature-verifier";
+
 export interface TransactionRecord {
   fromId: string;
   toId: string;
@@ -90,4 +92,22 @@ export function detectCircularFlow(transactions: TransactionRecord[]): {
 export function weightAttestation(input: AttestationInput): number {
   const { rating, voterScore } = input;
   return rating * Math.log2(voterScore + 1);
+}
+
+/**
+ * Verify a signed attestation using real Ed25519 verification.
+ */
+export function verifySignedAttestation(
+  attestation: { voterId: string; receiverId: string; rating: number; context?: string },
+  signature: string,
+  publicKey: string
+): { valid: boolean; error?: string } {
+  const verifier = new SignatureVerifier();
+  const result = verifier.verify({
+    data: attestation as Record<string, unknown>,
+    signature,
+    algorithm: "ed25519" as const,
+    publicKey,
+  });
+  return { valid: result.isValid, error: result.error };
 }

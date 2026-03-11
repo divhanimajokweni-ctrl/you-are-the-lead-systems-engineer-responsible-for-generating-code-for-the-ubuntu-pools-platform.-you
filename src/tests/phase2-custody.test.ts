@@ -20,6 +20,8 @@ import {
   SignatureVerifier,
   signatureVerifier,
   verifySignature,
+  generateEd25519Keypair,
+  signData,
   type SignatureInput,
 } from "@/lib/events/signature-verifier";
 import {
@@ -36,8 +38,9 @@ import {
 // TEST FIXTURES
 // =============================================================================
 
-const testPrivateKey = "test-private-key-for-verification";
-const testPublicKey = "dGhyZWUtdGVzdC1wdWJsaWMta2V5";
+const testKeypair = generateEd25519Keypair();
+const testPrivateKey = testKeypair.privateKey;
+const testPublicKey = testKeypair.publicKey;
 
 const validSignatureInput: SignatureInput = {
   data: {

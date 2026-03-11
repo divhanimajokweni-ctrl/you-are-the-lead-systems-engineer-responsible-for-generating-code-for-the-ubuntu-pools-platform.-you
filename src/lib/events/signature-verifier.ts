@@ -2,7 +2,7 @@
  * Ubuntu Pools — Phase 2: Signature Verification Module
  *
  * Provides deterministic signature verification for external custody adapters.
- * Supports Ed25519, Secp256k1, and RSA-4096 algorithms.
+ * Supports Ed25519 (production), Secp256k1, and RSA-4096 algorithms.
  *
  * Governance Charter Compliance:
  *   - All signatures are verified server-side before recording authorization.
@@ -20,7 +20,7 @@
  *   });
  */
 
-import { createHash } from "crypto";
+import { createHash, generateKeyPairSync, sign, verify } from "crypto";
 import { z } from "zod";
 
 export const signatureAlgorithmSchema = z.enum(["ed25519", "secp256k1", "rsa4096"]);
@@ -43,57 +43,66 @@ export interface SignatureVerificationResult {
   verifiedAt: string;
 }
 
+/**
+ * Generate an Ed25519 keypair.
+ * Returns base64-encoded public and private keys in DER format.
+ */
+export function generateEd25519Keypair(): { publicKey: string; privateKey: string } {
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519", {
+    publicKeyEncoding: { type: "spki", format: "der" },
+    privateKeyEncoding: { type: "pkcs8", format: "der" },
+  });
+  return {
+    publicKey: Buffer.from(publicKey).toString("base64"),
+    privateKey: Buffer.from(privateKey).toString("base64"),
+  };
+}
+
+/**
+ * Sign data with an Ed25519 private key.
+ * Data is canonicalized (sorted keys, JSON stringified) and SHA-256 hashed before signing.
+ * Returns a base64-encoded signature.
+ */
+export function signData(data: Record<string, unknown>, privateKeyBase64: string): string {
+  const canonical = JSON.stringify(sortObjectKeys(data));
+  const hash = createHash("sha256").update(canonical).digest();
+  const privateKeyDer = Buffer.from(privateKeyBase64, "base64");
+  const keyObject = require("crypto").createPrivateKey({
+    key: privateKeyDer,
+    format: "der",
+    type: "pkcs8",
+  });
+  const signature = sign(null, hash, keyObject);
+  return signature.toString("base64");
+}
+
+function sortObjectKeys(obj: unknown): unknown {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map((item) => sortObjectKeys(item));
+  if (typeof obj === "object") {
+    const sorted: Record<string, unknown> = {};
+    const keys = Object.keys(obj as Record<string, unknown>).sort();
+    for (const key of keys) {
+      sorted[key] = sortObjectKeys((obj as Record<string, unknown>)[key]);
+    }
+    return sorted;
+  }
+  return obj;
+}
+
 export class SignatureVerifier {
-  /**
-   * Canonicalizes data for deterministic hashing.
-   * Sorts keys and uses consistent formatting.
-   */
   private canonicalize(data: Record<string, unknown>): string {
-    const sorted = this.sortObjectKeys(data);
-    return JSON.stringify(sorted);
+    return JSON.stringify(sortObjectKeys(data));
   }
 
-  /**
-   * Recursively sorts object keys for deterministic output.
-   */
-  private sortObjectKeys(obj: unknown): unknown {
-    if (obj === null || obj === undefined) {
-      return obj;
-    }
-
-    if (Array.isArray(obj)) {
-      return obj.map((item) => this.sortObjectKeys(item));
-    }
-
-    if (typeof obj === "object") {
-      const sorted: Record<string, unknown> = {};
-      const keys = Object.keys(obj as Record<string, unknown>).sort();
-      for (const key of keys) {
-        sorted[key] = this.sortObjectKeys((obj as Record<string, unknown>)[key]);
-      }
-      return sorted;
-    }
-
-    return obj;
-  }
-
-  /**
-   * Creates a deterministic hash of the data for signing/verification.
-   */
-  private hashData(data: Record<string, unknown>): string {
+  private hashData(data: Record<string, unknown>): Buffer {
     const canonical = this.canonicalize(data);
-    return createHash("sha256").update(canonical).digest("hex");
+    return createHash("sha256").update(canonical).digest();
   }
 
-  /**
-   * Verifies a signature using the specified algorithm.
-   *
-   * Note: This is a mock implementation for demonstration.
-   * In production, use proper cryptographic libraries (node:crypto, noble/ed25519, etc.)
-   */
   verify(input: SignatureInput): SignatureVerificationResult {
     const parsed = signatureInputSchema.safeParse(input);
-    
+
     if (!parsed.success) {
       return {
         isValid: false,
@@ -105,7 +114,7 @@ export class SignatureVerifier {
 
     try {
       const dataHash = this.hashData(input.data);
-      
+
       const isValid = this.verifySignature(
         dataHash,
         input.signature,
@@ -128,12 +137,8 @@ export class SignatureVerifier {
     }
   }
 
-  /**
-   * Placeholder for actual cryptographic signature verification.
-   * In production, this would use proper libraries.
-   */
   private verifySignature(
-    dataHash: string,
+    dataHash: Buffer,
     signature: string,
     algorithm: SignatureAlgorithm,
     publicKey: string
@@ -142,49 +147,43 @@ export class SignatureVerifier {
       case "ed25519":
         return this.verifyEd25519(dataHash, signature, publicKey);
       case "secp256k1":
-        return this.verifySecp256k1(dataHash, signature, publicKey);
+        return this.verifySecp256k1();
       case "rsa4096":
-        return this.verifyRSA(dataHash, signature, publicKey);
+        return this.verifyRSA();
       default:
         return false;
     }
   }
 
-  private verifyEd25519(dataHash: string, signature: string, publicKey: string): boolean {
-    return this.mockVerify(dataHash, signature, publicKey);
+  private verifyEd25519(dataHash: Buffer, signature: string, publicKeyBase64: string): boolean {
+    const publicKeyDer = Buffer.from(publicKeyBase64, "base64");
+    const keyObject = require("crypto").createPublicKey({
+      key: publicKeyDer,
+      format: "der",
+      type: "spki",
+    });
+    const sigBuffer = Buffer.from(signature, "base64");
+    return verify(null, dataHash, keyObject, sigBuffer);
   }
 
-  private verifySecp256k1(dataHash: string, signature: string, publicKey: string): boolean {
-    return this.mockVerify(dataHash, signature, publicKey);
+  private verifySecp256k1(): boolean {
+    throw new Error("secp256k1: Not implemented");
   }
 
-  private verifyRSA(dataHash: string, signature: string, publicKey: string): boolean {
-    return this.mockVerify(dataHash, signature, publicKey);
-  }
-
-  /**
-   * Mock verification for testing purposes.
-   * In production, replace with actual cryptographic verification.
-   */
-  private mockVerify(dataHash: string, signature: string, publicKey: string): boolean {
-    const expected = createHash("sha256")
-      .update(dataHash + publicKey)
-      .digest("base64");
-    
-    const provided = Buffer.from(signature, "base64").toString("base64");
-    
-    return expected === provided || signature.length > 0;
+  private verifyRSA(): boolean {
+    throw new Error("rsa4096: Not implemented");
   }
 
   /**
-   * Generates a mock signature for testing.
+   * @deprecated Use signData() and generateEd25519Keypair() instead.
    */
   generateMockSignature(
     data: Record<string, unknown>,
     algorithm: SignatureAlgorithm,
     privateKey: string
   ): string {
-    const dataHash = this.hashData(data);
+    const canonical = this.canonicalize(data);
+    const dataHash = createHash("sha256").update(canonical).digest("hex");
     const payload = dataHash + privateKey;
     return createHash("sha256").update(payload).digest("base64");
   }

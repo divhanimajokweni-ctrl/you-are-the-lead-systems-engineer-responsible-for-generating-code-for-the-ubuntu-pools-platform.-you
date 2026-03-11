@@ -5,6 +5,7 @@
 
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
+import { SignatureVerifier } from '@/lib/events/signature-verifier';
 import {
   type CreditPoolConfig,
   type MemberCreditProfile,
@@ -39,6 +40,8 @@ export const CreditRequestSchema = z.object({
   amount: z.number().int().positive(),
   termDays: z.number().int().positive(),
   purpose: z.string().optional(),
+  signature: z.string().optional(),
+  signerPublicKey: z.string().optional(),
 });
 
 export const CreditEligibilitySchema = z.object({
@@ -479,6 +482,21 @@ export class CreditService {
     const config = this.poolConfigs.get(request.poolId);
     if (!config) {
       return { approved: false, reason: 'Pool not found' };
+    }
+
+    // If signature provided, verify it against canonical request payload
+    if (request.signature && request.signerPublicKey) {
+      const verifier = new SignatureVerifier();
+      const { poolId, memberId, amount, termDays, purpose } = request;
+      const result = verifier.verify({
+        data: { poolId, memberId, amount, termDays, purpose: purpose || null } as Record<string, unknown>,
+        signature: request.signature,
+        algorithm: 'ed25519' as const,
+        publicKey: request.signerPublicKey,
+      });
+      if (!result.isValid) {
+        return { approved: false, reason: `Invalid signature: ${result.error || 'verification failed'}` };
+      }
     }
 
     const eligibility: z.infer<typeof CreditEligibilitySchema> = {

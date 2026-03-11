@@ -236,6 +236,8 @@ export const reputationAttestations = pgTable(
     receiverId: uuid("receiver_id").notNull(),
     rating: integer("rating").notNull(), // 1-5
     context: text("context"),
+    signature: text("signature"),
+    signerPublicKey: text("signer_public_key"),
     expiresAt: timestamptz("expires_at"),
     createdAt: timestamptz("created_at").notNull().defaultNow(),
   },
