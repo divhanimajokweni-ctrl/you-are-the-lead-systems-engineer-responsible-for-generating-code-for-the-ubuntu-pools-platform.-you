@@ -22,6 +22,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 import * as schemaCredit from "./schema-credit";
+import * as schemaVillage from "./schema-village";
 
 const isProduction = process.env.NODE_ENV === "production";
 const isVercel = !!process.env.VERCEL;
@@ -61,7 +62,7 @@ function getSqlClient() {
 
 function getDb() {
   return drizzle(getSqlClient(), {
-    schema: { ...schema, ...schemaCredit },
+    schema: { ...schema, ...schemaCredit, ...schemaVillage },
     logger: process.env.NODE_ENV === "development",
   });
 }

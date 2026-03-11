@@ -1,12 +1,53 @@
-# Active Context: Ubuntu Pools — Phase 10 Complete
+# Active Context: Ubuntu Pools — Phase 11 Complete
 
 ## Current State
 
-**Phase 10 Status**: ✅ Complete — Social Networking Platform Integration
+**Phase 11 Status**: ✅ Complete — Village OS (Programmable Economic Units)
 
-The social networking features from the Ubuntu CX Pools README have been integrated into the navigation and village page structure.
+The Village OS has been implemented, allowing communities to coordinate capital, labor, and trust through programmable economic units.
 
 ## Recently Completed
+
+- [x] **Village OS Implementation** (2026-03-11)
+  - **Village Schema** (`src/db/schema-village.ts`)
+    - `villages` - Economic organizations with score, liquidity, settings
+    - `village_members` - Members with roles (admin, treasurer, member), Ubuntu Score, reputation
+    - `liquidity_pools` - ROSCA rotating savings pools with payout order
+    - `pool_contributions` - Member contributions per cycle
+    - `procurement_events` - Bulk purchasing events with negotiated savings
+    - `procurement_participants` - Procurement event participants
+    - `investments` - Village investments in local businesses
+    - `investment_backers` - Investment backers with expected returns
+    - `insurance_pools` - Community mutual insurance systems
+    - `insurance_members` - Insurance pool members
+    - `insurance_claims` - Insurance claims with approval workflow
+    - `village_proposals` - Governance proposals with weighted voting
+    - `village_votes` - Votes weighted by sqrt(Ubuntu Score)
+    - `village_messages` - Encrypted village messaging channels
+    - `village_relations` - Economic graph between villages
+  - **Migration SQL** (`src/db/migrations/0002_village_os.sql`)
+    - All enum types and tables with proper constraints
+    - `calculate_village_score()` function - 0.4*AvgUserScore + 0.3*TxVolume + 0.2*PoolStability + 0.1*Governance
+    - `calculate_governance_weight()` function - sqrt(Ubuntu Score) to prevent dominance
+    - Views: `v_village_details`, `v_pool_member_contributions`
+  - **Village Service** (`src/lib/services/village-service.ts`)
+    - Create/list villages, join/leave
+    - Create pools (savings, procurement, investment, insurance)
+    - ROSCA cycle processing
+    - Procurement event management
+    - Investment backing
+    - Insurance claims workflow
+    - Proposal creation and voting
+    - Village messaging
+    - Village linking (economic graph)
+    - Score calculation and updates
+  - **API Routes** (`src/app/api/villages/`)
+    - `POST/GET /api/villages` - Create and list villages
+    - `GET /api/villages/[id]` - Get village details
+    - `POST /api/villages/[id]/join` - Join a village
+    - `GET/POST /api/villages/[id]/pools` - Pool management
+    - `GET/POST /api/villages/[id]/proposals` - Governance proposals
+    - `GET/POST /api/villages/[id]/messages` - Village messaging
 
 - [x] **Social Networking Integration** (2026-03-08)
   - **Navigation Update** (`src/components/shell/AppShell.tsx`)
@@ -365,6 +406,15 @@ The social networking features from the Ubuntu CX Pools README have been integra
 | `src/app/search/page.tsx` | Search users and posts | ✅ Ready |
 | `src/app/profile/page.tsx` | User profile with followers/following | ✅ Ready |
 | `src/app/village/page.tsx` | Reconfigured village with social features | ✅ Ready |
+| `src/db/schema-village.ts` | Village OS schema | ✅ Ready |
+| `src/db/migrations/0002_village_os.sql` | Village migration | ✅ Ready |
+| `src/lib/services/village-service.ts` | Village business logic | ✅ Ready |
+| `src/app/api/villages/route.ts` | Villages API | ✅ Ready |
+| `src/app/api/villages/[id]/route.ts` | Single village API | ✅ Ready |
+| `src/app/api/villages/[id]/join/route.ts` | Join village API | ✅ Ready |
+| `src/app/api/villages/[id]/pools/route.ts` | Village pools API | ✅ Ready |
+| `src/app/api/villages/[id]/proposals/route.ts` | Village proposals API | ✅ Ready |
+| `src/app/api/villages/[id]/messages/route.ts` | Village messages API | ✅ Ready |
 
 ## Phase 1 + Phase 4 + Phase 6 Governance Compliance
 
@@ -414,3 +464,4 @@ The social networking features from the Ubuntu CX Pools README have been integra
 | 2026-03-06 | Code Consolidation: Service Bus, API Helpers, Access Control, Eventsourcing, Integrations modules |
 | 2026-03-07 | Observability Infrastructure: Sentry error tracking, structured logging, Web Vitals monitoring, feature flags, Redis cache engine, enhanced health checks with DB connection test, connection pooling config |
 | 2026-03-08 | Phase 10 Social Networking: Feed, Messages, Notifications, Search, Profile pages integrated with navigation, Village page reconfigured with social features |
+| 2026-03-11 | Phase 11 Village OS: Programmable economic units with members, liquidity pools (ROSCA), bulk procurement, investments, insurance pools, governance with sqrt-weighted voting, encrypted messaging, economic graph linking |
