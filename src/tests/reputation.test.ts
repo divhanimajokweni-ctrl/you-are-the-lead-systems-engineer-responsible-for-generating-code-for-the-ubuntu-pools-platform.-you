@@ -112,4 +112,38 @@ describe('Reputation Engine', () => {
       expect(AUTHORITY_LEVELS.archivist.maxScore).toBe(100);
     });
   });
+
+  describe('Attestation Expiry', () => {
+    it('should exclude expired events from trust score', () => {
+      const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const futureDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+      const eventsWithExpiry: TrustEvent[] = [
+        { type: 'help_given', userId: 'user-1', amount: 100, timestamp: '2026-02-27T10:00:00Z', expiresAt: pastDate },
+        { type: 'help_given', userId: 'user-1', amount: 100, timestamp: '2026-02-27T10:00:00Z', expiresAt: futureDate },
+      ];
+
+      const scoreWithExpired = calculateTrustScore('user-1', eventsWithExpiry);
+
+      const eventsAllActive: TrustEvent[] = [
+        { type: 'help_given', userId: 'user-1', amount: 100, timestamp: '2026-02-27T10:00:00Z' },
+        { type: 'help_given', userId: 'user-1', amount: 100, timestamp: '2026-02-27T10:00:00Z' },
+      ];
+
+      const scoreAllActive = calculateTrustScore('user-1', eventsAllActive);
+
+      // With one expired event, the help_given amount should be lower
+      expect(scoreWithExpired.components.reciprocityIndex).toBeLessThanOrEqual(
+        scoreAllActive.components.reciprocityIndex
+      );
+    });
+
+    it('should include events without expiresAt', () => {
+      const events: TrustEvent[] = [
+        { type: 'help_given', userId: 'user-1', amount: 100, timestamp: '2026-02-27T10:00:00Z' },
+      ];
+      const score = calculateTrustScore('user-1', events);
+      expect(score.components.reciprocityIndex).toBeGreaterThan(0);
+    });
+  });
 });

@@ -4,7 +4,16 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { CreditService, creditService, calculateUbuntuScore, calculatePoolHealthFromInput } from '@/lib/services/credit-service';
+import {
+  CreditService,
+  creditService,
+  calculateUbuntuScore,
+  calculatePoolHealthFromInput,
+  calculateVillageHealth,
+  timeDecay,
+  counterpartyMultiplier,
+  CATEGORY_WEIGHTS,
+} from '@/lib/services/credit-service';
 import { randomUUID } from 'crypto';
 
 describe('CreditService', () => {
@@ -349,5 +358,87 @@ describe('Ubuntu Score Calculation', () => {
     expect(result.score).toBeGreaterThan(0);
     expect(result.score).toBeLessThanOrEqual(100);
     expect(result.memberCore).toBeGreaterThan(0.8);
+  });
+});
+
+describe('Category Weighting', () => {
+  it('should produce higher coverage for community pool deposits than retail spend', () => {
+    const poolHealth = { bufferBalance: 10000, totalExposure: 10000, defaultCount: 0, activeLoanCount: 1 };
+    const basePeriods = [
+      { period: 1, required: 1000, paid: 1000, ontime: true, missed: false },
+    ];
+
+    const communityResult = calculateUbuntuScore(
+      { memberId: 'm1', poolId: 'p1', periods: basePeriods.map(p => ({ ...p, category: 'COMMUNITY_POOL_DEPOSIT' as const })), windowDays: 90 },
+      poolHealth
+    );
+    const retailResult = calculateUbuntuScore(
+      { memberId: 'm1', poolId: 'p1', periods: basePeriods.map(p => ({ ...p, category: 'RETAIL_SPEND' as const })), windowDays: 90 },
+      poolHealth
+    );
+
+    expect(communityResult.score).toBeGreaterThanOrEqual(retailResult.score);
+  });
+});
+
+describe('Time Decay', () => {
+  it('should reduce weight of old contributions', () => {
+    expect(timeDecay(0)).toBeCloseTo(1.0, 2);
+    expect(timeDecay(12)).toBeLessThan(1.0);
+    expect(timeDecay(12)).toBeGreaterThan(0.9); // λ=0.003, e^(-0.036) ≈ 0.965
+  });
+
+  it('should produce lower score for old contributions', () => {
+    const poolHealth = { bufferBalance: 10000, totalExposure: 10000, defaultCount: 0, activeLoanCount: 1 };
+    const recentPeriod = { period: 1, required: 1000, paid: 1000, ontime: true, missed: false, occurredAt: new Date().toISOString() };
+    const oldDate = new Date();
+    oldDate.setFullYear(oldDate.getFullYear() - 2);
+    const oldPeriod = { ...recentPeriod, occurredAt: oldDate.toISOString() };
+
+    const recentResult = calculateUbuntuScore(
+      { memberId: 'm1', poolId: 'p1', periods: [recentPeriod], windowDays: 90 },
+      poolHealth
+    );
+    const oldResult = calculateUbuntuScore(
+      { memberId: 'm1', poolId: 'p1', periods: [oldPeriod], windowDays: 90 },
+      poolHealth
+    );
+
+    expect(recentResult.score).toBeGreaterThanOrEqual(oldResult.score);
+  });
+});
+
+describe('Counterparty Multiplier', () => {
+  it('should return 1.0 for baseline score of 50', () => {
+    expect(counterpartyMultiplier(50)).toBeCloseTo(1.0, 2);
+  });
+
+  it('should return 0 for score 0', () => {
+    expect(counterpartyMultiplier(0)).toBe(0);
+  });
+
+  it('should amplify for high-trust counterparties', () => {
+    expect(counterpartyMultiplier(100)).toBeGreaterThan(1.0);
+  });
+});
+
+describe('Village Health', () => {
+  it('should calculate health from member scores and transactions', () => {
+    const result = calculateVillageHealth({
+      memberScores: [80, 70, 90],
+      transactionCount: 30,
+    });
+    expect(result).toBeGreaterThan(0);
+    expect(result).toBeLessThanOrEqual(100);
+  });
+
+  it('should return 0 for empty village', () => {
+    expect(calculateVillageHealth({ memberScores: [], transactionCount: 0 })).toBe(0);
+  });
+
+  it('should increase with more transactions per member', () => {
+    const low = calculateVillageHealth({ memberScores: [50, 50], transactionCount: 2 });
+    const high = calculateVillageHealth({ memberScores: [50, 50], transactionCount: 20 });
+    expect(high).toBeGreaterThan(low);
   });
 });

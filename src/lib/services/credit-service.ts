@@ -81,12 +81,41 @@ export interface LoanApprovalResult {
   reason?: string;
 }
 
+export type TransactionCategory =
+  | 'COMMUNITY_POOL_DEPOSIT'
+  | 'SME_BULK_BUY'
+  | 'PEER_TRANSFER'
+  | 'SAVINGS_POOL'
+  | 'RETAIL_SPEND';
+
+export const CATEGORY_WEIGHTS: Record<TransactionCategory, number> = {
+  COMMUNITY_POOL_DEPOSIT: 2.5,
+  SME_BULK_BUY: 2.0,
+  PEER_TRANSFER: 1.5,
+  SAVINGS_POOL: 1.5,
+  RETAIL_SPEND: 1.0,
+};
+
+const TIME_DECAY_LAMBDA = 0.003;
+
+export function timeDecay(ageMonths: number): number {
+  return Math.exp(-TIME_DECAY_LAMBDA * ageMonths);
+}
+
+export function counterpartyMultiplier(counterpartyScore: number): number {
+  if (counterpartyScore <= 0) return 0;
+  return Math.sqrt(counterpartyScore / 50);
+}
+
 export interface ContributionPeriod {
   period: number;
   required: number;
   paid: number;
   ontime: boolean;
   missed: boolean;
+  category?: TransactionCategory;
+  occurredAt?: string;
+  counterpartyScore?: number;
 }
 
 export interface MemberContributionHistory {
@@ -199,9 +228,25 @@ export function calculateUbuntuScore(
     };
   }
 
+  const now = new Date();
+
   const sumRequired = periods.reduce((sum, p) => sum + p.required, 0);
-  const sumPaid = periods.reduce((sum, p) => sum + p.paid, 0);
-  const coverage = clamp(sumPaid / (sumRequired + eps), 0, 1);
+  const sumPaid = periods.reduce((sum, p) => {
+    const categoryWeight = p.category ? CATEGORY_WEIGHTS[p.category] : 1.0;
+    const ageMonths = p.occurredAt
+      ? (now.getTime() - new Date(p.occurredAt).getTime()) / (30.44 * 24 * 60 * 60 * 1000)
+      : 0;
+    const decay = timeDecay(Math.max(0, ageMonths));
+    const cpMultiplier = p.counterpartyScore !== undefined
+      ? counterpartyMultiplier(p.counterpartyScore)
+      : 1.0;
+    return sum + p.paid * categoryWeight * decay * cpMultiplier;
+  }, 0);
+  const sumRequiredWeighted = periods.reduce((sum, p) => {
+    const categoryWeight = p.category ? CATEGORY_WEIGHTS[p.category] : 1.0;
+    return sum + p.required * categoryWeight;
+  }, 0);
+  const coverage = clamp(sumPaid / (sumRequiredWeighted + eps), 0, 1);
 
   const ontimeCount = periods.filter(p => p.ontime).length;
   const timeliness = ontimeCount / (W + eps);
@@ -245,6 +290,26 @@ export function calculateUbuntuScore(
         : undefined,
     },
   };
+}
+
+export interface VillageHealthInput {
+  memberScores: number[];
+  transactionCount: number;
+}
+
+export function calculateVillageHealth(input: VillageHealthInput): number {
+  const { memberScores, transactionCount } = input;
+  const memberCount = memberScores.length;
+  if (memberCount === 0) return 0;
+
+  const avgScore = memberScores.reduce((a, b) => a + b, 0) / memberCount;
+  const txPerMember = transactionCount / memberCount;
+
+  // Normalize: txPerMember of 10+ gives full credit
+  const txFactor = clamp(txPerMember / 10, 0, 1);
+  const health = txFactor * avgScore;
+
+  return Math.round(clamp(health, 0, 100));
 }
 
 export class CreditService {

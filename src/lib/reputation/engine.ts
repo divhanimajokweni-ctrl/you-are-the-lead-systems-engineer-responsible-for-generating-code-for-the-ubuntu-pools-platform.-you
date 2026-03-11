@@ -38,6 +38,7 @@ export interface TrustEvent {
   targetUserId?: string;
   amount: number;
   timestamp: string;
+  expiresAt?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -73,7 +74,9 @@ export class ReputationEngine {
   private eventHistory: TrustEvent[] = [];
 
   calculateTrustScore(userId: string, allEvents: TrustEvent[]): TrustScore {
-    const userEvents = allEvents.filter(e => e.userId === userId || e.targetUserId === userId);
+    const now = new Date().toISOString();
+    const activeEvents = allEvents.filter(e => !e.expiresAt || e.expiresAt > now);
+    const userEvents = activeEvents.filter(e => e.userId === userId || e.targetUserId === userId);
     
     const reciprocityIndex = this.calculateReciprocity(userEvents, userId);
     const consistencyScore = this.calculateConsistency(userEvents);

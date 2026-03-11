@@ -104,6 +104,10 @@ export const memberCreditProfile = pgTable(
     activeLoansCount: integer("active_loans_count").notNull().default(0),
     onTimeRepaymentRate: integer("on_time_repayment_rate").notNull().default(100),
     
+    // Score evolution tracking
+    lastScoreDecayApplied: timestamptz("last_score_decay_applied"),
+    categoryBreakdown: jsonb("category_breakdown").$type<Record<string, number>>().default({}),
+
     // Status
     creditEligible: boolean("credit_eligible").notNull().default(false),
     lastCreditCheck: timestamptz("last_credit_check"),
@@ -223,6 +227,26 @@ export const poolHealthHistory = pgTable(
     recordedAtIdx: index("idx_pool_health_history_recorded").on(table.poolId, table.recordedAt),
   })
 );
+
+export const reputationAttestations = pgTable(
+  "reputation_attestations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    voterId: uuid("voter_id").notNull(),
+    receiverId: uuid("receiver_id").notNull(),
+    rating: integer("rating").notNull(), // 1-5
+    context: text("context"),
+    expiresAt: timestamptz("expires_at"),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    voterIdx: index("idx_reputation_attestations_voter").on(table.voterId),
+    receiverIdx: index("idx_reputation_attestations_receiver").on(table.receiverId),
+  })
+);
+
+export type ReputationAttestation = typeof reputationAttestations.$inferSelect;
+export type NewReputationAttestation = typeof reputationAttestations.$inferInsert;
 
 export type CreditPoolConfig = typeof creditPoolConfig.$inferSelect;
 export type NewCreditPoolConfig = typeof creditPoolConfig.$inferInsert;

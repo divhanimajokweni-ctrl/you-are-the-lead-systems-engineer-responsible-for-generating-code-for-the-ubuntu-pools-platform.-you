@@ -57,6 +57,7 @@ export interface MatchmakerInput {
   ubuntuScore: number;
   contributionBase: number;
   poolHealth: number;
+  villageHealth?: number;
 }
 
 const POOL_TEMPLATES: Record<string, Omit<PoolRecommendation, 'matchScore' | 'matchReasons'>> = {
@@ -182,14 +183,15 @@ const POOL_TEMPLATES: Record<string, Omit<PoolRecommendation, 'matchScore' | 'ma
   },
 };
 
-function calculateSocialAccordSynergy(profile: SanitizedProfile, poolHealth: number): number {
+function calculateSocialAccordSynergy(profile: SanitizedProfile, poolHealth: number, villageHealth?: number): number {
   if (profile.intentTags.length === 0) return 0;
-  
+
   const tagDiversity = Math.min(profile.intentTags.length * 10, 30);
   const tagStrength = profile.aggregatedScore * 0.4;
   const poolHealthBonus = poolHealth > 70 ? 20 : poolHealth > 50 ? 10 : 0;
-  
-  return Math.min(Math.round(tagDiversity + tagStrength + poolHealthBonus), 100);
+  const villageBonus = villageHealth !== undefined ? Math.round(villageHealth * 0.1) : 0;
+
+  return Math.min(Math.round(tagDiversity + tagStrength + poolHealthBonus + villageBonus), 100);
 }
 
 function calculateCombinedScore(ubuntuScore: number, socialAccordSynergy: number): number {
@@ -297,9 +299,9 @@ function calculateMatchScore(
 }
 
 export function generateProsperityOpportunity(input: MatchmakerInput): ProsperityOpportunity {
-  const { memberId, sanitizedProfile, ubuntuScore, contributionBase, poolHealth } = input;
-  
-  const socialAccordSynergy = calculateSocialAccordSynergy(sanitizedProfile, poolHealth);
+  const { memberId, sanitizedProfile, ubuntuScore, contributionBase, poolHealth, villageHealth } = input;
+
+  const socialAccordSynergy = calculateSocialAccordSynergy(sanitizedProfile, poolHealth, villageHealth);
   const combinedScore = calculateCombinedScore(ubuntuScore, socialAccordSynergy);
   
   const poolIds = matchTagsToPools(sanitizedProfile.intentTags);
