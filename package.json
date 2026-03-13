@@ -13,12 +13,14 @@
     "test:coverage": "vitest run --coverage",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx src/lib/db/seed.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.39.0",
     "@kilocode/app-builder-db": "github:Kilo-Org/app-builder-db#main",
     "@sentry/nextjs": "^8.55.0",
+    "@upstash/ratelimit": "^2.0.0",
     "@upstash/redis": "^1.28.0",
     "d3-force": "^3.0.0",
     "d3-scale": "^4.0.2",

@@ -4,6 +4,16 @@
 
 ---
 
+## Feature Status Legend
+
+| Status | Icon | Description |
+|--------|------|-------------|
+| **Implemented** | 🟢 | Fully functional, tested, and integrated |
+| **In Progress** | 🟡 | Partially implemented, active development |
+| **Planned** | 🔵 | Documented but not yet implemented |
+
+---
+
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
@@ -12,11 +22,17 @@
 4. [Testing](#testing)
 5. [Type Checking & Linting](#type-checking--linting)
 6. [Database Setup](#database-setup)
-7. [Production Build](#production-build)
-8. [Deployment](#deployment)
-9. [Scaling Considerations](#scaling-considerations)
-10. [Troubleshooting](#troubleshooting)
-11. [Future Vision](#future-vision)
+7. [Database Operations](#database-operations)
+8. [Production Build](#production-build)
+9. [Deployment](#deployment)
+10. [CI/CD Pipeline](#ci-cd-pipeline)
+11. [Scaling Considerations](#scaling-considerations)
+12. [Observability & Monitoring](#observability--monitoring)
+13. [Security Operations](#security-operations)
+14. [Rate Limiting](#rate-limiting)
+15. [Disaster Recovery](#disaster-recovery)
+16. [Troubleshooting](#troubleshooting)
+17. [Future Vision](#future-vision)
 
 ---
 
@@ -28,7 +44,7 @@
 
 ---
 
-## Local Development
+## Local Development 🟢
 
 ### 1. Install Dependencies
 
@@ -152,6 +168,67 @@ bun db:migrate
 
 # Open Drizzle Studio
 bun db:studio
+
+# Seed development data
+bun db:seed
+```
+
+---
+
+## Database Operations 🟢
+
+### Connection Pooling with PgBouncer
+
+PostgreSQL can fail under high concurrency. Use PgBouncer as a connection pooling layer:
+
+```
+Next.js → PgBouncer → PostgreSQL
+```
+
+Configuration for `pgbouncer.ini`:
+
+```ini
+[databases]
+ubuntu_pools = host=postgres.internal port=5432 dbname=ubuntu_pools
+
+[pgbouncer]
+pool_mode = transaction
+max_client_conn = 1000
+default_pool_size = 25
+min_pool_size = 5
+```
+
+### Backup Strategy
+
+| Type | Frequency | Retention |
+|------|-----------|-----------|
+| Full Backup | Daily | 30 days |
+| Incremental | Every 4 hours | 7 days |
+| Snapshot | Every 5 minutes | 24 hours |
+
+#### Backup Commands
+
+```bash
+# Full backup with pg_dump
+pg_dump -Fc -f backup.dump ubuntu_pools
+
+# Restore from backup
+pg_restore -d ubuntu_pools backup.dump
+
+# Point-in-time recovery requires WAL archiving
+```
+
+### Ledger Sharding by Village
+
+For large-scale deployments, shard ledgers by village:
+
+```sql
+-- Create village-specific schemas
+CREATE SCHEMA village_soweto;
+CREATE SCHEMA village_khayelitsha;
+
+-- Each village has its own ledger tables in their schema
+-- Federation settlement layer reconciles between schemas
 ```
 
 ---
@@ -163,6 +240,119 @@ bun build
 ```
 
 This creates an optimized production build in the `.next` directory.
+
+### Alternative Build Strategies for Cross-Platform Consistency
+
+When working across multiple development environments (local, Codespaces, Gitpod, VS Code for Web), ensuring consistent builds requires additional strategies:
+
+#### 1. Build Tool Alternatives
+
+| Tool | Use Case | Command |
+|------|----------|---------|
+| **Bun** (default) | Fastest builds, all-in-one runtime | `bun build` |
+| **Turbopack** | Next.js native, incremental builds | `npx next build --turbo` |
+| **Webpack** (default Next.js) | Maximum compatibility | `npx next build` |
+
+#### 2. Reproducible Builds
+
+For consistent builds across all platforms, use these approaches:
+
+```bash
+# Lock dependencies to exact versions
+bun install --frozen-lockfile
+
+# Use a specific Bun version via .bun-version file
+echo "1.x.x" > .bun-version
+
+# Cache build artifacts between runs
+bun build --cache
+```
+
+#### 3. Build Caching Strategies
+
+**Local & Cloud Environments:**
+```bash
+# Enable build cache
+NEXT_TELEMETRY_DISABLED=1
+
+# Use CI cache for GitHub Actions
+# Add to workflow: actions/cache with bun cache path
+```
+
+**GitHub Codespaces / Gitpod:**
+```json
+// .devcontainer.json for Codespaces
+{
+  "build": {
+    "cacheFrom": "ubuntu-pools:latest"
+  }
+}
+```
+
+#### 4. CI/CD Pipeline Recommendations
+
+For consistent production builds across all platforms:
+
+```yaml
+# .github/workflows/build.yml
+name: Production Build
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun build
+      - run: bun lint
+      - run: bun typecheck
+```
+
+#### 5. Platform-Specific Build Optimizations
+
+| Platform | Optimization | Configuration |
+|----------|--------------|---------------|
+| **Vercel** | Edge functions, ISR | Use `export const dynamic = 'force-static'` |
+| **Railway** | Multi-stage Dockerfile | Enable build caching |
+| **Render** | Pre-build script | `prerender.sh` for generation |
+| **Docker** | Multi-stage builds | Use Alpine base, layer caching |
+
+#### 6. Multi-Workspace Build Validation
+
+To ensure builds work across all development environments:
+
+```bash
+# Test build in isolated environment
+docker run --rm -it node:18-alpine sh
+# Then run: npm install -g bun && bun build
+
+# Validate with different Node versions
+nvm install 18 && nvm use 18 && bun build
+nvm install 20 && nvm use 20 && bun build
+```
+
+#### 7. Recommended Build Configuration
+
+For production across all platforms, add to `next.config.js`:
+
+```js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'standalone',
+  experimental: {
+    optimizePackageImports: ['@/components', '@/lib'],
+  },
+  images: {
+    formats: ['image/avif', 'image/webp'],
+  },
+}
+
+module.exports = nextConfig
+```
 
 ---
 
@@ -255,6 +445,40 @@ docker run -p 3000:3000 ubuntu-pools
 
 ---
 
+## CI/CD Pipeline 🟢
+
+The project includes a GitHub Actions workflow (`.github/workflows/ci-cd.yml`) that provides:
+
+### Pipeline Stages
+
+| Stage | Jobs | Description |
+|-------|------|-------------|
+| **Lint & Type Check** | `lint-and-typecheck` | ESLint + TypeScript validation |
+| **Tests** | `test` | Unit tests with coverage |
+| **Build** | `build` | Production build with artifacts |
+| **Security Scan** | `security-scan` | Dependency audit + CodeQL |
+| **Deploy Staging** | `deploy-staging` | Auto-deploy on `develop` branch |
+| **Deploy Production** | `deploy-production` | Manual approval + deploy on `main` |
+
+### Environments
+
+- **Staging**: Auto-deploys on push to `develop` branch
+- **Production**: Deploys on push to `main` branch
+
+### Required Secrets
+
+Configure these in GitHub repository settings:
+
+| Secret | Description |
+|--------|-------------|
+| `VERCEL_TOKEN` | Vercel API token |
+| `VERCEL_ORG_ID` | Vercel organization ID |
+| `VERCEL_PROJECT_ID` | Vercel project ID |
+| `STAGING_DATABASE_URL` | Staging PostgreSQL connection |
+| `PRODUCTION_DATABASE_URL` | Production PostgreSQL connection |
+
+---
+
 ## Scaling Considerations
 
 ### Horizontal Scaling
@@ -272,29 +496,68 @@ The Ubuntu Pools platform is designed for horizontal scaling:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      CDN (Vercel/CloudFlare)               │
+│                         CDN                                │
+│                    (CloudFlare/Vercel)                     │
 └─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
+                               │
+                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Load Balancer (Vercel/ALB/CloudFlare)         │
+│                   WAF (Web Application Firewall)            │
+│              (Rate limiting, DDoS protection)               │
 └─────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┼───────────────┐
-              ▼               ▼               ▼
-        ┌──────────┐    ┌──────────┐    ┌──────────┐
-        │ Next.js  │    │ Next.js  │    │ Next.js  │
-        │ Instance │    │ Instance │    │ Instance │
-        └──────────┘    └──────────┘    └──────────┘
-              │               │               │
-              └───────────────┼───────────────┘
-                              │
-              ┌───────────────┼───────────────┐
-              ▼               ▼               ▼
-        ┌──────────┐    ┌──────────┐    ┌──────────┐
-        │  Redis   │    │PostgreSQL│    │   S3     │
-        │ (Cache)  │    │  (Write) │    │ (Media)  │
-        └──────────┘    └──────────┘    └──────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Load Balancer (ALB/CloudFlare)                │
+└─────────────────────────────────────────────────────────────┘
+                               │
+               ┌───────────────┼───────────────┐
+               ▼               ▼               ▼
+         ┌──────────┐    ┌──────────┐    ┌──────────┐
+         │ Next.js  │    │ Next.js  │    │ Next.js  │
+         │ Cluster  │    │ Cluster  │    │ Cluster  │
+         └──────────┘    └──────────┘    └──────────┘
+               │               │               │
+               └───────────────┼───────────────┘
+                               │
+               ┌───────────────┼───────────────┐
+               ▼               ▼               ▼
+         ┌──────────┐    ┌──────────┐    ┌──────────┐
+         │ PgBouncer│    │  Redis    │    │    S3    │
+         │  (Pool)  │    │  Cluster  │    │ (Media)  │
+         └──────────┘    └──────────┘    └──────────┘
+               │
+               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  PostgreSQL Cluster                         │
+│  ┌─────────────────┐         ┌─────────────────┐            │
+│  │    Primary     │◄──────►│  Read Replica   │            │
+│  │   (Write)      │         │     (Read)      │            │
+│  └─────────────────┘         └─────────────────┘            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Enterprise Architecture (Multi-Region)
+
+For global scaling:
+
+```
+                    ┌─────────────────┐
+                    │   Global CDN    │
+                    └────────┬────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         ▼                   ▼                   ▼
+  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+  │  Africa     │      │   Asia      │      │  Europe     │
+  │  Region     │◄────►│   Region    │◄────►│   Region    │
+  └─────────────┘      └─────────────┘      └─────────────┘
+         │                                       │
+         ▼                                       ▼
+  ┌─────────────┐                        ┌─────────────┐
+  │  Village    │                        │  Village    │
+  │  Ledger A   │                        │  Ledger B   │
+  └─────────────┘                        └─────────────┘
 ```
 
 ### Performance Optimization
@@ -323,6 +586,166 @@ The Ubuntu Pools platform is designed for horizontal scaling:
 
 ---
 
+## Observability & Monitoring 🟡
+
+### Recommended Stack
+
+| Layer | Tool | Purpose |
+|-------|------|---------|
+| **Metrics** | Prometheus | Time-series metrics collection |
+| **Dashboards** | Grafana | Visualization and alerting |
+| **Logs** | Loki or ELK | Log aggregation |
+| **Tracing** | OpenTelemetry | Distributed tracing |
+
+### Key Metrics to Monitor
+
+| Metric | Description | Alert Threshold |
+|--------|-------------|------------------|
+| `transaction_latency` | Time to commit ledger transaction | > 500ms |
+| `ledger_commit_time` | Time to finalize a ledger entry | > 1s |
+| `governance_vote_latency` | Time to process a vote | > 2s |
+| `websocket_connections` | Active WebSocket connections | > 10k |
+| `db_query_time` | Database query execution time | > 200ms |
+| `error_rate` | Percentage of failed requests | > 1% |
+
+### Dashboard Panels
+
+```
+- Transaction throughput (TPS)
+- Error rate by endpoint
+- Database connection pool usage
+- WebSocket connection count
+- API response times (p95, p99)
+- Trust graph computation time
+```
+
+### WebSocket Heartbeat
+
+```typescript
+// Client: ping every 25 seconds
+setInterval(() => {
+  socket.emit('ping');
+}, 25000);
+
+// Server: disconnect if no response
+socket.on('pong', () => {
+  socket.lastPong = Date.now();
+});
+
+// Server: check for stale connections
+setInterval(() => {
+  const stale = Date.now() - socket.lastPong > 60000;
+  if (stale) socket.disconnect();
+}, 30000);
+```
+
+---
+
+## Security Operations 🟢
+
+### Key Management
+
+| Key Type | Storage | Rotation |
+|----------|---------|----------|
+| User keys | Device secure enclave | On request |
+| Server keys | Hardware Security Module (HSM) | 90 days |
+| API keys | Secret manager (Vercel/AWS Secrets) | 30 days |
+| JWT secrets | Secret manager | 60 days |
+
+### Secret Rotation
+
+Rotate these secrets periodically:
+
+```bash
+# Rotate DATABASE_URL
+# 1. Generate new password
+# 2. Update database user
+# 3. Deploy new secret
+# 4. Verify connectivity
+# 5. Disable old credential
+
+# Rotate API_KEYS
+# Use Vercel CLI or dashboard
+vercel secrets add api_key_$(date +%Y%m%d) "new-secret-value"
+```
+
+### Audit Logging
+
+Every critical event is logged immutably:
+
+| Event Type | Severity | Logged Fields |
+|------------|----------|---------------|
+| Proposal created | Low | actor, target, timestamp |
+| Vote cast | Low | actor, target, timestamp |
+| Credit issued | High | actor, target, amount, timestamp |
+| Credit repaid | High | actor, target, amount, timestamp |
+| Pool withdrawal | Critical | actor, target, amount, timestamp |
+| Admin override | Critical | actor, target, reason, timestamp |
+
+---
+
+## Rate Limiting 🟢
+
+### Application Limits
+
+| Action | Limit | Window |
+|--------|-------|--------|
+| Login attempts | 10 | 1 minute |
+| Transactions | 20 | 1 minute |
+| Proposal creation | 5 | 1 day |
+| Votes | 100 | 1 hour |
+| API requests | 100 | 1 minute |
+| WebSocket connections | 50 | 1 minute |
+
+### Implementation
+
+The rate limiter uses Upstash Redis:
+
+```typescript
+import { rateLimits } from '@/lib/access/rate-limit';
+
+// Apply to API route
+export async function POST(request: Request) {
+  const identifier = getUserId(request);
+  const { success } = await rateLimits.transactions.limit(identifier);
+  
+  if (!success) {
+    return Response.json({ error: 'Rate limit exceeded' }, { status: 429 });
+  }
+  
+  // Process request...
+}
+```
+
+---
+
+## Disaster Recovery 🟡
+
+### Recovery Targets
+
+| Metric | Target |
+|--------|--------|
+| RPO (Recovery Point Objective) | < 5 minutes |
+| RTO (Recovery Time Objective) | < 30 minutes |
+
+### Protection Methods
+
+- Cross-region database replication
+- Automatic failover with health checks
+- Hourly backups stored in S3/Blob storage
+- Multi-region Redis for session persistence
+
+### Failover Procedure
+
+1. **Detect** — Health check fails for > 30 seconds
+2. **Alert** — PagerDuty/Slack notification
+3. **Promote** — Promote read replica to primary
+4. **Update** — Update DNS/load balancer to new primary
+5. **Verify** — Run smoke tests
+6. **Communicate** — Update status page
+
+---
+
 ## Troubleshooting
 
 | Issue | Solution |
@@ -338,7 +761,7 @@ The Ubuntu Pools platform is designed for horizontal scaling:
 
 ## Future Vision
 
-### Phase 4: Cross-Village Federation
+### Phase 4: Cross-Village Federation 🟡
 
 Enable villages to form federations, sharing surplus credit capacity and diversifying risk across geographic boundaries.
 
@@ -360,9 +783,17 @@ Enable villages to form federations, sharing surplus credit capacity and diversi
 - Implement tiered federation (village → district → region → global)
 - Use hash time-locked contracts (HTLCs) for trustless settlement
 
+**Settlement Layer Phased Approach:**
+
+| Phase | Model | Complexity |
+|-------|-------|------------|
+| 1 | Village Ledger A ↔ Village Ledger B ↔ Clearing House | Low |
+| 2 | Bilateral Settlement (direct village-to-village) | Medium |
+| 3 | Cryptographic Settlement (HTLCs, atomic swaps) | High |
+
 ---
 
-### Phase 5: Tokenized Commons
+### Phase 5: Tokenized Commons 🔵
 
 Convert commons assets (land, equipment, livestock) into fractional ownership tokens.
 
@@ -379,14 +810,34 @@ Convert commons assets (land, equipment, livestock) into fractional ownership to
 - Members earn governance rights proportional to contribution (token holdings + activity)
 - Circular incentive: More contribution → More tokens → More governance power → More influence over commons allocation
 
+**Legal Considerations:**
+
+Tokenizing assets can trigger regulatory requirements depending on jurisdiction:
+
+| Asset Type | Potential Regulation |
+|------------|---------------------|
+| Land | Securities law, property law |
+| Livestock | Commodities regulation |
+| Equipment | Securities law (if investment) |
+| Fractional ownership | Securities law (Howey test) |
+
+**Phased Approach:**
+
+| Phase | Token Type | Complexity | Legal Risk |
+|-------|------------|------------|------------|
+| 1 | Usage tokens (non-investment) | Low | Low |
+| 2 | Revenue sharing tokens | Medium | Medium |
+| 3 | Fractional ownership | High | High |
+
 **Recommendations:**
 - Start with non-controversial assets (community tools, meeting halls)
 - Implement gradual tokenization (test with 10% of assets first)
 - Legal structure: Cooperative or Benefit Corporation to hold assets
+- Consult local legal counsel before fractional ownership
 
 ---
 
-### Phase 6: Autonomous Economic Zones
+### Phase 6: Autonomous Economic Zones 🔵
 
 Partner with regulators to create special economic zones where Ubuntu Pools governance rules apply directly.
 
@@ -426,7 +877,7 @@ Partner with regulators to create special economic zones where Ubuntu Pools gove
 
 ---
 
-### Phase 7: Global Ubuntu Network
+### Phase 7: Global Ubuntu Network 🔵
 
 Connect Ubuntu Pools instances across continents, creating a global network of interconnected villages.
 
@@ -494,12 +945,77 @@ As the network scales, governance must evolve:
 
 ### Economic Model Sustainability
 
-Long-term sustainability requires:
+Long-term sustainability requires diversified revenue streams:
 
-- **Transaction Fees** — Small fee on credit transactions (0.1-0.5%)
-- **Membership Dues** — Annual contribution based on income tier
-- **Asset Management** — Tokenized commons generate yield
-- **Grants** — Partner with foundations supporting financial inclusion
+| Revenue Source | Rate | Description |
+|----------------|------|-------------|
+| **Transaction Fee** | 0.25% | On every credit transfer |
+| **Credit Origination Fee** | 0.5% | When credit is issued |
+| **Village Subscription** | R50-200/month | Core platform services |
+| **Institutional Analytics** | Custom | Data insights for partners |
+| **Cross-Border Settlement** | 0.1% | Federation transactions |
+| **Tokenized Asset Fees** | 1% | Asset tokenization service |
+
+**Revenue Allocation:**
+- 50% — Infrastructure & operations
+- 25% — Security & compliance
+- 15% — Development & feature work
+- 10% — Governance operations
+
+---
+
+## Hierarchical Trust Graph (HTG) 🟡
+
+The platform implements a Hierarchical Trust Graph to enable scaling to millions of users:
+
+### Layer Structure
+
+```
+Global Network
+     │
+     ▼
+Federation (Regional: Africa, Europe, Asia)
+     │
+     ▼
+Village (Community Pool)
+     │
+     ▼
+Individual (Member)
+```
+
+### Trust Propagation
+
+Trust flows upward through aggregation:
+
+```
+Individual Score → Village Score → Federation Score → Global Score
+```
+
+### Village Trust Formula
+
+```
+VillageTrust = average(memberScores) × governanceParticipation × (1 - defaultRate)
+```
+
+### Benefits
+
+1. **Scalability** — Each layer is independently computable
+2. **Fraud Detection** — Suspicious clusters fail to propagate trust upward
+3. **Credit Risk** — Individual creditworthiness enhanced by community reliability
+4. **Governance** — Nested voting mirrors real democratic systems
+5. **Ledger Sharding** — Each village can have its own ledger shard
+
+### Implementation
+
+```typescript
+import { calculateVillageTrust, HierarchicalTrustGraph } from '@/lib/trust-graph/hierarchy';
+
+const trustScore = calculateVillageTrust(
+  memberScores,      // [72, 73, 74, ...]
+  0.85,              // governance participation
+  0.02               // default rate
+);
+```
 
 ---
 
