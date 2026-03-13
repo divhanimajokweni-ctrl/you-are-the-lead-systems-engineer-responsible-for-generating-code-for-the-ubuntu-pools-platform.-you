@@ -1,12 +1,43 @@
-# Active Context: Ubuntu Pools — Phase 12 Complete
+# Active Context: Ubuntu Pools — Phase 13 Complete
 
 ## Current State
 
-**Phase 12 Status**: ✅ Complete — Collective Procurement & Market Engine (CPME)
+**Phase 13 Status**: ✅ Complete — Trust Enhancement (Reputation Friction, Invite Chains, Portable Passports)
 
-The CPME transforms Ubuntu Pools from a finance platform into a community wealth engine by coordinating collective purchasing and selling.
+The Trust Enhancement phase adds mechanisms to prevent reputation inflation and enable portable economic credentials.
 
 ## Recently Completed
+
+- [x] **Phase 13: Trust Enhancement** (2026-03-13)
+  - **Reputation Friction** (`src/lib/reputation/friction.ts`)
+    - Time decay with 90-day half-life
+    - Reputation age multiplier for longevity bonus
+    - Diversity penalty for limited endorsement sources
+    - Max 5% influence cap per user
+    - Negative signal penalties for violations
+    - Trust tier system (novice → archivist) with invite quotas
+  - **Invite Chain** (`src/lib/services/invite-service.ts`, `src/db/schema-invite.ts`)
+    - Tiered invites: Novice (2), Contributor (5), Steward (10), Archivist (unlimited)
+    - Risk sharing: Inviters lose points if invitees commit fraud
+    - Diversity requirements to prevent clique formation
+    - Anchor invitations for community leaders
+    - Network depth tracking
+  - **Portable Economic Passport** (`src/lib/identity/passport.ts`)
+    - Verifiable credentials with cryptographic proofs
+    - Selective disclosure (score above X, no defaults, duration Y)
+    - Base64 compact format for easy sharing
+    - External verification for banks/employers/cooperatives
+  - **Village Economic Mirror** (`src/lib/services/village-mirror.ts`)
+    - Monthly buying power visualization
+    - Village multiplier showing contribution leverage
+    - Eligible opportunities based on score
+    - Milestone tracking
+  - **Living Village Loop** (`src/lib/services/activity-engine.ts`)
+    - Event-based activity feed
+    - Priority ranking (high/medium/low)
+    - Impact narratives
+    - Time-ago formatting
+  - **Migration SQL** (`src/db/migrations/0004_trust_enhancement.sql`)
 
 - [x] **CPME Implementation** (2026-03-13)
   - **CPME Schema** (`src/db/schema-cpme.ts`)
@@ -479,11 +510,13 @@ The CPME transforms Ubuntu Pools from a finance platform into a community wealth
    - `psql $DATABASE_URL < src/db/migrations/0001_phase1_foundation.sql`
    - `psql $DATABASE_URL < src/db/migrations/0002_village_os.sql`
    - `psql $DATABASE_URL < src/db/migrations/0003_cpme.sql`
+   - `psql $DATABASE_URL < src/db/migrations/0004_trust_enhancement.sql`
 
 ## Session History
 
 | Date | Changes |
 |------|---------|
+| 2026-03-13 | Phase 13 Trust Enhancement: Reputation friction (decay, diversity, max influence), Invite chains with guardrails, Portable economic passports, Village economic mirror, Living village activity loop |
 | 2026-03-13 | Phase 12 CPME: Collective Procurement & Market Engine - demand/supply aggregation, supplier marketplace, contracts, procurement circles, market intelligence |
 | Initial | Template created with base Next.js setup |
 | 2026-02-26 | Phase 1 foundation implemented: event log, double-entry ledger, posting engine, 130 tests |

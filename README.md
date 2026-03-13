@@ -71,20 +71,22 @@ src/
 │   ├── ledger/                  # Merkle trees & snapshots
 │   ├── market/                  # CPME core services
 │   ├── observability/           # Sentry, logging, performance
-│   ├── openclaw/                # Executive shadow gateway
+│   ├── openclaw/               # Executive shadow gateway
 │   ├── performance/             # Edge optimization
-│   ├── privacy/                 # Data sovereignty framework
-│   ├── reputation/              # Trust score engine
-│   ├── services/                # Business logic services
-│   ├── sybil/                   # Sybil attack defense
-│   ├── trust-graph/             # Graph-based fraud detection
-│   └── websocket/               # Real-time communication
+│   ├── privacy/                # Data sovereignty framework
+│   ├── reputation/             # Trust score engine + friction mechanisms
+│   ├── identity/               # Portable passport & credentials
+│   ├── services/               # Business logic services
+│   ├── sybil/                  # Sybil attack defense
+│   ├── trust-graph/            # Graph-based fraud detection
+│   └── websocket/              # Real-time communication
 ├── db/
 │   ├── migrations/               # Drizzle migrations
 │   ├── schema.ts                # Core database schema
 │   ├── schema-credit.ts         # Credit facilities schema
 │   ├── schema-village.ts        # Village OS schema
 │   ├── schema-cpme.ts          # CPME schema
+│   ├── schema-invite.ts        # Invite chain schema
 │   └── client.ts                # DB client
 └── tests/                        # Vitest test suite
 ```
@@ -241,6 +243,57 @@ Plus zero-knowledge proofs that verify membership/score without revealing identi
 
 **Why it matters**: Ubuntu Pools bridges collective finance with the formal banking system. Members can contribute from bank accounts and withdraw to them.
 
+### 14. Reputation Friction System (`src/lib/reputation/friction.ts`)
+
+**What it does**: Prevents reputation inflation through multiple mechanisms:
+- **Time Decay** — Trust fades with inactivity (90-day half-life)
+- **Reputation Age** — Longer membership earns bonus multiplier
+- **Diversity Penalty** — Score reduced if endorsements come from too few sources
+- **Max Influence Cap** — No single user can have >5% influence on another's score
+- **Negative Signal Penalty** — Defaults, fraud, violations reduce score significantly
+
+**Why it matters**: Early crypto reputation systems failed because scores could inflate endlessly. These friction mechanisms keep the Ubuntu Score meaningful and resistant to gaming.
+
+### 15. Village Invite Chain (`src/lib/services/invite-service.ts`)
+
+**What it does**: Trust-based onboarding through invitation chains:
+- **Tiered Invites** — Novice (2), Contributor (5), Steward (10), Archivist (unlimited)
+- **Risk Sharing** — Inviters lose points if invitees commit fraud
+- **Diversity Requirements** — Prevents clique formation
+- **Anchor Invitations** — Community leaders get higher quotas
+
+**Why it matters**: Organic growth through trusted relationships, not cold signups. This mirrors how real communities grow and provides natural Sybil protection.
+
+### 16. Portable Economic Passport (`src/lib/identity/passport.ts`)
+
+**What it does**: Zero-knowledge credentials for external verification:
+- **Verifiable Credentials** — Cryptographically signed reputation proofs
+- **Selective Disclosure** — Share only what's needed (score > 70, no defaults, 2+ years)
+- **Portable Trust** — Use Ubuntu Score for banks, employers, cooperatives
+- **Base64 Compact Format** — Easy to share via any channel
+
+**Why it matters**: A score of 78 means nothing to a bank in another country. But "verified Ubuntu credential showing score > 75 for 2 years with no defaults" is meaningful. This creates the "economic passport" concept.
+
+### 17. Village Economic Mirror (`src/lib/services/village-mirror.ts`)
+
+**What it does**: Real-time visualization of collective power:
+- **Monthly Buying Power** — Sum of all member capacity
+- **Village Multiplier** — How much R1 contribution becomes in collective value
+- **Eligible Opportunities** — Credit, pools, governance rights based on score
+- **Milestone Tracking** — Progress toward collective goals
+
+**Why it matters**: Users understand why they should participate. Instead of "R200 balance" they see "Your R200 unlocks R840 in village buying power."
+
+### 18. Living Village Loop (`src/lib/services/activity-engine.ts`)
+
+**What it does**: Activity feed that makes the village feel alive:
+- **Event Types** — Joins, contributions, procurements, investments, governance
+- **Priority Ranking** — High (milestones), Medium (contributions), Low (votes)
+- **Impact Narratives** — Human-readable activity descriptions
+- **Time-Ago Formatting** — "2h ago", "3d ago"
+
+**Why it matters**: Traditional apps feel static. This makes the platform feel like a living village where something meaningful happens every day.
+
 ---
 
 ## Technical Decisions Explained
@@ -279,7 +332,8 @@ The platform must verify membership and creditworthiness without collecting sens
 | 10 | Social Networking | ✅ Complete |
 | 11 | Village OS | ✅ Complete |
 | 12 | CPME (Collective Procurement) | ✅ Complete |
-| 13 | Portable Economic Passport | 🔮 |
+| 13 | Trust Enhancement (Friction, Invites, Passport) | ✅ Complete |
+| 14 | Portable Economic Passport | 🔮 |
 
 ---
 
@@ -305,6 +359,7 @@ cp .env.local.example .env.local
 psql $DATABASE_URL < src/db/migrations/0001_phase1_foundation.sql
 psql $DATABASE_URL < src/db/migrations/0002_village_os.sql
 psql $DATABASE_URL < src/db/migrations/0003_cpme.sql
+psql $DATABASE_URL < src/db/migrations/0004_trust_enhancement.sql
 
 # Run development server
 bun dev
@@ -373,6 +428,10 @@ bun lint             # Code quality
 | `/api/matchmaker` | POST/GET | Prosperity matching |
 | `/api/backbone` | GET/POST | Lindiwe AI |
 | `/api/cpme` | GET/POST | Collective Procurement |
+| `/api/invites` | GET/POST | Invite chain management |
+| `/api/passport` | POST | Portable credential issuance |
+| `/api/mirror` | GET | Village economic mirror |
+| `/api/activity` | GET | Living village activity feed |
 | `/api/reputation` | GET | Trust scores |
 
 ---
