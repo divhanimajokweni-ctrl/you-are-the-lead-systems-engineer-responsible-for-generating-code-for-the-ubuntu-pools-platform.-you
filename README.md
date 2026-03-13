@@ -28,37 +28,49 @@ The platform addresses three fundamental challenges in community-based finance:
 src/
 ├── app/                          # Next.js 16 App Router
 │   ├── api/                      # REST API endpoints
-│   ├── page.tsx                 # Main dashboard
+│   │   ├── cpme/                # Collective Procurement & Market Engine
+│   │   ├── credit/              # Credit facilities
+│   │   ├── villages/            # Village OS
+│   │   ├── backbone/            # Lindiwe AI
+│   │   └── ...
+│   ├── page.tsx                 # Main dashboard (Feed)
+│   ├── messages/                # Direct messaging
+│   ├── notifications/           # Notifications
+│   ├── search/                  # Search
+│   ├── profile/                 # User profile
+│   ├── village/                 # Village page
 │   └── globals.css              # Tailwind 4 theme
 ├── components/
 │   ├── backbone/                # Lindiwe AI integration
-│   ├── collective/             # Timebank & contribution systems
-│   ├── dashboard/              # Trust score & technical dashboards
-│   ├── governance/             # Proposal & voting UI
-│   ├── home/                   # FAQ, prosperity tiers, activity
-│   ├── ledger/                 # Immutable transaction display
-│   ├── lindiwe/                # AI governance assistant
-│   ├── privacy/                # Sovereignty controls
-│   ├── sovereignty/            # Data rights management
-│   ├── stitch/                 # South African banking integration
-│   ├── village/                # Village circles, pools, commons
-│   └── ui/                     # Shared UI components
+│   ├── collective/              # Timebank & contribution systems
+│   ├── credit/                  # Credit dashboard & pool health
+│   ├── dashboard/               # Trust score & technical dashboards
+│   ├── governance/              # Proposal & voting UI
+│   ├── home/                    # FAQ, prosperity tiers, activity
+│   ├── ledger/                  # Immutable transaction display
+│   ├── lindiwe/                 # AI governance assistant
+│   ├── privacy/                 # Sovereignty controls
+│   ├── sovereignty/             # Data rights management
+│   ├── stitch/                  # South African banking integration
+│   ├── village/                 # Village circles, pools, commons
+│   └── ui/                      # Shared UI components
 ├── lib/
 │   ├── access/                  # RBAC & consent management
 │   ├── api/                     # Route handlers & validation
 │   ├── auth/                    # Authentication middleware
-│   ├── backbone/                # Central nervous system
+│   ├── backbone/                # Central nervous system (Lindiwe + Matchmaker)
 │   ├── bank-provider/           # Banking abstraction layer
-│   ├── cache/                   # Performance caching
+│   ├── cache/                   # Redis/in-memory caching
 │   ├── custody/                 # Custody adapters
 │   ├── events/                  # Event schemas & signing
 │   ├── eventsourcing/           # Event sourcing core
 │   ├── features/                # Feature flags
-│   ├── governance/               # Constitution & proposals
+│   ├── governance/              # Constitution & proposals
 │   ├── identity/                # Keypair management & proofs
 │   ├── integrations/            # OpenClaw & Stitch
 │   ├── ledger/                  # Merkle trees & snapshots
-│   ├── observability/           # Logging & performance
+│   ├── market/                  # CPME core services
+│   ├── observability/           # Sentry, logging, performance
 │   ├── openclaw/                # Executive shadow gateway
 │   ├── performance/             # Edge optimization
 │   ├── privacy/                 # Data sovereignty framework
@@ -69,8 +81,10 @@ src/
 │   └── websocket/               # Real-time communication
 ├── db/
 │   ├── migrations/               # Drizzle migrations
-│   ├── schema.ts                # Database schema
+│   ├── schema.ts                # Core database schema
 │   ├── schema-credit.ts         # Credit facilities schema
+│   ├── schema-village.ts        # Village OS schema
+│   ├── schema-cpme.ts          # CPME schema
 │   └── client.ts                # DB client
 └── tests/                        # Vitest test suite
 ```
@@ -124,7 +138,35 @@ Pool health is a composite metric (buffer ratio, capital adequacy, default rate,
 
 **Why it matters**: Traditional microfinance exploits the poor with opaque terms. Ubuntu Pools makes credit terms transparent, rates community-driven, and default consequences collective — creating natural incentives for mutual support.
 
-### 5. Data Sovereignty Framework (`src/lib/privacy/sovereignty.ts`)
+### 5. Village OS — Programmable Economic Units (`src/lib/services/village-service.ts`)
+
+**What it does**: Villages as programmable economic units with:
+- **ROSCA Pools** — Rotating savings with automated payout cycles
+- **Bulk Procurement** — Collective purchasing with negotiated discounts
+- **Investments** — Village-backed local business investments
+- **Insurance Pools** — Community mutual insurance systems
+- **Governance** — Proposals with sqrt(Ubuntu Score) weighted voting
+- **Messaging** — Encrypted village communication channels
+- **Economic Graph** — Inter-village trade relationships
+
+**Why it matters**: Villages become self-organizing economic entities that can scale from simple savings circles to complex cooperative structures.
+
+### 6. Collective Procurement & Market Engine — CPME (`src/lib/market/`)
+
+**What it does**: Transforms Ubuntu Pools from a finance platform into a community wealth engine:
+- **Procurement Circles** — Village buying collectives
+- **Demand Aggregation** — Pool buying power for bulk negotiation
+- **Supply Aggregation** — Pool selling power for better prices
+- **Supplier Marketplace** — Trust-scored suppliers bidding on demands
+- **Contract Management** — Legal agreements between villages and suppliers
+- **Order Settlement** — Payment, shipping, delivery tracking
+- **Market Intelligence** — Aggregated demand data for insights
+
+**Why it matters**: Communities save 20-40% on purchases and get higher prices for produce by pooling demand/supply. The platform earns 0.5% coordination fees while villages save significantly more.
+
+**Example**: 200 farmers buying seeds individually at R500/bag = R100,000. Aggregated demand of 200 bags → bulk price R380/bag = R76,000. Village saves R24,000.
+
+### 7. Data Sovereignty Framework (`src/lib/privacy/sovereignty.ts`)
 
 **What it does**: Implements the four fundamental data rights:
 - **Right to Export** — full data portability
@@ -136,7 +178,7 @@ Plus zero-knowledge proofs that verify membership/score without revealing identi
 
 **Why it matters**: In a trust-based system, members must share data to build reputation. But sharing shouldn't mean surrendering control. This framework gives members granular consent over what data is shared, with whom, and for how long.
 
-### 6. Sybil Defense System (`src/lib/sybil/`)
+### 8. Sybil Defense System (`src/lib/sybil/`)
 
 **What it does**: Multi-layered defense against fake identities:
 - **Human Verification** — biometric/liveness checks
@@ -150,7 +192,7 @@ Plus zero-knowledge proofs that verify membership/score without revealing identi
 
 **Why it matters**: Open membership systems are vulnerable to Sybil attacks where one entity creates many fake identities to subvert voting or drain collective resources. These defenses make attack economically unviable.
 
-### 7. Trust Graph & Fraud Detection (`src/lib/trust-graph/`)
+### 9. Trust Graph & Fraud Detection (`src/lib/trust-graph/`)
 
 **What it does**: Graph-based analysis of member relationships:
 - **PageRank** — influence scoring
@@ -160,17 +202,26 @@ Plus zero-knowledge proofs that verify membership/score without revealing identi
 
 **Why it matters**: Individual reputation scores can be gamed through colluding pairs. The trust graph detects patterns that single-metric systems miss.
 
-### 8. Lindiwe AI — Autonomous Governance Matriarch (`src/lib/backbone/lindiwe.ts`)
+### 10. Sovereignty Proxy & Matchmaker (`src/lib/services/sovereignty-proxy.ts`)
+
+**What it does**: 
+- **Sovereignty Proxy** — NER-based anonymization, intent tag extraction, profile types (blank, ESG, Community Anchor, Entrepreneur), TTL-based data ephemerality
+- **Matchmaker** — Signal-to-Asset matching, pool recommendations, Social-Accord Synergy calculation, personalized prosperity opportunities
+
+**Why it matters**: Members can control what data is visible while still receiving personalized recommendations for economic opportunities.
+
+### 11. Lindiwe AI — Autonomous Governance Matriarch (`src/lib/backbone/lindiwe.ts`)
 
 **What it does**: An autonomous governance agent that:
 - Monitors pool health, member scores, and system safety
 - Triggers SHIELD/PROSPERITY/EMERGENCY modes
 - Proposes credit terms and governance adjustments
 - Provides natural-language insights via chat
+- Controls Matchmaker for personalized opportunities
 
 **Why it matters**: Human governance can't monitor real-time system health. Lindiwe provides continuous vigilance, alerting the collective (via OpenClaw) when intervention is needed.
 
-### 9. OpenClaw Integration (`src/lib/integrations/openclaw/`)
+### 12. OpenClaw Integration (`src/lib/integrations/openclaw/`)
 
 **What it does**: A command-and-control bridge that:
 - Receives alerts from Lindiwe
@@ -180,7 +231,7 @@ Plus zero-knowledge proofs that verify membership/score without revealing identi
 
 **Why it matters**: The platform needs human override capability. OpenClaw ensures the Founder always retains control while delegating day-to-day operations to autonomous systems.
 
-### 10. Stitch Banking Integration (`src/lib/integrations/stitch/`)
+### 13. Stitch Banking Integration (`src/lib/integrations/stitch/`)
 
 **What it does**: Connects to South African banking infrastructure for:
 - Payment initiation
@@ -212,26 +263,23 @@ The platform must verify membership and creditworthiness without collecting sens
 
 ---
 
-## Future Vision
+## Phase Roadmap
 
-### Phase 4: Cross-Village Federation
-
-Enable villages to form federations, sharing surplus credit capacity and diversifying risk across geographic boundaries. This requires:
-- Inter-village governance protocols
-- Settlement layer between villages
-- Reputation portability
-
-### Phase 5: Tokenized Commons
-
-Convert commons assets (land, equipment, livestock) into fractional ownership tokens. Members earn governance rights proportional to contribution, creating circular incentive structures.
-
-### Phase 6: Autonomous Economic Zones
-
-Partner with regulators to create special economic zones where Ubuntu Pools governance rules apply directly — enabling collective-owned enterprises with legal recognition.
-
-### Phase 7: Global Ubuntu Network
-
-Connect Ubuntu Pools instances across continents, creating a global network of interconnected villages. The trust graph becomes a web of villages, not just individuals.
+| Phase | Name | Status |
+|-------|------|--------|
+| 1 | Foundation (Ledger, Events, Posting Engine) | ✅ Complete |
+| 2 | Compliance & Privacy | ✅ Complete |
+| 3 | Trust System & Observability | ✅ Complete |
+| 4 | Trust-Based Governance | ✅ Complete |
+| 5 | Tokenized Commons (Future) | 🔮 |
+| 6 | Credit Facilities | ✅ Complete |
+| 7 | Sovereignty & Matchmaker | ✅ Complete |
+| 8 | Backbone (Lindiwe AI) | ✅ Complete |
+| 9 | Observability Infrastructure | ✅ Complete |
+| 10 | Social Networking | ✅ Complete |
+| 11 | Village OS | ✅ Complete |
+| 12 | CPME (Collective Procurement) | ✅ Complete |
+| 13 | Portable Economic Passport | 🔮 |
 
 ---
 
@@ -252,6 +300,11 @@ bun install
 # Configure environment
 cp .env.local.example .env.local
 # Edit .env.local with your DATABASE_URL
+
+# Run database migrations (in order)
+psql $DATABASE_URL < src/db/migrations/0001_phase1_foundation.sql
+psql $DATABASE_URL < src/db/migrations/0002_village_os.sql
+psql $DATABASE_URL < src/db/migrations/0003_cpme.sql
 
 # Run development server
 bun dev
@@ -308,13 +361,29 @@ bun lint             # Code quality
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
+| `/api/events` | GET/POST | Event log |
+| `/api/ledger` | GET | Transaction history |
 | `/api/members` | GET/POST | Member management |
 | `/api/villages` | GET/POST | Village operations |
+| `/api/villages/[id]/pools` | GET/POST | ROSCA pools |
+| `/api/villages/[id]/proposals` | GET/POST | Governance |
 | `/api/credit` | GET/POST | Credit facilities |
-| `/api/governance` | GET/POST | Proposals & voting |
-| `/api/ledger` | GET | Transaction history |
+| `/api/credit/score` | GET | Ubuntu Score |
+| `/api/sovereignty` | POST/GET | Data rights |
+| `/api/matchmaker` | POST/GET | Prosperity matching |
+| `/api/backbone` | GET/POST | Lindiwe AI |
+| `/api/cpme` | GET/POST | Collective Procurement |
 | `/api/reputation` | GET | Trust scores |
-| `/api/sovereignty` | POST | Data rights |
+
+---
+
+## Documentation
+
+- [CPME Operations Guide](docs/cpme-operations.md) — Full API reference for Collective Procurement & Market Engine
+- [Phase 3 Transformation](docs/phase3-ubuntu-transformation.md) — Technical roadmap
+- [Phase 2 Compliance](docs/phase2-compliance.md) — Legal framework
+- [ADR-015: Crypto Shredding](docs/adr/015-crypto-shredding.md)
+- [ADR-016: PII-Free Events](docs/adr/016-pii-free-events.md)
 
 ---
 

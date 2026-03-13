@@ -1,12 +1,38 @@
-# Active Context: Ubuntu Pools — Phase 11 Complete
+# Active Context: Ubuntu Pools — Phase 12 Complete
 
 ## Current State
 
-**Phase 11 Status**: ✅ Complete — Village OS (Programmable Economic Units)
+**Phase 12 Status**: ✅ Complete — Collective Procurement & Market Engine (CPME)
 
-The Village OS has been implemented, allowing communities to coordinate capital, labor, and trust through programmable economic units.
+The CPME transforms Ubuntu Pools from a finance platform into a community wealth engine by coordinating collective purchasing and selling.
 
 ## Recently Completed
+
+- [x] **CPME Implementation** (2026-03-13)
+  - **CPME Schema** (`src/db/schema-cpme.ts`)
+    - `procurement_circles` - Groups of villages forming buying collectives
+    - `village_demands` - What villages want to buy collectively
+    - `village_supplies` - What villages want to sell collectively  
+    - `suppliers` - Registered suppliers with trust scores
+    - `bids` - Supplier responses to demands
+    - `contracts` - Agreements between villages and suppliers
+    - `order_settlements` - Tracking delivery and payment
+    - `village_entities` - Unified reference for villages across CPME
+    - `cross_village_federations` - Federations for bulk coordination
+    - `market_intelligence` - Aggregated demand/supply data for insights
+  - **CPME Services** (`src/lib/market/index.ts`)
+    - `DemandAggregationService` - Create/manage village buying demands
+    - `SupplyAggregationService` - Create/manage village selling supplies
+    - `SupplierMatchingService` - Register suppliers, match to demands, trust scoring
+    - `ContractNegotiationService` - Submit bids, accept, create contracts
+    - `OrderSettlementService` - Payment, shipping, delivery tracking
+    - `ProcurementCircleService` - Create/join procurement circles
+    - `MarketIntelligenceService` - Record/analyze market transactions
+  - **API Routes** (`src/app/api/cpme/route.ts`)
+    - Unified POST/GET endpoint for all CPME operations
+  - **Migration SQL** (`src/db/migrations/0003_cpme.sql`)
+    - All CPME tables with proper indexes
+    - Helper functions: `calculate_coordination_fee()`, `adjust_supplier_trust()`, etc.
 
 - [x] **Village OS Implementation** (2026-03-11)
   - **Village Schema** (`src/db/schema-village.ts`)
@@ -415,6 +441,10 @@ The Village OS has been implemented, allowing communities to coordinate capital,
 | `src/app/api/villages/[id]/pools/route.ts` | Village pools API | ✅ Ready |
 | `src/app/api/villages/[id]/proposals/route.ts` | Village proposals API | ✅ Ready |
 | `src/app/api/villages/[id]/messages/route.ts` | Village messages API | ✅ Ready |
+| `src/db/schema-cpme.ts` | CPME schema | ✅ Ready |
+| `src/db/migrations/0003_cpme.sql` | CPME migration | ✅ Ready |
+| `src/lib/market/index.ts` | CPME core services | ✅ Ready |
+| `src/app/api/cpme/route.ts` | CPME API | ✅ Ready |
 
 ## Phase 1 + Phase 4 + Phase 6 Governance Compliance
 
@@ -445,12 +475,16 @@ The Village OS has been implemented, allowing communities to coordinate capital,
 
 1. PostgreSQL database
 2. `DATABASE_URL` environment variable
-3. Run migration: `psql $DATABASE_URL < src/db/migrations/0001_phase1_foundation.sql`
+3. Run migrations in order:
+   - `psql $DATABASE_URL < src/db/migrations/0001_phase1_foundation.sql`
+   - `psql $DATABASE_URL < src/db/migrations/0002_village_os.sql`
+   - `psql $DATABASE_URL < src/db/migrations/0003_cpme.sql`
 
 ## Session History
 
 | Date | Changes |
 |------|---------|
+| 2026-03-13 | Phase 12 CPME: Collective Procurement & Market Engine - demand/supply aggregation, supplier marketplace, contracts, procurement circles, market intelligence |
 | Initial | Template created with base Next.js setup |
 | 2026-02-26 | Phase 1 foundation implemented: event log, double-entry ledger, posting engine, 130 tests |
 | 2026-02-27 | Phase 4 trust system: scores, decay, penalties, appeals, gating middleware |
