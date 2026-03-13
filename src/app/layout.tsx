@@ -4,10 +4,9 @@ import { ClerkProvider } from '@clerk/nextjs';
 import {
   SignInButton,
   SignUpButton,
-  SignedIn,
-  SignedOut,
   UserButton,
 } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import './globals.css';
 
 const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -82,31 +81,33 @@ export const metadata: Metadata = {
   },
 };
 
-function AuthHeader() {
+async function AuthHeader() {
+  const { userId } = await auth();
+  
   return (
     <header className="sticky top-0 z-50 flex items-center justify-end gap-4 p-4 bg-[var(--surface)]/80 backdrop-blur-md border-b border-[var(--border)]">
-      <SignedOut>
-        <SignInButton mode="modal">
-          <button className="px-4 py-2 text-sm font-medium text-white bg-[color:var(--accent-sage)] hover:bg-[color:var(--accent-sage)]/80 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-sage)]">
-            Sign In
-          </button>
-        </SignInButton>
-        <SignUpButton mode="modal">
-          <button className="px-4 py-2 text-sm font-medium text-white bg-[color:var(--accent-gold)] hover:bg-[color:var(--accent-gold)]/80 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-gold)]">
-            Sign Up
-          </button>
-        </SignUpButton>
-      </SignedOut>
-      <SignedIn>
+      {!userId ? (
+        <>
+          <SignInButton mode="modal">
+            <button className="px-4 py-2 text-sm font-medium text-white bg-[color:var(--accent-sage)] hover:bg-[color:var(--accent-sage)]/80 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-sage)]">
+              Sign In
+            </button>
+          </SignInButton>
+          <SignUpButton mode="modal">
+            <button className="px-4 py-2 text-sm font-medium text-white bg-[color:var(--accent-gold)] hover:bg-[color:var(--accent-gold)]/80 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-gold)]">
+              Sign Up
+            </button>
+          </SignUpButton>
+        </>
+      ) : (
         <UserButton
-          afterSignOutUrl="/"
           appearance={{
             elements: {
               avatarBox: "w-9 h-9"
             }
           }}
         />
-      </SignedIn>
+      )}
     </header>
   );
 }

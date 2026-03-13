@@ -348,7 +348,7 @@ The platform must verify membership and creditworthiness without collecting sens
 ### Quick Start
 
 ```bash
-# Install dependencies
+# Install dependencies (auto-fixes known vulnerabilities)
 bun install
 
 # Configure environment
@@ -360,9 +360,25 @@ psql $DATABASE_URL < src/db/migrations/0001_phase1_foundation.sql
 psql $DATABASE_URL < src/db/migrations/0002_village_os.sql
 psql $DATABASE_URL < src/db/migrations/0003_cpme.sql
 psql $DATABASE_URL < src/db/migrations/0004_trust_enhancement.sql
+psql $DATABASE_URL < src/db/migrations/0005_security_controls.sql
 
 # Run development server
 bun dev
+```
+
+### Security & Dependencies
+
+```bash
+# Run security audit
+bun audit
+
+# Fix vulnerabilities (semver-safe updates)
+bun audit:fix
+# or
+bun update
+
+# Fix all vulnerabilities (including breaking changes)
+bun update --latest
 ```
 
 Visit `http://localhost:3000` to see the platform.

@@ -239,8 +239,13 @@ curl -X POST http://localhost:3000/api/security/controls/[id]/evidence \
 ## Development Commands
 
 ```bash
-# Install dependencies
+# Install dependencies (auto-fixes known vulnerabilities)
 bun install
+
+# Run security audit
+bun audit
+bun audit:fix  # semver-safe updates
+bun update     # semver-safe updates
 
 # Run migrations
 psql $DATABASE_URL < src/db/migrations/0005_security_controls.sql

@@ -3,7 +3,7 @@
  * Web Vitals tracking for real user experience measurement
  */
 
-type MetricName = 'CLS' | 'FID' | 'FCP' | 'LCP' | 'TTFB';
+type MetricName = 'CLS' | 'INP' | 'FCP' | 'LCP' | 'TTFB';
 
 interface Metric {
   name: MetricName;
@@ -16,7 +16,7 @@ type ReportCallback = (metric: Metric) => void;
 
 interface WebVitals {
   onCLS: (callback: ReportCallback) => void;
-  onFID: (callback: ReportCallback) => void;
+  onINP: (callback: ReportCallback) => void;
   onFCP: (callback: ReportCallback) => void;
   onLCP: (callback: ReportCallback) => void;
   onTTFB: (callback: ReportCallback) => void;
@@ -28,7 +28,14 @@ async function loadWebVitals(): Promise<WebVitals | null> {
   if (webVitals) return webVitals;
   
   try {
-    webVitals = await import('web-vitals');
+    const webVitalsModule = await import('web-vitals');
+    webVitals = {
+      onCLS: webVitalsModule.onCLS,
+      onINP: webVitalsModule.onINP,
+      onFCP: webVitalsModule.onFCP,
+      onLCP: webVitalsModule.onLCP,
+      onTTFB: webVitalsModule.onTTFB,
+    };
     return webVitals;
   } catch {
     return null;
@@ -38,7 +45,7 @@ async function loadWebVitals(): Promise<WebVitals | null> {
 function getRating(value: number, metric: MetricName): 'good' | 'needs-improvement' | 'poor' {
   const thresholds: Record<MetricName, { poor: number; needsImprovement: number }> = {
     CLS: { poor: 0.25, needsImprovement: 0.1 },
-    FID: { poor: 300, needsImprovement: 100 },
+    INP: { poor: 300, needsImprovement: 100 },
     FCP: { poor: 3000, needsImprovement: 1800 },
     LCP: { poor: 4000, needsImprovement: 2500 },
     TTFB: { poor: 800, needsImprovement: 400 },
@@ -85,7 +92,7 @@ export async function initPerformanceMonitoring(): Promise<void> {
   }
   
   vitals.onCLS(logMetric);
-  vitals.onFID(logMetric);
+  vitals.onINP(logMetric);
   vitals.onFCP(logMetric);
   vitals.onLCP(logMetric);
   vitals.onTTFB(logMetric);
@@ -107,7 +114,7 @@ export async function getWebVitals(): Promise<Metric[]> {
       };
       
       vitals.onCLS(collect);
-      vitals.onFID(collect);
+      vitals.onINP(collect);
       vitals.onFCP(collect);
       vitals.onLCP(collect);
       vitals.onTTFB(collect);
