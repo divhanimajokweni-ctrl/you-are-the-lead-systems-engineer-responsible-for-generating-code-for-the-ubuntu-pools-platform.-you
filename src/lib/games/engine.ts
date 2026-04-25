@@ -8,7 +8,7 @@ import { db } from '@ubuntu/db/client';
 import { gameSessions, gameEvents, type GameSession } from '@ubuntu/db/schema-games';
 import { eq, and } from 'drizzle-orm';
 import { createEventEmitter } from '@ubuntu/domain-core/emitter';
-import LindiweSignalProcessor from '@ubuntu/lindiwe/pipeline';
+// TODO: Orphaned Reference - import LindiweSignalProcessor from '@ubuntu/lindiwe/pipeline';
 
 const lindiweProcessor = new LindiweSignalProcessor();
 
