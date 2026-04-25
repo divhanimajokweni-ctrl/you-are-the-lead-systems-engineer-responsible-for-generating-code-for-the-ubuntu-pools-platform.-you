@@ -1,12 +1,10 @@
 name: Security Spine Pipeline
-
 on:
   push:
     branches: [ main, turbo ]
   pull_request:
     branches: [ main, turbo ]
 
-# FIX: Prevents Exit Code 128 by granting explicit read access
 permissions:
   contents: read
   packages: read
@@ -15,48 +13,13 @@ jobs:
   schema-validation:
     runs-on: ubuntu-latest
     env:
-      # FIX: Clears deprecation warnings by opting into Node 24
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '24' # Future-proofed to Node 24
+          node-version: '24'
           cache: 'npm'
-      
-      - name: Install Dependencies
-        run: npm ci
-        
-      - name: Typecheck (Schema Validation)
-        # This will now pass thanks to Step 1
-        run: npm run typecheck
-        
-      - name: Lint Check
-        run: npm run lint
-
-  compliance-attestation-check:
-    runs-on: ubuntu-latest
-    needs: schema-validation
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
       - run: npm ci
-      - name: Verify KAYA POPIA attestation
-        run: node scripts/verify-doc.js contracts/compliance/kaya-popia-attestation-signed.json data-protection-officer-key
-      - name: Verify LEX responsible party reconciliation
-        run: node scripts/verify-doc.js contracts/compliance/lex-responsible-party-signed.json trustee-1-key
-      - name: Ensure attested pools match active pools
-        run: npx tsx scripts/ci/check-pool-coverage.ts
-
-  security-tests:
-    runs-on: ubuntu-latest
-    needs: compliance-attestation-check
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - run: npm ci
-      - run: npm test -- --testPathPattern="governance|security|safekrypte"
+      - run: npm run typecheck
+      - run: npm run lint

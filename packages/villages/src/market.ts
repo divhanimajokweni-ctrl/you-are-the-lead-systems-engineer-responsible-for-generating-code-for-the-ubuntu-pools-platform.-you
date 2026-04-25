@@ -109,29 +109,29 @@ export interface CreateContractInput {
 // =============================================================================
 
 export class DemandAggregationService {
-  async createDemand(input: CreateDemandInput) {
+  // async createDemand(input: CreateDemandInput) {
     const [demand] = await db
       .insert(villageDemands)
       .values({
-        villageId: input.villageId,
-        circleId: input.circleId,
-        product: input.product,
-        category: input.category,
-        description: input.description,
-        quantity: input.quantity,
-        unit: input.unit,
-        individualPrice: input.individualPrice,
-        targetPrice: input.targetPrice,
-        urgency: input.urgency || "normal",
-        deliveryLocation: input.deliveryLocation || {},
-        preferredSuppliers: input.preferredSuppliers || [],
-        deadline: input.deadline,
+        // villageId: input.villageId,
+        // circleId: input.circleId,
+        // product: input.product,
+        // category: input.category,
+        // description: input.description,
+        // quantity: input.quantity,
+        // unit: input.unit,
+        // individualPrice: input.individualPrice,
+        // targetPrice: input.targetPrice,
+        // urgency: input.urgency || "normal",
+        // deliveryLocation: input.deliveryLocation || {},
+        // preferredSuppliers: input.preferredSuppliers || [],
+        // deadline: input.deadline,
         status: "draft",
       })
       .returning();
 
-    if (input.circleId) {
-      await this.updateCircleDemand(input.circleId);
+    // if (input.circleId) {
+      // await this.updateCircleDemand(input.circleId);
     }
 
     return demand;
@@ -259,24 +259,24 @@ export class DemandAggregationService {
 // =============================================================================
 
 export class SupplyAggregationService {
-  async createSupply(input: CreateSupplyInput) {
+  // async createSupply(input: CreateSupplyInput) {
     const [supply] = await db
       .insert(villageSupplies)
       .values({
-        villageId: input.villageId,
-        product: input.product,
-        category: input.category,
-        description: input.description,
-        quantity: input.quantity,
-        unit: input.unit,
-        askingPrice: input.askingPrice,
-        minPrice: input.minPrice,
-        quality: input.quality || "standard",
-        harvestDate: input.harvestDate,
-        expiryDate: input.expiryDate,
-        location: input.location || {},
-        preferredBuyers: input.preferredBuyers || [],
-        deadline: input.deadline,
+        // villageId: input.villageId,
+        // product: input.product,
+        // category: input.category,
+        // description: input.description,
+        // quantity: input.quantity,
+        // unit: input.unit,
+        // askingPrice: input.askingPrice,
+        // minPrice: input.minPrice,
+        // quality: input.quality || "standard",
+        // harvestDate: input.harvestDate,
+        // expiryDate: input.expiryDate,
+        // location: input.location || {},
+        // preferredBuyers: input.preferredBuyers || [],
+        // deadline: input.deadline,
         status: "draft",
       })
       .returning();
@@ -362,7 +362,7 @@ export class SupplyAggregationService {
 // =============================================================================
 
 export class SupplierMatchingService {
-  async registerSupplier(input: {
+  // async registerSupplier(input: {
     name: string;
     description?: string;
     businessType: string;
@@ -380,19 +380,19 @@ export class SupplierMatchingService {
     const [supplier] = await db
       .insert(suppliers)
       .values({
-        name: input.name,
-        description: input.description,
-        businessType: input.businessType,
-        registrationNumber: input.registrationNumber,
-        contactEmail: input.contactEmail,
-        contactPhone: input.contactPhone,
-        address: input.address || {},
-        categories: input.categories,
-        certifications: input.certifications || [],
-        minOrderValue: input.minOrderValue,
-        maxOrderCapacity: input.maxOrderCapacity,
-        paymentTerms: input.paymentTerms || "net_30",
-        deliveryRegions: input.deliveryRegions || [],
+        // name: input.name,
+        // description: input.description,
+        // businessType: input.businessType,
+        // registrationNumber: input.registrationNumber,
+        // contactEmail: input.contactEmail,
+        // contactPhone: input.contactPhone,
+        // address: input.address || {},
+        // categories: input.categories,
+        // certifications: input.certifications || [],
+        // minOrderValue: input.minOrderValue,
+        // maxOrderCapacity: input.maxOrderCapacity,
+        // paymentTerms: input.paymentTerms || "net_30",
+        // deliveryRegions: input.deliveryRegions || [],
         status: "pending",
       })
       .returning();
@@ -512,42 +512,42 @@ export class SupplierMatchingService {
 // =============================================================================
 
 export class ContractNegotiationService {
-  async submitBid(input: CreateBidInput) {
+  // async submitBid(input: CreateBidInput) {
     const [demand] = await db
       .select()
       .from(villageDemands)
-      .where(eq(villageDemands.id, input.demandId));
+      // .where(eq(villageDemands.id, input.demandId));
 
     if (!demand) {
       throw new Error("Demand not found");
     }
 
-    const totalPrice = input.unitPrice * input.quantityOffered;
+    // const totalPrice = input.unitPrice * input.quantityOffered;
     const savingsFromRetail =
       demand.quantity * Number(demand.individualPrice) - totalPrice;
     const discountPercent =
-      ((Number(demand.individualPrice) - input.unitPrice) /
+      // ((Number(demand.individualPrice) - input.unitPrice) /
         Number(demand.individualPrice)) *
       100;
 
     const [bid] = await db
       .insert(bids)
       .values({
-        demandId: input.demandId,
-        supplyId: input.supplyId,
-        circleId: input.circleId,
-        supplierId: input.supplierId,
-        unitPrice: input.unitPrice,
+        // demandId: input.demandId,
+        // supplyId: input.supplyId,
+        // circleId: input.circleId,
+        // supplierId: input.supplierId,
+        // unitPrice: input.unitPrice,
         totalPrice,
-        quantityOffered: input.quantityOffered,
-        deliveryTime: input.deliveryTime,
-        deliveryTerms: input.deliveryTerms,
-        paymentTerms: input.paymentTerms,
-        warranty: input.warranty,
-        additionalNotes: input.additionalNotes,
+        // quantityOffered: input.quantityOffered,
+        // deliveryTime: input.deliveryTime,
+        // deliveryTerms: input.deliveryTerms,
+        // paymentTerms: input.paymentTerms,
+        // warranty: input.warranty,
+        // additionalNotes: input.additionalNotes,
         discountPercent: Math.round(discountPercent),
         savingsFromRetail,
-        expiresAt: input.expiresAt,
+        // expiresAt: input.expiresAt,
         status: "submitted",
       })
       .returning();
@@ -593,14 +593,14 @@ export class ContractNegotiationService {
     return bid!;
   }
 
-  async createContract(input: CreateContractInput) {
+  // async createContract(input: CreateContractInput) {
     const contractNumber = `CPME-${Date.now()}-${Math.random()
       .toString(36)
       .substr(2, 9)
       .toUpperCase()}`;
 
-    const totalValue = input.unitPrice * input.quantity;
-    const coordinationFeePercent = input.coordinationFeePercent || 50;
+    // const totalValue = input.unitPrice * input.quantity;
+    // const coordinationFeePercent = input.coordinationFeePercent || 50;
     const coordinationFee = Math.round(
       (totalValue * coordinationFeePercent) / 1000
     );
@@ -610,23 +610,23 @@ export class ContractNegotiationService {
       .insert(contracts)
       .values({
         contractNumber,
-        circleId: input.circleId,
-        demandId: input.demandId,
-        supplyId: input.supplyId,
-        supplierId: input.supplierId,
-        winningBidId: input.winningBidId,
-        memberVillageIds: input.memberVillageIds,
-        product: input.product,
-        quantity: input.quantity,
-        unit: input.unit,
-        unitPrice: input.unitPrice,
+        // circleId: input.circleId,
+        // demandId: input.demandId,
+        // supplyId: input.supplyId,
+        // supplierId: input.supplierId,
+        // winningBidId: input.winningBidId,
+        // memberVillageIds: input.memberVillageIds,
+        // product: input.product,
+        // quantity: input.quantity,
+        // unit: input.unit,
+        // unitPrice: input.unitPrice,
         totalValue,
         coordinationFeePercent,
         coordinationFee,
         netValue,
-        deliveryTerms: input.deliveryTerms,
-        paymentTerms: input.paymentTerms,
-        deliveryDeadline: input.deliveryDeadline,
+        // deliveryTerms: input.deliveryTerms,
+        // paymentTerms: input.paymentTerms,
+        // deliveryDeadline: input.deliveryDeadline,
         status: "draft",
       })
       .returning();
@@ -826,7 +826,7 @@ export class OrderSettlementService {
 // =============================================================================
 
 export class ProcurementCircleService {
-  async createCircle(input: {
+  // async createCircle(input: {
     name: string;
     description?: string;
     category: string;
@@ -839,15 +839,15 @@ export class ProcurementCircleService {
     const [circle] = await db
       .insert(procurementCircles)
       .values({
-        name: input.name,
-        description: input.description,
-        category: input.category,
-        creatorVillageId: input.creatorVillageId,
-        memberVillageIds: [input.creatorVillageId],
-        minVillages: input.minVillages || 1,
-        maxVillages: input.maxVillages,
-        coordinationFeePercent: input.coordinationFeePercent || 50,
-        deadline: input.deadline,
+        // name: input.name,
+        // description: input.description,
+        // category: input.category,
+        // creatorVillageId: input.creatorVillageId,
+        // memberVillageIds: [input.creatorVillageId],
+        // minVillages: input.minVillages || 1,
+        // maxVillages: input.maxVillages,
+        // coordinationFeePercent: input.coordinationFeePercent || 50,
+        // deadline: input.deadline,
         status: "forming",
       })
       .returning();
