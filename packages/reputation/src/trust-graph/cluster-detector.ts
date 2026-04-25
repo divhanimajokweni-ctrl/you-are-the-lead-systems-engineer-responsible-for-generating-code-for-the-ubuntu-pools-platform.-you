@@ -79,7 +79,7 @@ export function detectClusters(
 
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
-  const results: ClusterResult[] = [];
+  // const results: ClusterResult[] = [];
   let clusterId = 0;
   for (const [, nodeIds] of clusters) {
     if (nodeIds.length < 2) continue;
@@ -97,21 +97,13 @@ export function detectClusters(
     }
     let dominantEdgeType = "transaction";
     let maxCount = 0;
-    for (const [type, count] of edgeTypeCounts) {
+for (const [type, count] of edgeTypeCounts) {
       if (count > maxCount) {
         maxCount = count;
         dominantEdgeType = type;
       }
     }
 
-    results.push({
-      clusterId: clusterId++,
-      nodeIds,
-      size: nodeIds.length,
-      avgTrustScore: Math.round(avgTrustScore),
-      dominantEdgeType,
-    });
+    return results;
   }
-
-  return results;
 }

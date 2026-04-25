@@ -79,7 +79,7 @@ export function detectClusters(
 
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
-  const results: ClusterResult[] = [];
+  // const results: ClusterResult[] = [];
   let clusterId = 0;
   for (const [, nodeIds] of clusters) {
     if (nodeIds.length < 2) continue;
@@ -104,7 +104,7 @@ export function detectClusters(
       }
     }
 
-    results.push({
+    // results.push({
       clusterId: clusterId++,
       nodeIds,
       size: nodeIds.length,
@@ -113,5 +113,5 @@ export function detectClusters(
     });
   }
 
-  return results;
+  // return results;
 }

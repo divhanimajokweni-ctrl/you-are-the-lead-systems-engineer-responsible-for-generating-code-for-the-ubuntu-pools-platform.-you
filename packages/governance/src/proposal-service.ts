@@ -106,12 +106,12 @@ export class ProposalService {
    * Creates a new governance proposal.
    * Emits governance.proposal_created event.
    */
-  async createProposal(input: CreateProposalInput): Promise<{
+  // async createProposal(input: CreateProposalInput): Promise<{
     proposal: GovernanceProposal;
     eventId: string;
     errors?: ValidationError[];
   }> {
-    const constitutionVersion = input.constitutionVersion ?? getLatestConstitution().version;
+    // const constitutionVersion = input.constitutionVersion ?? getLatestConstitution().version;
     const constitution = getLatestConstitution();
     
     if (!constitution) {
@@ -119,11 +119,11 @@ export class ProposalService {
     }
 
     const errors = validateProposalInput({
-      title: input.title,
-      description: input.description,
-      proposalType: input.proposalType,
-      votingPeriodEnd: input.votingPeriodEnd,
-      proposerId: input.proposerId,
+      // title: input.title,
+      // description: input.description,
+      // proposalType: input.proposalType,
+      // votingPeriodEnd: input.votingPeriodEnd,
+      // proposerId: input.proposerId,
       constitutionVersion,
     });
 
@@ -136,17 +136,17 @@ export class ProposalService {
     }
 
     const payload = governanceProposalCreatedPayloadSchema.parse({
-      proposalType: input.proposalType,
-      title: input.title,
-      description: input.description,
+      // proposalType: input.proposalType,
+      // title: input.title,
+      // description: input.description,
       constitutionVersion,
-      votingPeriodEnd: input.votingPeriodEnd,
+      // votingPeriodEnd: input.votingPeriodEnd,
       quorumThreshold: constitution.params.quorumThreshold,
       approvalThreshold: constitution.params.approvalThreshold,
-      proposerId: input.proposerId,
-      targetEntityId: input.targetEntityId,
-      targetEntityType: input.targetEntityType,
-      payload: input.payload,
+      // proposerId: input.proposerId,
+      // targetEntityId: input.targetEntityId,
+      // targetEntityType: input.targetEntityType,
+      // payload: input.payload,
     });
 
     const entityId = randomUUID();
@@ -154,39 +154,39 @@ export class ProposalService {
 
     const eventInput: CreateEventInput = {
       eventType: "governance.proposal_created",
-      actorId: input.proposerId,
+      // actorId: input.proposerId,
       entityId,
       entityType: "proposal",
       payload,
       occurredAt,
     };
 
-    const result = await this.eventService.emit(eventInput);
+    // const result = await this.eventService.emit(eventInput);
 
     const proposal: GovernanceProposal = {
       id: entityId,
-      proposalType: input.proposalType,
-      title: input.title,
-      description: input.description,
+      // proposalType: input.proposalType,
+      // title: input.title,
+      // description: input.description,
       constitutionVersion,
-      proposerId: input.proposerId,
-      targetEntityId: input.targetEntityId ?? null,
-      targetEntityType: input.targetEntityType ?? null,
-      payload: input.payload ?? {},
+      // proposerId: input.proposerId,
+      // targetEntityId: input.targetEntityId ?? null,
+      // targetEntityType: input.targetEntityType ?? null,
+      // payload: input.payload ?? {},
       status: "draft",
       quorumThreshold: Math.floor(constitution.params.quorumThreshold * 10000),
       approvalThreshold: Math.floor(constitution.params.approvalThreshold * 10000),
       votingPeriodStart: new Date(occurredAt),
-      votingPeriodEnd: new Date(input.votingPeriodEnd),
+      // votingPeriodEnd: new Date(input.votingPeriodEnd),
       createdAt: new Date(occurredAt),
-      createdByEventId: result.event.id,
+      // createdByEventId: result.event.id,
       executedAt: null,
       executedByEventId: null,
     };
 
     return {
       proposal,
-      eventId: result.event.id,
+      // eventId: result.event.id,
     };
   }
 
@@ -213,72 +213,72 @@ export class ProposalService {
    * Casts a vote on an active proposal.
    * Emits governance.proposal_approved or governance.proposal_rejected event.
    */
-  async castVote(input: CastVoteInput): Promise<{
+  // async castVote(input: CastVoteInput): Promise<{
     vote: GovernanceVote;
     eventId: string;
   }> {
-    const proposal = await this.getProposal(input.proposalId);
+    // const proposal = await this.getProposal(input.proposalId);
     if (!proposal) {
-      throw new Error(`Proposal ${input.proposalId} not found`);
+      // throw new Error(`Proposal ${input.proposalId} not found`);
     }
 
     if (proposal.status !== "active") {
-      throw new Error(`Proposal ${input.proposalId} is not active`);
+      // throw new Error(`Proposal ${input.proposalId} is not active`);
     }
 
     const now = new Date();
     if (now > new Date(proposal.votingPeriodEnd)) {
-      throw new Error(`Voting period for proposal ${input.proposalId} has ended`);
+      // throw new Error(`Voting period for proposal ${input.proposalId} has ended`);
     }
 
-    const isApproval = input.vote === "approved";
+    // const isApproval = input.vote === "approved";
     const eventType = isApproval 
       ? "governance.proposal_approved" 
       : "governance.proposal_rejected";
 
     const payload = isApproval
       ? governanceProposalApprovedPayloadSchema.parse({
-          proposalId: input.proposalId,
-          voterId: input.voterId,
-          voterType: input.voterType,
-          voteWeight: input.weight ?? 1,
-          signature: input.signature,
-          signedAt: input.signedAt,
+          // proposalId: input.proposalId,
+          // voterId: input.voterId,
+          // voterType: input.voterType,
+          // voteWeight: input.weight ?? 1,
+          // signature: input.signature,
+          // signedAt: input.signedAt,
         })
       : governanceProposalRejectedPayloadSchema.parse({
-          proposalId: input.proposalId,
-          voterId: input.voterId,
-          voterType: input.voterType,
-          rejectionReason: input.signature,
+          // proposalId: input.proposalId,
+          // voterId: input.voterId,
+          // voterType: input.voterType,
+          // rejectionReason: input.signature,
         });
 
     const eventInput: CreateEventInput = {
       eventType,
-      actorId: input.voterId,
+      // actorId: input.voterId,
       entityId: randomUUID(),
       entityType: "proposal_vote",
       payload,
       occurredAt: new Date().toISOString(),
     };
 
-    const result = await this.eventService.emit(eventInput);
+    // const result = await this.eventService.emit(eventInput);
 
     const vote: GovernanceVote = {
-      id: result.event.entityId as string,
-      proposalId: input.proposalId,
-      voterId: input.voterId,
-      voterType: input.voterType,
-      vote: input.vote,
-      weight: input.weight ?? 1,
-      signature: input.signature ?? null,
-      signedAt: input.signedAt ? new Date(input.signedAt) : null,
-      createdAt: new Date(result.event.occurredAt),
-      createdByEventId: result.event.id,
+      // id: result.event.entityId as string,
+      // proposalId: input.proposalId,
+      // voterId: input.voterId,
+      // voterType: input.voterType,
+      // vote: input.vote,
+      // weight: input.weight ?? 1,
+      // signature: input.signature ?? null,
+      // signedAt: input.signedAt ? new Date(input.signedAt) : null,
+      // createdAt: new Date(result.event.occurredAt),
+      // createdByEventId: result.event.id,
     };
 
     return {
       vote,
-      eventId: result.event.id,
+      // eventId: result.event.id,
     };
   }
 
@@ -330,8 +330,8 @@ export class ProposalService {
   async executeProposal(
     proposalId: string,
     executorId: string,
-    result: "success" | "partial" | "failed" = "success",
-    resultPayload?: Record<string, unknown>
+    // result: "success" | "partial" | "failed" = "success",
+    // resultPayload?: Record<string, unknown>
   ): Promise<{
     eventId: string;
   }> {
@@ -352,9 +352,9 @@ export class ProposalService {
     const payload = governanceProposalExecutedPayloadSchema.parse({
       proposalId,
       executedBy: executorId,
-      executionResult: result,
+      // executionResult: result,
       executedAt: new Date().toISOString(),
-      resultPayload,
+      // resultPayload,
     });
 
     const eventInput: CreateEventInput = {

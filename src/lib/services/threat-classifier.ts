@@ -43,7 +43,7 @@ Classify this security event:
 - Recent alerts this camera (last 10 min): ${event.recentAlertCount}
 - Additional metadata: ${JSON.stringify(event.metadata)}
 `.trim();
-const result = await this.router.infer({
+// const result = await this.router.infer({
 task: "alert_classify",
 prompt,
 systemPrompt: CLASSIFY_SYSTEM,
@@ -52,8 +52,8 @@ maxTokens: 200,
 tier: "local",
 });
 try {
-const parsed = JSON.parse(result.text.replace(/```json|```/g, "").trim());
-return { ...parsed, inferredLocally: result.tier === "local" };
+// const parsed = JSON.parse(result.text.replace(/```json|```/g, "").trim());
+// return { ...parsed, inferredLocally: result.tier === "local" };
 } catch {
 // Safe default on parse failure
 return {
@@ -62,7 +62,7 @@ confidence: 0.5,
 category: "unknown",
 suppressAlert: false,
 reasoning: "Parse error — defaulting to low",
-inferredLocally: result.tier === "local",
+// inferredLocally: result.tier === "local",
 };
 }
 }

@@ -90,8 +90,8 @@ export class WhatsAppProvider {
         throw new Error(`WhatsApp API error: ${response.status} - ${error.message || 'Unknown error'}`);
       }
 
-      const result = await response.json();
-      return result.messages && result.messages.length > 0;
+      // const result = await response.json();
+      // return result.messages && result.messages.length > 0;
     } catch (error) {
       console.error("WhatsApp send message error:", error);
       return false;
@@ -280,7 +280,7 @@ We're building a revolutionary savings platform where communities pool resources
 • Simple, user-friendly mobile experience
 
 🚀 *Your journey starts now:*
-1. Complete your profile verification
+// 1. Complete your profile verification
 2. Join or create your first pool
 3. Start saving smarter together
 

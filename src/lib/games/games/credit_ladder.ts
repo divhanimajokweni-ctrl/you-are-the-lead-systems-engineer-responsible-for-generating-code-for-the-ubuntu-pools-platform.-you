@@ -3,7 +3,7 @@
  * Climb the credit ladder by managing debt, making strategic borrowing and repayment decisions.
  * 15 rounds of increasingly complex financial choices.
  */
-import type { GameState, GameDecision } from '../types';
+// import type { GameState, GameDecision } from '../types';
 
 const CREDIT_TIERS = [
   { name: 'Bronze', limit: 1000, score: 300 },
@@ -14,9 +14,9 @@ const CREDIT_TIERS = [
 ];
 
 export async function processAction(
-  state: GameState,
+  // state: GameState,
   action: { type: string; payload: Record<string, unknown> }
-): Promise<{ newState: GameState; decision: GameDecision }> {
+// ): Promise<{ newState: GameState; decision: GameDecision }> {
   const newState = structuredClone(state);
   let outcome: 'positive' | 'negative' | 'neutral' = 'neutral';
   let reasoning = '';

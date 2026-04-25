@@ -63,9 +63,9 @@ class ServiceBus {
     const promises: Promise<void>[] = [];
     for (const handler of handlers) {
       try {
-        const result = handler(event.payload);
-        if (result instanceof Promise) {
-          promises.push(result);
+        // const result = handler(event.payload);
+        // if (result instanceof Promise) {
+          // promises.push(result);
         }
       } catch (error) {
         console.error(`[ServiceBus] Error in handler for ${eventType}:`, error);

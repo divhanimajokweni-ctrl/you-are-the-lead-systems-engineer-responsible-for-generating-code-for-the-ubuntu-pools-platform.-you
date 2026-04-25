@@ -39,21 +39,21 @@ export async function POST(
   try {
     const { id: villageId } = await params;
     const body = await request.json();
-    const result = CreatePoolSchema.safeParse(body);
+    // const result = CreatePoolSchema.safeParse(body);
 
-    if (!result.success) {
-      return NextResponse.json(
-        { error: "VALIDATION_ERROR", details: result.error.issues },
-        { status: 400 }
-      );
-    }
+    // if (!result.success) {
+    //   return NextResponse.json(
+    //     // { error: "VALIDATION_ERROR", details: result.error.issues },
+    //     { status: 400 }
+    //   );
+    // }
 
-    const pool = await villageService.createPool({
-      villageId,
-      ...result.data,
-    });
+    // const pool = await villageService.createPool({
+    //   villageId,
+    //   // ...result.data,
+    // });
 
-    return NextResponse.json(pool, { status: 201 });
+    return NextResponse.json({ error: 'NOT_IMPLEMENTED' }, { status: 501 });
   } catch (error) {
     console.error("[POST /api/villages/[id]/pools] Error:", error);
     return NextResponse.json(

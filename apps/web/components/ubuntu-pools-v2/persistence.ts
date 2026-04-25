@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 
 interface UbuntuPoolsState {
-  prestige: number;
+  // prestige: number;
   lindiweStats: { impulse: number; altruism: number };
-  leaderboard: Array<{ name: string; wealth: number; prestige: number }>;
+ //  // leaderboard: Array<{ name: string; wealth: number; prestige: number }>;
   gameHistory: Array<{ gameId: string; score: number; timestamp: number }>;
 }
 

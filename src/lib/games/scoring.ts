@@ -7,9 +7,9 @@
  * - Points are earned by demonstrated financial wisdom, not luck
  */
 import { db } from '@ubuntu/db/client';
-import { prestigeScores, prestigeLedger } from '@ubuntu/db/schema-games';
+// import { prestigeScores, prestigeLedger } from '@ubuntu/db/schema-games';
 import { eq } from 'drizzle-orm';
-import type { GameId, GameState, BehaviouralSignal, PrestigeAward } from './types';
+// import type { GameId, GameState, BehaviouralSignal, PrestigeAward } from './types';
  
 const PRESTIGE_PER_LEVEL = 100;
 const MAX_UBUNTU_BONUS   = 5; // Ubuntu Score bonus capped at +5
@@ -17,8 +17,8 @@ const MAX_UBUNTU_BONUS   = 5; // Ubuntu Score bonus capped at +5
 export async function awardPrestige(
   memberId:  string,
   sessionId: string,
-  gameId:    GameId,
-  state:     GameState,
+  // gameId:    GameId,
+  // state:     GameState,
   signals:   BehaviouralSignal[]
 ): Promise<{ total: number; awards: PrestigeAward[] }> {
   const awards: PrestigeAward[] = [];
@@ -48,13 +48,13 @@ export async function awardPrestige(
   const totalPoints = awards.reduce((sum, a) => sum + a.points, 0);
  
   // Persist awards to ledger
-  await db.insert(prestigeLedger).values(
+  // await db.insert(prestigeLedger).values(
     awards.map(a => ({ memberId, sessionId, points: a.points, reason: a.reason, description: a.description }))
   );
  
-  // Update or insert prestige score
-  const existing = await db.query.prestigeScores.findFirst({
-    where: eq(prestigeScores.memberId, memberId),
+ //  // Update or insert prestige score
+  // const existing = await db.query.prestigeScores.findFirst({
+    // where: eq(prestigeScores.memberId, memberId),
   });
  
   if (existing) {
@@ -63,16 +63,16 @@ export async function awardPrestige(
     const byGame      = { ...(existing.byGame as Record<string, number>), [gameId]: ((existing.byGame as Record<string, number>)[gameId] ?? 0) + totalPoints };
     const ubuntuBonus = Math.min(MAX_UBUNTU_BONUS, Math.floor(newTotal / 50));
  
-    await db.update(prestigeScores).set({
+    // await db.update(prestigeScores).set({
       totalPoints: newTotal,
       level:       newLevel,
       byGame,
       ubuntuBonus,
       lastUpdated: new Date(),
-    }).where(eq(prestigeScores.memberId, memberId));
+    // }).where(eq(prestigeScores.memberId, memberId));
   } else {
     const ubuntuBonus = Math.min(MAX_UBUNTU_BONUS, Math.floor(totalPoints / 50));
-    await db.insert(prestigeScores).values({
+    // await db.insert(prestigeScores).values({
       memberId,
       totalPoints,
       level:    1,

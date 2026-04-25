@@ -241,7 +241,7 @@ export default function SearchPage() {
             <h1 className="mt-2 text-2xl font-black tracking-tighter">Find People & Posts</h1>
             
             <div className="mt-6 relative">
-              <input
+              // <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

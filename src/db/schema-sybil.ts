@@ -29,7 +29,7 @@ export const sybilVerdictEnum = pgEnum("sybil_verdict", [
 ]);
 
 export const sybilProfiles = pgTable(
-  "sybil_profiles",
+  // "sybil_profiles",
   {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: text("user_id").notNull().unique(),
@@ -49,7 +49,7 @@ export const sybilProfiles = pgTable(
     createdAt: timestamptz("created_at").notNull().defaultNow(),
     updatedAt: timestamptz("updated_at").notNull().defaultNow(),
   },
-  (table) => [index("sybil_profiles_verdict_idx").on(table.verdict)]
+  // (table) => [index("sybil_profiles_verdict_idx").on(table.verdict)]
 );
 
 export const sybilInvitations = pgTable(

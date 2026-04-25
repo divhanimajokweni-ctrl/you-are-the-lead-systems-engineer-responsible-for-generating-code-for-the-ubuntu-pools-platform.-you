@@ -41,25 +41,25 @@ export default function UbuntuPoolsApp() {
 
   // Initialize state from localStorage
   const savedState = loadState();
-  const [prestige, setPrestige] = useState(savedState?.prestige ?? 150);
-  const [activeGameId, setActiveGameId] = useState<string | null>(null);
+  // const [prestige, setPrestige] = useState(savedState?.prestige ?? 150);
+  // const [activeGameId, setActiveGameId] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [lindiweStats, setLindiweStats] = useState(savedState?.lindiweStats ?? { impulse: 0.5, altruism: 0 });
-  const [leaderboard, setLeaderboard] = useState(savedState?.leaderboard ?? [
-    { name: 'Sovereign_Alpha', wealth: 12500, prestige: 4500 },
-    { name: 'Ubuntu_Queen', wealth: 9800, prestige: 5200 },
-    { name: 'Lindiwe_Watcher', wealth: 7500, prestige: 3800 },
+  // const [leaderboard, setLeaderboard] = useState(savedState?.leaderboard ?? [
+    // { name: 'Sovereign_Alpha', wealth: 12500, prestige: 4500 },
+    // { name: 'Ubuntu_Queen', wealth: 9800, prestige: 5200 },
+    // { name: 'Lindiwe_Watcher', wealth: 7500, prestige: 3800 },
   ]);
 
   // Save state whenever it changes
   useEffect(() => {
     saveState({
-      prestige,
+      // prestige,
       lindiweStats,
-      leaderboard,
+      // leaderboard,
       gameHistory: [] // Could be expanded
     });
-  }, [prestige, lindiweStats, leaderboard, saveState]);
+ //  // }, [prestige, lindiweStats, leaderboard, saveState]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('light', !isDarkMode);
@@ -76,8 +76,8 @@ export default function UbuntuPoolsApp() {
     const impulse = calcImpulse(signal);
     const altruism = signal.metadata?.isAltruistic ? 0.4 : 0;
 
-    const prestigeGain = (signal.score / 1000) + (altruism * 50);
-    setPrestige(prev => prev + Math.max(0, prestigeGain));
+    // const prestigeGain = (signal.score / 1000) + (altruism * 50);
+    // setPrestige(prev => prev + Math.max(0, prestigeGain));
     setLindiweStats({ impulse, altruism });
 
     return { impulse, altruism };
@@ -93,7 +93,7 @@ export default function UbuntuPoolsApp() {
 
     ingestSignal(signal);
     queueSignal(signal); // Queue for sync when backend available
-    setActiveGameId(null);
+    // setActiveGameId(null);
   };
 
   return (
@@ -117,16 +117,16 @@ export default function UbuntuPoolsApp() {
           <div className="text-right">
             <div className="text-[0.65rem] text-cyber-cyan/70 uppercase mb-1">SOVEREIGN STATUS</div>
             <div className="text-2xl font-bold text-cyber-pink">
-              PRESTIGE: {Math.floor(prestige).toLocaleString()} XP
+              // PRESTIGE: {Math.floor(prestige).toLocaleString()} XP
             </div>
           </div>
         </div>
 
         <div className="w-full h-2 bg-gray-900 border border-cyber-pink rounded-full overflow-hidden relative">
           <motion.div
-            className="h-full bg-gradient-to-r from-cyber-pink to-cyber-cyan prestige-glow"
+            // className="h-full bg-gradient-to-r from-cyber-pink to-cyber-cyan prestige-glow"
             initial={{ width: 0 }}
-            animate={{ width: `${Math.min(100, (prestige / 5000) * 100)}%` }}
+            // animate={{ width: `${Math.min(100, (prestige / 5000) * 100)}%` }}
             transition={{ duration: 0.5 }}
           />
         </div>
@@ -146,7 +146,7 @@ export default function UbuntuPoolsApp() {
           <GameCard
             key={game.id}
             game={game}
-            onPlay={() => setActiveGameId(game.id)}
+            // onPlay={() => setActiveGameId(game.id)}
           />
         ))}
       </main>
@@ -156,13 +156,13 @@ export default function UbuntuPoolsApp() {
           {/* Top Sovereigns (Altruism + Wealth) */}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {leaderboard.map((entry, i) => (
+          // {leaderboard.map((entry, i) => (
             <div key={i} className="bg-white/5 p-3 border-l-2 border-cyber-cyan">
               <span className="block text-[0.65rem] text-cyber-cyan/70 mb-1">
                 {String(i + 1).padStart(2, '0')}. {entry.name.toUpperCase()}
               </span>
               <span className="font-bold text-sm">
-                A: {((entry.prestige / 5000) * 100).toFixed(0)}% | R{entry.wealth.toLocaleString()}
+                // A: {((entry.prestige / 5000) * 100).toFixed(0)}% | R{entry.wealth.toLocaleString()}
               </span>
             </div>
           ))}
@@ -170,7 +170,7 @@ export default function UbuntuPoolsApp() {
       </footer>
 
       <AnimatePresence>
-        {activeGameId && (
+        // {activeGameId && (
           <Suspense fallback={
             <motion.div
               className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
@@ -182,8 +182,8 @@ export default function UbuntuPoolsApp() {
             </motion.div>
           }>
             <GameModal
-              game={GAMES.find(g => g.id === activeGameId)!}
-              onClose={() => setActiveGameId(null)}
+              // game={GAMES.find(g => g.id === activeGameId)!}
+              // onClose={() => setActiveGameId(null)}
               onEnd={handleGameEnd}
             />
           </Suspense>

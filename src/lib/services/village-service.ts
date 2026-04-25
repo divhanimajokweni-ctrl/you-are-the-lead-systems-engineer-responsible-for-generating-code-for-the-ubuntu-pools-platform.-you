@@ -131,24 +131,24 @@ export interface SendMessageInput {
 }
 
 export class VillageService {
-  async createVillage(input: CreateVillageInput) {
+  // async createVillage(input: CreateVillageInput) {
     const [village] = await db
       .insert(villages)
       .values({
-        name: input.name,
-        description: input.description,
-        founderId: input.founderId,
-        currency: input.currency || "USD",
-        isPublic: input.isPublic ?? true,
-        tags: input.tags || [],
-        location: input.location || {},
-        settings: input.settings || {},
+        // name: input.name,
+        // description: input.description,
+        // founderId: input.founderId,
+        // currency: input.currency || "USD",
+        // isPublic: input.isPublic ?? true,
+        // tags: input.tags || [],
+        // location: input.location || {},
+        // settings: input.settings || {},
       })
       .returning();
 
     await db.insert(villageMembers).values({
       villageId: village.id,
-      userId: input.founderId,
+      // userId: input.founderId,
       role: "admin",
       ubuntuScore: 500,
       reputationScore: 500,
@@ -193,13 +193,13 @@ export class VillageService {
     return query;
   }
 
-  async joinVillage(input: JoinVillageInput) {
+  // async joinVillage(input: JoinVillageInput) {
     const [member] = await db
       .insert(villageMembers)
       .values({
-        villageId: input.villageId,
-        userId: input.userId,
-        role: input.role || "member",
+        // villageId: input.villageId,
+        // userId: input.userId,
+        // role: input.role || "member",
         ubuntuScore: 500,
         reputationScore: 500,
         governanceWeight: Math.floor(Math.sqrt(500)),
@@ -242,16 +242,16 @@ export class VillageService {
     return member;
   }
 
-  async createPool(input: CreatePoolInput) {
-    const village = await this.getVillage(input.villageId);
+  // async createPool(input: CreatePoolInput) {
+    // const village = await this.getVillage(input.villageId);
     if (!village) {
       throw new Error("Village not found");
     }
 
     const payoutOrder: Array<{ userId: string; cycle: number }> = [];
-    const members = await this.getVillageMembers(input.villageId);
+    // const members = await this.getVillageMembers(input.villageId);
 
-    for (let i = 0; i < input.totalCycles; i++) {
+    // for (let i = 0; i < input.totalCycles; i++) {
       if (members[i % members.length]) {
         payoutOrder.push({
           userId: members[i % members.length].userId,
@@ -263,13 +263,13 @@ export class VillageService {
     const [pool] = await db
       .insert(liquidityPools)
       .values({
-        villageId: input.villageId,
-        poolType: input.poolType,
-        name: input.name,
-        description: input.description,
-        contributionAmount: input.contributionAmount,
-        totalCycles: input.totalCycles,
-        cycleDuration: input.cycleDuration || 30,
+        // villageId: input.villageId,
+        // poolType: input.poolType,
+        // name: input.name,
+        // description: input.description,
+        // contributionAmount: input.contributionAmount,
+        // totalCycles: input.totalCycles,
+        // cycleDuration: input.cycleDuration || 30,
         payoutOrder,
         memberCount: members.length,
       })
@@ -286,15 +286,15 @@ export class VillageService {
       .orderBy(desc(liquidityPools.createdAt));
   }
 
-  async contributeToPool(input: ContributeToPoolInput) {
+  // async contributeToPool(input: ContributeToPoolInput) {
     const [contribution] = await db
       .insert(poolContributions)
       .values({
-        poolId: input.poolId,
-        memberId: input.memberId,
-        userId: input.userId,
-        cycle: input.cycle,
-        amount: input.amount,
+        // poolId: input.poolId,
+        // memberId: input.memberId,
+        // userId: input.userId,
+        // cycle: input.cycle,
+        // amount: input.amount,
         status: "paid",
         paidAt: new Date(),
       })
@@ -303,16 +303,16 @@ export class VillageService {
     const pool = await db
       .select()
       .from(liquidityPools)
-      .where(eq(liquidityPools.id, input.poolId))
+      // .where(eq(liquidityPools.id, input.poolId))
       .then((r) => r[0]);
 
     if (pool) {
       await db
         .update(liquidityPools)
         .set({
-          totalFunds: pool.totalFunds + input.amount,
+          // totalFunds: pool.totalFunds + input.amount,
         })
-        .where(eq(liquidityPools.id, input.poolId));
+        // .where(eq(liquidityPools.id, input.poolId));
     }
 
     return contribution;
@@ -326,25 +326,25 @@ export class VillageService {
       .orderBy(desc(poolContributions.createdAt));
   }
 
-  async createProcurementEvent(input: CreateProcurementInput) {
+  // async createProcurementEvent(input: CreateProcurementInput) {
     const savingsPercent = Math.round(
-      ((input.individualPrice - input.negotiatedPrice) / input.individualPrice) *
+      // ((input.individualPrice - input.negotiatedPrice) / input.individualPrice) *
         100
     );
 
     const [event] = await db
       .insert(procurementEvents)
       .values({
-        villageId: input.villageId,
-        organizerId: input.organizerId,
-        product: input.product,
-        description: input.description,
-        totalVolume: input.totalVolume,
-        individualPrice: input.individualPrice,
-        negotiatedPrice: input.negotiatedPrice,
+        // villageId: input.villageId,
+        // organizerId: input.organizerId,
+        // product: input.product,
+        // description: input.description,
+        // totalVolume: input.totalVolume,
+        // individualPrice: input.individualPrice,
+        // negotiatedPrice: input.negotiatedPrice,
         savingsPercent,
-        minParticipants: input.minParticipants || 1,
-        deadline: input.deadline,
+        // minParticipants: input.minParticipants || 1,
+        // deadline: input.deadline,
         status: "proposed",
       })
       .returning();
@@ -389,18 +389,18 @@ export class VillageService {
       .orderBy(desc(procurementEvents.createdAt));
   }
 
-  async createInvestment(input: CreateInvestmentInput) {
+  // async createInvestment(input: CreateInvestmentInput) {
     const [investment] = await db
       .insert(investments)
       .values({
-        villageId: input.villageId,
-        businessName: input.businessName,
-        description: input.description,
-        investmentAmount: input.investmentAmount,
-        expectedReturn: input.expectedReturn,
+        // villageId: input.villageId,
+        // businessName: input.businessName,
+        // description: input.description,
+        // investmentAmount: input.investmentAmount,
+        // expectedReturn: input.expectedReturn,
         returnRate: Math.round(
-          ((input.expectedReturn - input.investmentAmount) /
-            input.investmentAmount) *
+          // ((input.expectedReturn - input.investmentAmount) /
+            // input.investmentAmount) *
             100
         ),
         status: "proposed",
@@ -453,16 +453,16 @@ export class VillageService {
       .orderBy(desc(investments.createdAt));
   }
 
-  async createInsurancePool(input: CreateInsuranceInput) {
+  // async createInsurancePool(input: CreateInsuranceInput) {
     const [pool] = await db
       .insert(insurancePools)
       .values({
-        villageId: input.villageId,
-        name: input.name,
-        coverageType: input.coverageType,
-        description: input.description,
-        monthlyContribution: input.monthlyContribution,
-        coverageLimit: input.coverageLimit,
+        // villageId: input.villageId,
+        // name: input.name,
+        // coverageType: input.coverageType,
+        // description: input.description,
+        // monthlyContribution: input.monthlyContribution,
+        // coverageLimit: input.coverageLimit,
         status: "active",
       })
       .returning();
@@ -550,8 +550,8 @@ export class VillageService {
       .orderBy(desc(insurancePools.createdAt));
   }
 
-  async createProposal(input: CreateProposalInput) {
-    const member = await this.getMemberRole(input.villageId, input.proposerId);
+  // async createProposal(input: CreateProposalInput) {
+    // const member = await this.getMemberRole(input.villageId, input.proposerId);
     const weight = member?.governanceWeight || 1;
 
     const votingPeriodEnd = new Date();
@@ -560,12 +560,12 @@ export class VillageService {
     const [proposal] = await db
       .insert(villageProposals)
       .values({
-        villageId: input.villageId,
-        proposerId: input.proposerId,
-        proposalType: input.proposalType,
-        title: input.title,
-        description: input.description,
-        payload: input.payload || {},
+        // villageId: input.villageId,
+        // proposerId: input.proposerId,
+        // proposalType: input.proposalType,
+        // title: input.title,
+        // description: input.description,
+        // payload: input.payload || {},
         votingPeriodStart: new Date(),
         votingPeriodEnd,
         status: "active",
@@ -575,14 +575,14 @@ export class VillageService {
     return proposal;
   }
 
-  async castVote(input: CastVoteInput) {
+  // async castVote(input: CastVoteInput) {
     const [vote] = await db
       .insert(villageVotes)
       .values({
-        proposalId: input.proposalId,
-        voterId: input.voterId,
-        vote: input.vote,
-        weight: input.weight,
+        // proposalId: input.proposalId,
+        // voterId: input.voterId,
+        // vote: input.vote,
+        // weight: input.weight,
       })
       .onConflictDoNothing()
       .returning();
@@ -590,24 +590,24 @@ export class VillageService {
     const proposal = await db
       .select()
       .from(villageProposals)
-      .where(eq(villageProposals.id, input.proposalId))
+      // .where(eq(villageProposals.id, input.proposalId))
       .then((r) => r[0]);
 
     if (proposal && vote) {
       const updateFields: Record<string, number> = {
-        totalWeight: proposal.totalWeight + input.weight,
+        // totalWeight: proposal.totalWeight + input.weight,
       };
 
-      if (input.vote === "approved") {
-        updateFields.votesFor = proposal.votesFor + input.weight;
+      // if (input.vote === "approved") {
+        // updateFields.votesFor = proposal.votesFor + input.weight;
       } else {
-        updateFields.votesAgainst = proposal.votesAgainst + input.weight;
+        // updateFields.votesAgainst = proposal.votesAgainst + input.weight;
       }
 
       await db
         .update(villageProposals)
         .set(updateFields)
-        .where(eq(villageProposals.id, input.proposalId));
+        // .where(eq(villageProposals.id, input.proposalId));
     }
 
     return vote;
@@ -621,16 +621,16 @@ export class VillageService {
       .orderBy(desc(villageProposals.createdAt));
   }
 
-  async sendMessage(input: SendMessageInput) {
+  // async sendMessage(input: SendMessageInput) {
     const [message] = await db
       .insert(villageMessages)
       .values({
-        villageId: input.villageId,
-        senderId: input.senderId,
-        channel: input.channel,
-        content: input.content,
-        isEncrypted: input.isEncrypted || false,
-        eventReference: input.eventReference,
+        // villageId: input.villageId,
+        // senderId: input.senderId,
+        // channel: input.channel,
+        // content: input.content,
+        // isEncrypted: input.isEncrypted || false,
+        // eventReference: input.eventReference,
       })
       .returning();
 

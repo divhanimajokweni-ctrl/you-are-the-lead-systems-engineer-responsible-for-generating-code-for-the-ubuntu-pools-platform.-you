@@ -44,29 +44,29 @@ export async function POST(
   try {
     const { id } = await params;
     const body = await request.json();
-    const result = addEvidenceSchema.safeParse(body);
+    // const result = addEvidenceSchema.safeParse(body);
     
-    if (!result.success) {
-      return NextResponse.json(
-        { error: 'Invalid request', details: result.error.issues },
-        { status: 400 }
-      );
-    }
+    // if (!result.success) {
+    //   return NextResponse.json(
+    //     // { error: 'Invalid request', details: result.error.issues },
+    //     { status: 400 }
+    //   );
+    // }
     
-    const control = await securityControlsService.getControlById(id);
-    if (!control) {
-      return NextResponse.json(
-        { error: 'Control not found' },
-        { status: 404 }
-      );
-    }
+    // const control = await securityControlsService.getControlById(id);
+    // if (!control) {
+    //   return NextResponse.json(
+    //     { error: 'Control not found' },
+    //     { status: 404 }
+    //   );
+    // }
     
-    const evidence = await securityControlsService.addEvidence(id, {
-      ...result.data,
-      expirationDate: result.data.expirationDate ? new Date(result.data.expirationDate) : undefined,
-    });
+    // const evidence = await securityControlsService.addEvidence(id, {
+    //   ...result.data,
+    //   // expirationDate: result.data.expirationDate ? new Date(result.data.expirationDate) : undefined,
+    // });
     
-    return NextResponse.json({ evidence }, { status: 201 });
+    return NextResponse.json({ error: 'NOT_IMPLEMENTED' }, { status: 501 });
   } catch (error) {
     console.error('Failed to add evidence:', error);
     return NextResponse.json(

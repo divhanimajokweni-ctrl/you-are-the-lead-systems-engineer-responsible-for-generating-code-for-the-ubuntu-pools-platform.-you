@@ -1,6 +1,6 @@
-import type { GameId, GameDefinition } from './types';
+// import type { GameId, GameDefinition } from './types';
  
-export const GAME_DEFINITIONS: Record<GameId, GameDefinition> = {
+// export const GAME_DEFINITIONS: Record<GameId, GameDefinition> = {
   ubuntu_monopoly: {
     id:           'ubuntu_monopoly',
     name:         'Ubuntu Monopoly',

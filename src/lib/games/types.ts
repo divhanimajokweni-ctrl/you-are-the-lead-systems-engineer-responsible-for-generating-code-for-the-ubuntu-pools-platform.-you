@@ -2,7 +2,7 @@
  * Ubuntu Pools Games Module — Type Definitions
  */
  
-export type GameId =
+// export type GameId =
   | 'ubuntu_monopoly'
   | 'pool_simulator'
   | 'credit_ladder'
@@ -29,7 +29,7 @@ export type SignalType =
 // ── Game Metadata ─────────────────────────────────────────────────────────────
  
 export interface GameDefinition {
-  id:           GameId;
+  // id:           GameId;
   name:         string;
   tagline:      string;
   description:  string;
@@ -48,14 +48,14 @@ export interface GameDefinition {
 export interface GameSession {
   id:             string;
   memberId:       string;
-  gameId:         GameId;
+  // gameId:         GameId;
   status:         GameStatus;
   startedAt:      Date;
   completedAt?:   Date;
   durationMs?:    number;
-  stateSnapshot?: GameState;
+  // stateSnapshot?: GameState;
   finalScore?:    number;
-  prestigeAwarded: number;
+  // prestigeAwarded: number;
   isMultiplayer:  boolean;
   villageId?:     string;
   metadata?:      unknown;
@@ -65,7 +65,7 @@ export interface GameSession {
  
 // ── Game State (generic, each game extends this) ──────────────────────────────
  
-export interface GameState {
+// export interface GameState {
   round:        number;
   maxRounds:    number;
   score:        number;
@@ -98,14 +98,14 @@ export interface BehaviouralSignal {
   type:       SignalType;
   value:      number;   // 0–100
   confidence: number;   // 0–100
-  gameId:     GameId;
+  // gameId:     GameId;
   rationale:  string;
 }
  
 export interface SessionTelemetry {
   sessionId: string;
   memberId:  string;
-  gameId:    GameId;
+  // gameId:    GameId;
   signals:   BehaviouralSignal[];
   summary:   string;
 }
@@ -122,7 +122,7 @@ export interface PrestigeScore {
   memberId:    string;
   total:       number;
   level:       number;
-  byGame:      Partial<Record<GameId, number>>;
+  // byGame:      Partial<Record<GameId, number>>;
   ubuntuBonus: number;
 }
  
@@ -134,7 +134,7 @@ export interface PrestigeScore {
 export interface GameTelemetryPayload {
   sessionId: string;
   memberId: string;
-  gameId: GameId;
+  // gameId: GameId;
   signals: BehaviouralSignal[];
   consentGiven: boolean;
   timestamp: Date;
@@ -180,12 +180,12 @@ export interface CreditSignal extends LindiweSignal {
  
 export interface StartSessionResponse {
   session: GameSession;
-  initialState: GameState;
+  // initialState: GameState;
 }
  
 export interface SubmitActionResponse {
   session: GameSession;
-  newState: GameState;
+  // newState: GameState;
   signals: BehaviouralSignal[];
   awards:  PrestigeAward[];
 }
@@ -194,7 +194,7 @@ export interface LeaderboardEntry {
   rank:        number;
   memberId:    string;
   displayName: string;
-  prestige:    number;
+  // prestige:    number;
   level:       number;
   gamesPlayed: number;
   villageId?:  string;

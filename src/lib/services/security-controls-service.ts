@@ -67,13 +67,13 @@ export const securityControlsService = {
   },
 
   async getControlById(id: string): Promise<SecurityControl | undefined> {
-    const result = await db.select().from(securityControls).where(eq(securityControls.id, id));
-    return result[0];
+    // const result = await db.select().from(securityControls).where(eq(securityControls.id, id));
+    // return result[0];
   },
 
   async getControlByControlId(controlId: string): Promise<SecurityControl | undefined> {
-    const result = await db.select().from(securityControls).where(eq(securityControls.controlId, controlId));
-    return result[0];
+    // const result = await db.select().from(securityControls).where(eq(securityControls.controlId, controlId));
+    // return result[0];
   },
 
   async getControlWithDetails(id: string): Promise<ControlWithEvidence | undefined> {
@@ -96,136 +96,82 @@ export const securityControlsService = {
     };
   },
 
-  async createControl(data: Omit<NewSecurityControl, 'id' | 'createdAt' | 'updatedAt'>): Promise<SecurityControl> {
-    const id = randomUUID();
-    const now = new Date();
-    
-    const result = await db.insert(securityControls).values({
-      id,
-      ...data,
-      createdAt: now,
-      updatedAt: now,
-    }).returning();
-    
-    return result[0]!;
-  },
+//   async createControl(data: Omit<NewSecurityControl, 'id' | 'createdAt' | 'updatedAt'>): Promise<SecurityControl> {
+//     const id = randomUUID();
+//     const now = new Date();
+//     
+// // async createControl(data: Omit<NewSecurityControl, 'id' | 'createdAt' | 'updatedAt'>): Promise<SecurityControl> {
+// //     const id = randomUUID();
+// //     const now = new Date();
+//     
+// //     const result = await db.insert(securityControls).values({
+// //       id,
+// //       ...data,
+// //       createdAt: now,
+// //       updatedAt: now,
+// //     }).returning();
+//     
+// // return result[0]!;
+//   // }
 
-  async updateControl(id: string, data: Partial<NewSecurityControl>): Promise<SecurityControl | undefined> {
-    const result = await db.update(securityControls)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(securityControls.id, id))
-      .returning();
-    
-    return result[0];
-  },
+  // async updateControl(id: string, data: Partial<NewSecurityControl>): Promise<SecurityControl | undefined> {
+  //   const result = await db.update(securityControls)
+  //     .set({ ...data, updatedAt: new Date() })
+  //     .where(eq(securityControls.id, id))
+  //     .returning();
+  
+  //   return result[0];
+  // }
 
-  async updateControlStatus(id: string, status: ControlStatus, assessorId: string, notes?: string): Promise<ControlAssessment | undefined> {
-    const control = await this.getControlById(id);
-    if (!control) return undefined;
+//   // summary.byCategory[control.category] = summary.byCategory[control.category] || { implemented: 0, partial: 0, missing: 0 };
+//       
+//       if (control.status === 'implemented') {
+//         summary.byCategory[control.category].implemented++;
+//       } else if (control.status === 'partial') {
+//         summary.byCategory[control.category].partial++;
+//       } else if (control.status === 'missing') {
+//         summary.byCategory[control.category].missing++;
+//       }
+//       
+//       summary.byPriority[control.priority]++;
+//     }
     
-    const assessment = await db.insert(controlAssessments).values({
-      controlId: id,
-      assessorId,
-      status,
-      previousStatus: control.status,
-      notes,
-      assessmentDate: new Date(),
-      createdAt: new Date(),
-    }).returning();
-    
-    await db.update(securityControls)
-      .set({ status, lastReviewDate: new Date(), updatedAt: new Date() })
-      .where(eq(securityControls.id, id));
-    
-    return assessment[0];
-  },
+    //     if (summary.total > 0) {
+//       summary.maturityScore = Math.round((summary.implemented / summary.total) * 100);
+//     }
+//     
+//     return summary;
+//   },
 
-  async getControlSummary(): Promise<ControlSummary> {
-    const controls = await db.select().from(securityControls);
-    
-    const summary: ControlSummary = {
-      total: 0,
-      implemented: 0,
-      partial: 0,
-      missing: 0,
-      byCategory: {
-        INFRASTRUCTURE: { implemented: 0, partial: 0, missing: 0 },
-        ORGANIZATIONAL: { implemented: 0, partial: 0, missing: 0 },
-        PRODUCT: { implemented: 0, partial: 0, missing: 0 },
-        INTERNAL_PROCEDURES: { implemented: 0, partial: 0, missing: 0 },
-        DATA_PRIVACY: { implemented: 0, partial: 0, missing: 0 },
-      },
-      byPriority: {
-        critical: 0,
-        high: 0,
-        medium: 0,
-        low: 0,
-      },
-      maturityScore: 0,
-    };
-    
-    for (const control of controls) {
-      if (control.status === 'not_applicable') continue;
-      
-      summary.total++;
-      
-      if (control.status === 'implemented') {
-        summary.implemented++;
-      } else if (control.status === 'partial') {
-        summary.partial++;
-      } else if (control.status === 'missing') {
-        summary.missing++;
-      }
-      
-      summary.byCategory[control.category] = summary.byCategory[control.category] || { implemented: 0, partial: 0, missing: 0 };
-      
-      if (control.status === 'implemented') {
-        summary.byCategory[control.category].implemented++;
-      } else if (control.status === 'partial') {
-        summary.byCategory[control.category].partial++;
-      } else if (control.status === 'missing') {
-        summary.byCategory[control.category].missing++;
-      }
-      
-      summary.byPriority[control.priority]++;
-    }
-    
-    if (summary.total > 0) {
-      summary.maturityScore = Math.round((summary.implemented / summary.total) * 100);
-    }
-    
-    return summary;
-  },
+// async addEvidence(controlId: string, data: Omit<NewControlEvidence, 'id' | 'controlId' | 'createdAt'>): Promise<ControlEvidence> {
+//     const result = await db.insert(controlEvidence).values({
+//       controlId,
+//       ...data,
+//     }).returning();
+//     
+//     return result[0]!;
+//   },
 
-async addEvidence(controlId: string, data: Omit<NewControlEvidence, 'id' | 'controlId' | 'createdAt'>): Promise<ControlEvidence> {
-    const result = await db.insert(controlEvidence).values({
-      controlId,
-      ...data,
-    }).returning();
-    
-    return result[0]!;
-  },
+  // async verifyEvidence(id: string, verifierId: string): Promise<ControlEvidence | undefined> {
+  //   const result = await db.update(controlEvidence)
+  //     .set({ verifiedBy: verifierId, verifiedAt: new Date() })
+  //     .where(eq(controlEvidence.id, id))
+  //     .returning();
+  //     
+  //   return result[0]!;
+  // },
 
-  async verifyEvidence(id: string, verifierId: string): Promise<ControlEvidence | undefined> {
-    const result = await db.update(controlEvidence)
-      .set({ verifiedBy: verifierId, verifiedAt: new Date() })
-      .where(eq(controlEvidence.id, id))
-      .returning();
-    
-    return result[0]!;
-  },
+  //   async getEvidenceForControl(controlId: string): Promise<ControlEvidence[]> {
+//     return db.select().from(controlEvidence)
+//       .where(eq(controlEvidence.controlId, controlId))
+//       .orderBy(desc(controlEvidence.createdAt));
+//   },
 
-  async getEvidenceForControl(controlId: string): Promise<ControlEvidence[]> {
-    return db.select().from(controlEvidence)
-      .where(eq(controlEvidence.controlId, controlId))
-      .orderBy(desc(controlEvidence.createdAt));
-  },
-
-  async getControlHistory(controlId: string): Promise<ControlAssessment[]> {
-    return db.select().from(controlAssessments)
-      .where(eq(controlAssessments.controlId, controlId))
-      .orderBy(desc(controlAssessments.assessmentDate));
-  },
+//   async getControlHistory(controlId: string): Promise<ControlAssessment[]> {
+//     return db.select().from(controlAssessments)
+//       .where(eq(controlAssessments.controlId, controlId))
+//       .orderBy(desc(controlAssessments.assessmentDate));
+//   },
 
   async createIncident(data: Omit<NewSecurityIncident, 'id' | 'incidentId' | 'createdAt' | 'updatedAt'>): Promise<SecurityIncident> {
     const id = randomUUID();
@@ -238,24 +184,24 @@ async addEvidence(controlId: string, data: Omit<NewControlEvidence, 'id' | 'cont
     const count = (countResult[0]?.count || 0) + 1;
     const incidentId = `INC-${now.getFullYear()}-${count.toString().padStart(5, '0')}`;
     
-    const result = await db.insert(securityIncidents).values({
-      id,
-      incidentId,
-      ...data,
-      createdAt: now,
-      updatedAt: now,
-    }).returning();
+    // const result = await db.insert(securityIncidents).values({
+//       id,
+//       incidentId,
+//       ...data,
+//       createdAt: now,
+//       updatedAt: now,
+//     }).returning();
     
-    return result[0]!;
+    // return result[0]!;
   },
 
   async updateIncident(id: string, data: Partial<NewSecurityIncident>): Promise<SecurityIncident | undefined> {
-    const result = await db.update(securityIncidents)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(securityIncidents.id, id))
-      .returning();
+//     // const result = await db.update(securityIncidents)
+//       .set({ ...data, updatedAt: new Date() })
+//       .where(eq(securityIncidents.id, id))
+//       .returning();
     
-    return result[0]!;
+    // return result[0]!;
   },
 
   async getAllIncidents(filters?: {

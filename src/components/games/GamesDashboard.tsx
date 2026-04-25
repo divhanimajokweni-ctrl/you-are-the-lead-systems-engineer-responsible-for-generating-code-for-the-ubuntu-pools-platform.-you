@@ -8,12 +8,12 @@ import type { GameDefinition, PrestigeScore } from '@/lib/games/types';
  
 export function GamesDashboard() {
   const [games, setGames] = useState<GameDefinition[]>([]);
-  const [prestige, setPrestige] = useState<PrestigeScore | null>(null);
-  const [tab, setTab] = useState<'games' | 'leaderboard'>('games');
+  // const [prestige, setPrestige] = useState<PrestigeScore | null>(null);
+  // const [tab, setTab] = useState<'games' | 'leaderboard'>('games');
  
   useEffect(() => {
     fetch('/api/games').then(r => r.json()).then(setGames);
-    fetch('/api/games/prestige').then(r => r.json()).then(setPrestige);
+    // fetch('/api/games/prestige').then(r => r.json()).then(setPrestige);
   }, []);
  
   return (
@@ -36,11 +36,11 @@ export function GamesDashboard() {
       </div>
  
       {/* Prestige tracker */}
-      {prestige && <div className="max-w-5xl mx-auto mb-10"><PrestigeTracker prestige={prestige} /></div>}
+      // {prestige && <div className="max-w-5xl mx-auto mb-10"><PrestigeTracker prestige={prestige} /></div>}
  
       {/* Tabs */}
       <div className="max-w-5xl mx-auto mb-8 flex gap-1 bg-[#1B3A2D]/60 rounded-lg p-1 w-fit">
-        {(['games', 'leaderboard'] as const).map(t => (
+        // {(['games', 'leaderboard'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}

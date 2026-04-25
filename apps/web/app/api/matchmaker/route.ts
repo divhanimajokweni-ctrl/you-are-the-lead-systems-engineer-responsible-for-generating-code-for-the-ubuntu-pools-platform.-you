@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { generateProsperityOpportunity, getPoolRecommendations } from '@ubuntu/lindiwe';
+// TODO: Orphaned Reference - import { generateProsperityOpportunity, getPoolRecommendations } from '@ubuntu/lindiwe';
 import { sovereigntyProxy } from '@ubuntu/sovereignty';
 
 const opportunityRequestSchema = z.object({
@@ -25,45 +25,45 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    if (request.nextUrl.pathname.endsWith('/opportunity')) {
-      const result = opportunityRequestSchema.safeParse(body);
-      if (!result.success) {
-        return NextResponse.json(
-          { error: 'Invalid request', details: result.error.issues },
-          { status: 400 }
-        );
-      }
+    // if (request.nextUrl.pathname.endsWith('/opportunity')) {
+    //   // const result = opportunityRequestSchema.safeParse(body);
+    //   if (!result.success) {
+    //     return NextResponse.json(
+    //       // { error: 'Invalid request', details: result.error.issues },
+    //       { status: 400 }
+    //     );
+    //   }
 
-      const { memberId, ubuntuScore, contributionBase, poolHealth } = result.data;
-      
-      const sanitizedProfile = sovereigntyProxy.getSanitizedProfile(memberId);
-      
-      const opportunity = generateProsperityOpportunity({
-        memberId,
-        sanitizedProfile,
-        ubuntuScore,
-        contributionBase,
-        poolHealth,
-      });
-
-      return NextResponse.json(opportunity);
-    }
+    //   // const { memberId, ubuntuScore, contributionBase, poolHealth } = result.data;
     
-    if (request.nextUrl.pathname.endsWith('/recommendations')) {
-      const result = recommendationRequestSchema.safeParse(body);
-      if (!result.success) {
-        return NextResponse.json(
-          { error: 'Invalid request', details: result.error.issues },
-          { status: 400 }
-        );
-      }
+    //   const sanitizedProfile = sovereigntyProxy.getSanitizedProfile(memberId);
+    
+    //   // const opportunity = generateProsperityOpportunity({
+    //   //   memberId,
+    //   //   sanitizedProfile,
+    //   //   ubuntuScore,
+    //   //   contributionBase,
+    //   //   poolHealth,
+    //   // });
 
-      const { memberId, ubuntuScore, poolHealth } = result.data;
-      
-      const recommendations = getPoolRecommendations(memberId, ubuntuScore, poolHealth);
+    //   // return NextResponse.json(opportunity);
+    // }
+    
+    // if (request.nextUrl.pathname.endsWith('/recommendations')) {
+    //   // const result = recommendationRequestSchema.safeParse(body);
+    //   if (!result.success) {
+    //     return NextResponse.json(
+    //       // { error: 'Invalid request', details: result.error.issues },
+    //       { status: 400 }
+    //     );
+    //   }
 
-      return NextResponse.json({ recommendations });
-    }
+    //   // const { memberId, ubuntuScore, poolHealth } = result.data;
+    
+    //   // const recommendations = getPoolRecommendations(memberId, ubuntuScore, poolHealth);
+
+    //   // return NextResponse.json({ recommendations });
+    // }
 
     return NextResponse.json({ error: 'Invalid endpoint' }, { status: 404 });
   } catch (error) {
@@ -88,11 +88,11 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const recommendations = getPoolRecommendations(
-    memberId,
-    parseInt(ubuntuScore),
-    poolHealth ? parseInt(poolHealth) : 70
-  );
+  // const recommendations = getPoolRecommendations(
+  //   memberId,
+  //   parseInt(ubuntuScore),
+  //   poolHealth ? parseInt(poolHealth) : 70
+  // );
 
-  return NextResponse.json({ recommendations });
+  // return NextResponse.json({ recommendations });
 }

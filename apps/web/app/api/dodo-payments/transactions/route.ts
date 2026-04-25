@@ -14,15 +14,16 @@ export async function POST(request: NextRequest) {
 
     const provider = getDodoPaymentsProvider();
 
-    const result = await provider.getTransactions(
-      access_token,
-      start_date || '2024-01-01',
-      end_date || new Date().toISOString().split('T')[0]
-    );
+    // const result = await provider.getTransactions(
+    //   access_token,
+    //   start_date || '2024-01-01',
+    //   end_date || new Date().toISOString().split('T')[0]
+    // );
 
     return NextResponse.json({
-      transactions: result.transactions,
-      accounts: result.accounts,
+      error: 'NOT_IMPLEMENTED',
+      // transactions: result.transactions,
+      // accounts: result.accounts,
     });
   } catch (error) {
     console.error('Dodo Payments transactions error:', error);

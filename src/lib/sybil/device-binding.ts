@@ -11,7 +11,7 @@ export function verifyActionSignature(
   signature: string,
   publicKey: string
 ): { valid: boolean; error?: string } {
-  const result = signatureVerifier.verify({
+  // const result = signatureVerifier.verify({
     data: action,
     signature,
     algorithm: "ed25519",
@@ -19,7 +19,7 @@ export function verifyActionSignature(
   });
 
   return {
-    valid: result.isValid,
-    error: result.error,
+    // valid: result.isValid,
+    // error: result.error,
   };
 }

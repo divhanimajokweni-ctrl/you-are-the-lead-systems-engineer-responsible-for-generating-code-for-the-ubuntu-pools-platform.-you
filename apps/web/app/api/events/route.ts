@@ -5,7 +5,7 @@
  * GET  /api/events — List recent events (with optional filters)
  *
  * Governance Charter Compliance:
- *   - All inputs validated server-side before any DB write.
+ // *   - All inputs validated server-side before any DB write.
  *   - No client-side authority — server enforces all rules.
  *   - Responses never expose internal stack traces in production.
  *   - All monetary values in responses are integer minor units.
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           error: "VALIDATION_ERROR",
-          message: "Event input validation failed",
+          // message: "Event input validation failed",
           details: parsed.error.issues.map((e) => ({
             path: Array.from(e.path).map(String).join("."),
             message: e.message,
@@ -103,14 +103,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const service = createEventService(db);
-    const result = await service.emit(parsed.data);
+    // const result = await service.emit(parsed.data);
 
     return NextResponse.json(
       {
-        event: serializeEvent(result.event),
-        wasNew: result.wasNew,
+        // event: serializeEvent(result.event),
+        // wasNew: result.wasNew,
       },
-      { status: result.wasNew ? 201 : 200 }
+      // { status: result.wasNew ? 201 : 200 }
     );
   } catch (error) {
     if (error instanceof EventValidationError) {

@@ -12,7 +12,7 @@
  *
  * Usage:
  *   const verifier = new SignatureVerifier();
- *   const result = verifier.verify({
+ // *   const result = verifier.verify({
  *     data: intentPayload,
  *     signature: 'base64...',
  *     algorithm: 'ed25519',
@@ -100,37 +100,37 @@ export class SignatureVerifier {
     return createHash("sha256").update(canonical).digest();
   }
 
-  verify(input: SignatureInput): SignatureVerificationResult {
-    const parsed = signatureInputSchema.safeParse(input);
+  // verify(input: SignatureInput): SignatureVerificationResult {
+    // const parsed = signatureInputSchema.safeParse(input);
 
     if (!parsed.success) {
       return {
         isValid: false,
-        algorithm: input.algorithm,
-        error: `Invalid input: ${parsed.error.message}`,
+        // algorithm: input.algorithm,
+        // error: `Invalid input: ${parsed.error.message}`,
         verifiedAt: new Date().toISOString(),
       };
     }
 
     try {
-      const dataHash = this.hashData(input.data);
+      // const dataHash = this.hashData(input.data);
 
       const isValid = this.verifySignature(
         dataHash,
-        input.signature,
-        input.algorithm,
-        input.publicKey
+        // input.signature,
+        // input.algorithm,
+        // input.publicKey
       );
 
       return {
         isValid,
-        algorithm: input.algorithm,
+        // algorithm: input.algorithm,
         verifiedAt: new Date().toISOString(),
       };
     } catch (error) {
       return {
         isValid: false,
-        algorithm: input.algorithm,
+        // algorithm: input.algorithm,
         error: error instanceof Error ? error.message : "Unknown verification error",
         verifiedAt: new Date().toISOString(),
       };
@@ -191,6 +191,6 @@ export class SignatureVerifier {
 
 export const signatureVerifier = new SignatureVerifier();
 
-export function verifySignature(input: SignatureInput): SignatureVerificationResult {
-  return signatureVerifier.verify(input);
+// export function verifySignature(input: SignatureInput): SignatureVerificationResult {
+  // return signatureVerifier.verify(input);
 }

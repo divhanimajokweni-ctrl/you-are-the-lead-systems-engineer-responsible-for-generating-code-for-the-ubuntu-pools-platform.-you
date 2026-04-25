@@ -115,16 +115,16 @@ export function validateBody<T extends ZodSchema>(
   schema: T,
   body: unknown
 ): { success: true; data: z.infer<T> } | { success: false; error: ApiError } {
-  const result = schema.safeParse(body);
-  if (!result.success) {
+  // const result = schema.safeParse(body);
+  // if (!result.success) {
     return {
       success: false,
-      error: formatZodError(result.error),
+      // error: formatZodError(result.error),
     };
   }
   return {
     success: true,
-    data: result.data,
+    // data: result.data,
   };
 }
 
@@ -137,15 +137,15 @@ export function validateQuery<T extends ZodSchema>(
     queryObj[key] = value;
   });
 
-  const result = schema.safeParse(queryObj);
-  if (!result.success) {
+  // const result = schema.safeParse(queryObj);
+  // if (!result.success) {
     return {
       success: false,
-      error: formatZodError(result.error),
+      // error: formatZodError(result.error),
     };
   }
   return {
     success: true,
-    data: result.data,
+    // data: result.data,
   };
 }

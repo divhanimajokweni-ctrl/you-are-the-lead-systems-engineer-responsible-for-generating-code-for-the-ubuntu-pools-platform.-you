@@ -1,5 +1,5 @@
 // src/lib/games/games/lottery_scenario.ts
-import type { GameState, GameDecision } from '../types';
+// import type { GameState, GameDecision } from '../types';
 
 const scenarios = [
   { name: 'Rent Week', choices: ['Pay Rent (safe)', 'Buy Ticket (gamble)'], weights: [0.8, 0.2] },
@@ -7,7 +7,7 @@ const scenarios = [
   { name: 'Emergency', choices: ['Use Savings', 'Borrow', 'Gamble Solution'], weights: [0.6, 0.3, 0.1] },
 ];
 
-export async function processAction(currentState: GameState, action: { type: string; payload: Record<string, unknown> }) {
+// export async function processAction(currentState: GameState, action: { type: string; payload: Record<string, unknown> }) {
   if (action.type !== 'choose') throw new Error('Invalid action');
 
   const { scenarioIndex, choiceIndex } = action.payload as { scenarioIndex: number; choiceIndex: number };
@@ -24,7 +24,7 @@ export async function processAction(currentState: GameState, action: { type: str
     timestamp: Date.now(),
   };
 
-  const newState: GameState = {
+  // const newState: GameState = {
     ...currentState,
     round: currentState.round + 1,
     score: currentState.score + points,

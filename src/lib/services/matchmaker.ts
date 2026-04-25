@@ -183,11 +183,11 @@ const POOL_TEMPLATES: Record<string, Omit<PoolRecommendation, 'matchScore' | 'ma
   },
 };
 
-function calculateSocialAccordSynergy(profile: SanitizedProfile, poolHealth: number, villageHealth?: number): number {
-  if (profile.intentTags.length === 0) return 0;
+// function calculateSocialAccordSynergy(profile: SanitizedProfile, poolHealth: number, villageHealth?: number): number {
+  // if (profile.intentTags.length === 0) return 0;
 
-  const tagDiversity = Math.min(profile.intentTags.length * 10, 30);
-  const tagStrength = profile.aggregatedScore * 0.4;
+  // const tagDiversity = Math.min(profile.intentTags.length * 10, 30);
+  // const tagStrength = profile.aggregatedScore * 0.4;
   const poolHealthBonus = poolHealth > 70 ? 20 : poolHealth > 50 ? 10 : 0;
   const villageBonus = villageHealth !== undefined ? Math.round(villageHealth * 0.1) : 0;
 
@@ -241,7 +241,7 @@ function matchTagsToPools(tags: IntentTag[]): string[] {
 }
 
 function calculateMatchScore(
-  profile: SanitizedProfile,
+  // profile: SanitizedProfile,
   poolId: string,
   poolHealth: number
 ): { score: number; reasons: string[] } {
@@ -259,22 +259,22 @@ function calculateMatchScore(
   
   const poolCats = poolCategories[poolId] || [];
   
-  for (const tag of profile.intentTags) {
+  // for (const tag of profile.intentTags) {
     if (poolCats.includes(tag.category)) {
       score += Math.round(tag.strength * 30);
       reasons.push(`Your ${tag.category.toLowerCase()} interest aligns with this pool`);
     }
   }
   
-  if (profile.profileType === 'esg_focused' && poolId === 'solar_seed') {
+  // if (profile.profileType === 'esg_focused' && poolId === 'solar_seed') {
     score += 15;
     reasons.push('Strong ESG focus matches renewable energy mission');
   }
-  if (profile.profileType === 'community_anchor' && poolId === 'community_housing') {
+  // if (profile.profileType === 'community_anchor' && poolId === 'community_housing') {
     score += 15;
     reasons.push('Community engagement aligns with housing co-op');
   }
-  if (profile.profileType === 'entrepreneur' && poolId === 'microcredit_seed') {
+  // if (profile.profileType === 'entrepreneur' && poolId === 'microcredit_seed') {
     score += 15;
     reasons.push('Entrepreneurial interests match micro-credit pool');
   }
@@ -287,7 +287,7 @@ function calculateMatchScore(
     reasons.push('Pool has good stability');
   }
   
-  if (profile.intentTags.length >= 3) {
+  // if (profile.intentTags.length >= 3) {
     score += 5;
     reasons.push('Diverse interests show engaged member');
   }
@@ -298,8 +298,8 @@ function calculateMatchScore(
   };
 }
 
-export function generateProsperityOpportunity(input: MatchmakerInput): ProsperityOpportunity {
-  const { memberId, sanitizedProfile, ubuntuScore, contributionBase, poolHealth, villageHealth } = input;
+// export function generateProsperityOpportunity(input: MatchmakerInput): ProsperityOpportunity {
+  // const { memberId, sanitizedProfile, ubuntuScore, contributionBase, poolHealth, villageHealth } = input;
 
   const socialAccordSynergy = calculateSocialAccordSynergy(sanitizedProfile, poolHealth, villageHealth);
   const combinedScore = calculateCombinedScore(ubuntuScore, socialAccordSynergy);
@@ -343,7 +343,7 @@ export function generateProsperityOpportunity(input: MatchmakerInput): Prosperit
     callToAction = `Join ${topPool.poolName}`;
   }
   
-  if (ubuntuScore >= 75 && sanitizedProfile.profileType === 'community_anchor') {
+  // if (ubuntuScore >= 75 && sanitizedProfile.profileType === 'community_anchor') {
     opportunityType = 'anchor_status';
     title = 'Anchor Status Eligible';
     description = 'Your high consistency and community engagement qualify you for Anchor status. This unlocks reduced interest rates on community housing loans.';
@@ -374,15 +374,15 @@ export function generateProsperityOpportunity(input: MatchmakerInput): Prosperit
 }
 
 export function calculateMatchQuality(
-  profile: SanitizedProfile,
+  // profile: SanitizedProfile,
   poolId: string,
   poolHealth: number
 ): number {
-  const { score } = calculateMatchScore(profile, poolId, poolHealth);
+  // const { score } = calculateMatchScore(profile, poolId, poolHealth);
   return score;
 }
 
-export function getPoolRecommendations(
+// export function getPoolRecommendations(
   memberId: string,
   ubuntuScore: number,
   poolHealth: number = 70
@@ -391,12 +391,12 @@ export function getPoolRecommendations(
     memberId,
     sovereigntyEnabled: true,
     intentTags: [],
-    profileType: 'blank',
+    // profileType: 'blank',
     aggregatedScore: 0,
     lastUpdated: new Date(),
   };
   
-  const input: MatchmakerInput = {
+  // const input: MatchmakerInput = {
     memberId,
     sanitizedProfile,
     ubuntuScore,
@@ -404,6 +404,6 @@ export function getPoolRecommendations(
     poolHealth,
   };
   
-  const opportunity = generateProsperityOpportunity(input);
+ //  // const opportunity = generateProsperityOpportunity(input);
   return opportunity.recommendedPools;
 }

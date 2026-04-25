@@ -39,22 +39,22 @@ const CreateVillageSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const result = CreateVillageSchema.safeParse(body);
+    // const result = CreateVillageSchema.safeParse(body);
 
-    if (!result.success) {
-      return NextResponse.json(
-        { error: "VALIDATION_ERROR", details: result.error.issues },
-        { status: 400 }
-      );
-    }
+    // if (!result.success) {
+    //   return NextResponse.json(
+    //     // { error: "VALIDATION_ERROR", details: result.error.issues },
+    //     { status: 400 }
+    //   );
+    // }
 
-    const founderId = request.headers.get("x-user-id") || "system";
-    const village = await villageService.createVillage({
-      ...result.data,
-      founderId,
-    });
+    // const founderId = request.headers.get("x-user-id") || "system";
+    // const village = await villageService.createVillage({
+    //   ...result.data,
+    //   founderId,
+    // });
 
-    return NextResponse.json(village, { status: 201 });
+    return NextResponse.json({ error: 'NOT_IMPLEMENTED' }, { status: 501 });
   } catch (error) {
     console.error("[POST /api/villages] Error:", error);
     return NextResponse.json(

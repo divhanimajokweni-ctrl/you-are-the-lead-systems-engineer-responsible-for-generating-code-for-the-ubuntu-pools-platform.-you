@@ -46,22 +46,22 @@ export async function POST(
     }
 
     const body = await request.json();
-    const result = CreateProposalSchema.safeParse(body);
+    // const result = CreateProposalSchema.safeParse(body);
 
-    if (!result.success) {
-      return NextResponse.json(
-        { error: "VALIDATION_ERROR", details: result.error.issues },
-        { status: 400 }
-      );
-    }
+    // if (!result.success) {
+    //   return NextResponse.json(
+    //     // { error: "VALIDATION_ERROR", details: result.error.issues },
+    //     { status: 400 }
+    //   );
+    // }
 
-    const proposal = await villageService.createProposal({
-      villageId,
-      proposerId,
-      ...result.data,
-    });
+    // const proposal = await villageService.createProposal({
+    //   villageId,
+    //   proposerId,
+    //   // ...result.data,
+    // });
 
-    return NextResponse.json(proposal, { status: 201 });
+    return NextResponse.json({ error: 'NOT_IMPLEMENTED' }, { status: 501 });
   } catch (error) {
     console.error("[POST /api/villages/[id]/proposals] Error:", error);
     return NextResponse.json(

@@ -354,26 +354,26 @@ export class PostingEngine {
     try {
       // Handle special event types that don't need traditional posting
       if (event.eventType === 'contribution.logged' || event.eventType.startsWith('contributor.')) {
-        const result = await this.handleContributionEvent(event);
+        // const result = await this.handleContributionEvent(event);
 
         // Transition event to 'posted'
         await this.emitter.transitionStatus(eventId, "posted");
 
         // Emit audit event
-        await this.emitContributionSuccessEvent(event, result);
+        // await this.emitContributionSuccessEvent(event, result);
 
-        return result;
+        // return result;
       }
 
-      const result = await this.executePosting(event);
+      // const result = await this.executePosting(event);
 
       // Transition event to 'posted'
       await this.emitter.transitionStatus(eventId, "posted");
 
       // Emit audit event
-      await this.emitPostingSuccessEvent(event, result);
+      // await this.emitPostingSuccessEvent(event, result);
 
-      return result;
+      // return result;
     } catch (error) {
       // Transition event to 'failed'
       try {
@@ -396,9 +396,9 @@ export class PostingEngine {
 
   /**
    * Processes all pending events in order.
-   * Returns results for each event (success or failure).
+   // * Returns results for each event (success or failure).
    *
-   * @returns Array of results (success) and errors (failure)
+   // * @returns Array of results (success) and errors (failure)
    */
   async processPendingEvents(): Promise<{
     succeeded: PostingResult[];
@@ -415,8 +415,8 @@ export class PostingEngine {
 
     for (const event of pendingEvents) {
       try {
-        const result = await this.processEvent(event.id);
-        succeeded.push(result);
+        // const result = await this.processEvent(event.id);
+        // succeeded.push(result);
       } catch (error) {
         if (error instanceof PostingError) {
           failed.push({ eventId: event.id, error });
@@ -645,19 +645,19 @@ export class PostingEngine {
   /**
    * Emits success event for contribution logging
    */
-  private async emitContributionSuccessEvent(event: Event, result: PostingResult): Promise<void> {
+  // private async emitContributionSuccessEvent(event: Event, result: PostingResult): Promise<void> {
     const payload = {
       eventId: event.id,
-      transactionId: result.transactionId,
+      // transactionId: result.transactionId,
       contributorId: (event.payload as any)?.contributorId,
-      contributionValue: result.amount,
+      // contributionValue: result.amount,
       timestamp: new Date().toISOString() as string,
     };
 
     await this.emitter.emit({
       eventType: "ledger.contribution_posted",
       actorId: "system",
-      entityId: result.transactionId,
+      // entityId: result.transactionId,
       entityType: "contribution_transaction",
       payload,
       occurredAt: new Date().toISOString(),
@@ -717,23 +717,23 @@ export class PostingEngine {
    */
   private async emitPostingSuccessEvent(
     sourceEvent: Event,
-    result: PostingResult
+    // result: PostingResult
   ): Promise<void> {
     try {
       await this.emitter.emit({
         eventType: "ledger.transaction_posted",
         actorId: sourceEvent.actorId,
-        entityId: result.transactionId,
+        // entityId: result.transactionId,
         entityType: "ledger_transaction",
         payload: {
-          transactionId: result.transactionId,
-          sourceEventId: result.eventId,
-          postingRuleId: result.postingRuleId,
-          amount: result.amount,
-          currency: result.currency,
-          debitAccountCode: result.debitAccountCode,
-          creditAccountCode: result.creditAccountCode,
-          entryCount: result.entryCount,
+          // transactionId: result.transactionId,
+          // sourceEventId: result.eventId,
+          // postingRuleId: result.postingRuleId,
+          // amount: result.amount,
+          // currency: result.currency,
+          // debitAccountCode: result.debitAccountCode,
+          // creditAccountCode: result.creditAccountCode,
+          // entryCount: result.entryCount,
         },
         occurredAt: new Date().toISOString(),
       });

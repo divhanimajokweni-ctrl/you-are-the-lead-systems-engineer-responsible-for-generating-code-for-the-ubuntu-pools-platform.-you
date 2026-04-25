@@ -103,7 +103,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           error: "VALIDATION_ERROR",
-          message: "Account input validation failed",
+          // message: "Account input validation failed",
           details: parsed.error.issues.map((e) => ({
             path: Array.from(e.path).map(String).join("."),
             message: e.message,

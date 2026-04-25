@@ -1,6 +1,6 @@
 import { lindiweAI, getVillagePulse, type LindiweReasoningResult, type SafetyBufferState, type VillagePulse } from './lindiwe';
 import { calculateUbuntuScore, calculatePoolHealthFromInput, type MemberContributionHistory, type PoolHealthInput } from '../services/credit-service';
-import { generateProsperityOpportunity, type MatchmakerInput } from '../services/matchmaker';
+// import { generateProsperityOpportunity, type MatchmakerInput } from '../services/matchmaker';
 import { sovereigntyProxy, type SanitizedProfile } from '../services/sovereignty-proxy';
 import { getDodoPaymentsProvider } from '../bank-provider/dodo-payments';
 import type { BankTransaction } from '../bank-provider/types';
@@ -141,7 +141,7 @@ export class UbuntuBackbone {
 
     const sanitizedProfile = sovereigntyProxy.getSanitizedProfile(memberId);
 
-    const profile: MemberBackboneProfile = {
+    // const profile: MemberBackboneProfile = {
       memberId,
       ubuntuScore: ubuntuScoreResult.score,
       behavioralScore: behavioralAnalysis.behavioralScore,
@@ -151,9 +151,9 @@ export class UbuntuBackbone {
       sanitizedProfile,
     };
 
-    this.memberProfiles.set(memberId, profile);
+    // this.memberProfiles.set(memberId, profile);
 
-    return profile;
+    // return profile;
   }
 
   regulate(): LindiweReasoningResult {
@@ -262,46 +262,46 @@ export class UbuntuBackbone {
   }
 
   updateMemberGameSignals(memberId: string, gameSignals: GameBehavioralSignals): void {
-    const profile = this.memberProfiles.get(memberId);
-    if (profile) {
-      profile.gameSignals = gameSignals;
+    // const profile = this.memberProfiles.get(memberId);
+    // if (profile) {
+      // profile.gameSignals = gameSignals;
       // Update behavioralScore based on game signals
-      profile.behavioralScore = Math.round(
+      // profile.behavioralScore = Math.round(
         (gameSignals.stewardship_potential +
          gameSignals.cooperative_quotient +
          (100 - gameSignals.risk_appetite) +
          (100 - gameSignals.overextension)) / 4
       );
       // Update risk level based on signals
-      if (profile.behavioralScore >= 80) {
-        profile.riskLevel = 'low';
-      } else if (profile.behavioralScore >= 60) {
-        profile.riskLevel = 'medium';
-      } else if (profile.behavioralScore >= 40) {
-        profile.riskLevel = 'high';
+      // if (profile.behavioralScore >= 80) {
+        // profile.riskLevel = 'low';
+      // } else if (profile.behavioralScore >= 60) {
+        // profile.riskLevel = 'medium';
+      // } else if (profile.behavioralScore >= 40) {
+        // profile.riskLevel = 'high';
       } else {
-        profile.riskLevel = 'critical';
+        // profile.riskLevel = 'critical';
       }
 
       // Check for automatic Contributor promotion (Novice → Contributor)
-      this.checkAutomaticContributorPromotion(memberId, profile);
+      // this.checkAutomaticContributorPromotion(memberId, profile);
 
       // Check for Guardian nomination (Steward → Guardian)
-      this.checkGuardianNomination(memberId, profile);
+      // this.checkGuardianNomination(memberId, profile);
     }
   }
 
-  private async checkAutomaticContributorPromotion(memberId: string, profile: MemberBackboneProfile): Promise<void> {
+  // private async checkAutomaticContributorPromotion(memberId: string, profile: MemberBackboneProfile): Promise<void> {
     // Automatic promotion: Novice (0-19) → Contributor (20-39)
     // Requires: Multi-factor verification (temporal + behavioral + social + device)
-    if (profile.ubuntuScore >= 0 && profile.ubuntuScore <= 19) {
-      if (profile.behavioralScore && profile.behavioralScore >= 70) {
+    // if (profile.ubuntuScore >= 0 && profile.ubuntuScore <= 19) {
+      // if (profile.behavioralScore && profile.behavioralScore >= 70) {
         // Multi-factor Sybil defense verification
         const verificationResult = await this.performMultiFactorVerification(memberId);
 
         if (verificationResult.passedChecks >= 3) { // Require 3/4 checks passing
           // Automatic promotion to Contributor level
-          await this.executePromotion(memberId, 'novice', 'contributor', 'AUTOMATED', profile.gameSignals);
+          // await this.executePromotion(memberId, 'novice', 'contributor', 'AUTOMATED', profile.gameSignals);
           console.log(`Member ${memberId} promoted to Contributor (passed ${verificationResult.passedChecks}/4 checks)`);
         } else {
           console.log(`Member ${memberId} failed verification (${verificationResult.passedChecks}/4 checks passed)`);
@@ -311,7 +311,7 @@ export class UbuntuBackbone {
   }
 
   private async performMultiFactorVerification(memberId: string): Promise<{ passedChecks: number; details: string[] }> {
-    const results = [];
+    // const results = [];
     let passedChecks = 0;
 
     // 1. Temporal verification (30+ days in village)
@@ -319,39 +319,39 @@ export class UbuntuBackbone {
     const daysInVillage = timeInVillage / (1000 * 60 * 60 * 24);
     if (daysInVillage >= 30) {
       passedChecks++;
-      results.push('temporal: ✓');
+      // results.push('temporal: ✓');
     } else {
-      results.push(`temporal: ✗ (${daysInVillage.toFixed(1)} days)`);
+      // results.push(`temporal: ✗ (${daysInVillage.toFixed(1)} days)`);
     }
 
     // 2. Behavioral verification (consistent game patterns)
     const behavioralConsistency = await this.checkBehavioralConsistency(memberId);
     if (behavioralConsistency) {
       passedChecks++;
-      results.push('behavioral: ✓');
+      // results.push('behavioral: ✓');
     } else {
-      results.push('behavioral: ✗');
+      // results.push('behavioral: ✗');
     }
 
     // 3. Social verification (endorsement network validation)
     const socialValidation = await this.validateSocialNetwork(memberId);
     if (socialValidation) {
       passedChecks++;
-      results.push('social: ✓');
+      // results.push('social: ✓');
     } else {
-      results.push('social: ✗');
+      // results.push('social: ✗');
     }
 
     // 4. Device verification (consistent device patterns)
     const deviceConsistency = await this.checkDeviceConsistency(memberId);
     if (deviceConsistency) {
       passedChecks++;
-      results.push('device: ✓');
+      // results.push('device: ✓');
     } else {
-      results.push('device: ✗');
+      // results.push('device: ✗');
     }
 
-    return { passedChecks, details: results };
+    // return { passedChecks, details: results };
   }
 
   private async checkBehavioralConsistency(memberId: string): Promise<boolean> {
@@ -388,9 +388,9 @@ export class UbuntuBackbone {
 
   private async checkDeviceConsistency(memberId: string): Promise<boolean> {
     // Check for consistent device/browser patterns (anti-bot measure)
-    // This would integrate with device fingerprinting in production
+   //  // This would integrate with device fingerprinting in production
     // For now: check session consistency
-    return true; // Placeholder - implement device fingerprinting
+    // return true; // Placeholder - implement device fingerprinting
   }
 
   private async getMemberTimeInVillage(memberId: string): Promise<number> {
@@ -413,13 +413,13 @@ export class UbuntuBackbone {
     return Date.now() - joinDate.getTime(); // Return milliseconds in village
   }
 
-  private async checkGuardianNomination(memberId: string, profile: MemberBackboneProfile): Promise<void> {
+  // private async checkGuardianNomination(memberId: string, profile: MemberBackboneProfile): Promise<void> {
     // Guardian nomination: Steward (40-59) → Guardian (60-79)
     // Requires: High stewardship potential AND leadership index from games
-    if (profile.ubuntuScore >= 40 && profile.ubuntuScore <= 59) {
-      if (profile.gameSignals?.stewardship_potential && profile.gameSignals.stewardship_potential > 75) {
+    // if (profile.ubuntuScore >= 40 && profile.ubuntuScore <= 59) {
+      // if (profile.gameSignals?.stewardship_potential && profile.gameSignals.stewardship_potential > 75) {
         // Create nomination for social validation (Phase 15 implementation)
-        await this.createGuardianNomination(memberId, profile.gameSignals);
+        // await this.createGuardianNomination(memberId, profile.gameSignals);
         console.log(`Member ${memberId} nominated for Guardian promotion`);
       }
     }
@@ -452,10 +452,10 @@ export class UbuntuBackbone {
       gameSignals,
     });
 
-    // Update profile in memory
-    const profile = this.memberProfiles.get(memberId);
-    if (profile) {
-      profile.ubuntuScore = newScore;
+   //  // Update profile in memory
+    // const profile = this.memberProfiles.get(memberId);
+    // if (profile) {
+      // profile.ubuntuScore = newScore;
     }
   }
 
@@ -545,9 +545,9 @@ export class UbuntuBackbone {
     currentScore: number;
     requiredScore: number;
   } {
-    const profile = this.memberProfiles.get(memberId);
+    // const profile = this.memberProfiles.get(memberId);
     
-    if (!profile) {
+    // if (!profile) {
       return {
         eligible: false,
         reason: 'Member data not synced. Please connect your bank account.',
@@ -558,42 +558,42 @@ export class UbuntuBackbone {
 
     if (this.state.currentMode === 'emergency') {
       return {
-        eligible: profile.ubuntuScore >= this.config.elderThreshold,
+        // eligible: profile.ubuntuScore >= this.config.elderThreshold,
         reason: 'Emergency mode active. Only Village Elders may participate.',
-        currentScore: profile.ubuntuScore,
+        // currentScore: profile.ubuntuScore,
         requiredScore: this.config.elderThreshold,
       };
     }
 
-    if (profile.riskLevel === 'critical') {
+    // if (profile.riskLevel === 'critical') {
       return {
         eligible: false,
         reason: 'Risk assessment indicates critical level. Please contact support.',
-        currentScore: profile.ubuntuScore,
+        // currentScore: profile.ubuntuScore,
         requiredScore: this.state.entryThreshold,
       };
     }
 
-    const eligible = profile.ubuntuScore >= this.state.entryThreshold;
+    // const eligible = profile.ubuntuScore >= this.state.entryThreshold;
     
     return {
       eligible,
-      reason: eligible ? undefined : `Ubuntu Score ${profile.ubuntuScore} is below threshold ${this.state.entryThreshold}`,
-      currentScore: profile.ubuntuScore,
+      // reason: eligible ? undefined : `Ubuntu Score ${profile.ubuntuScore} is below threshold ${this.state.entryThreshold}`,
+      // currentScore: profile.ubuntuScore,
       requiredScore: this.state.entryThreshold,
     };
   }
 
   generateMatchmakerInput(memberId: string): MatchmakerInput | null {
-    const profile = this.memberProfiles.get(memberId);
+    // const profile = this.memberProfiles.get(memberId);
     
-    if (!profile) return null;
+    // if (!profile) return null;
 
     return {
       memberId,
-      sanitizedProfile: profile.sanitizedProfile,
-      ubuntuScore: profile.ubuntuScore,
-      contributionBase: profile.contributionHistory.periods.reduce((sum, p) => sum + p.paid, 0),
+      // sanitizedProfile: profile.sanitizedProfile,
+      // ubuntuScore: profile.ubuntuScore,
+      // contributionBase: profile.contributionHistory.periods.reduce((sum, p) => sum + p.paid, 0),
       poolHealth: this.calculatePoolHealth(),
     };
   }
@@ -767,4 +767,4 @@ export class UbuntuBackbone {
   }
 }
 
-export const ubuntuBackbone = new UbuntuBackbone();
+// export const ubuntuBackbone = new UbuntuBackbone();

@@ -50,7 +50,7 @@ export const signalTypeEnum = pgEnum('signal_type', [
 /**
  * Game Sessions — one row per play-through
  */
-export const gameSessions = pgTable('game_sessions', {
+// export const gameSessions = pgTable('game_sessions', {
   id:          uuid('id').defaultRandom().primaryKey(),
   memberId:    varchar('member_id', { length: 255 }).notNull(),
   gameId:      gameIdEnum('game_id').notNull(),
@@ -66,22 +66,22 @@ export const gameSessions = pgTable('game_sessions', {
   finalScore:  integer('final_score'),
  
   /** Prestige Points awarded at session end */
-  prestigeAwarded: integer('prestige_awarded').default(0).notNull(),
+  // prestigeAwarded: integer('prestige_awarded').default(0).notNull(),
  
   /** Was this a solo or multiplayer session? */
   isMultiplayer: boolean('is_multiplayer').default(false).notNull(),
  
-  /** Village context — null for solo sessions */
+ //  /** Village context — null for solo sessions */
   villageId:   varchar('village_id', { length: 255 }),
  
   metadata:    jsonb('metadata'),
   createdAt:   timestamp('created_at').defaultNow().notNull(),
   updatedAt:   timestamp('updated_at').defaultNow().notNull(),
 }, (t) => ({
-  memberIdx:  index('game_sessions_member_idx').on(t.memberId),
-  gameIdx:    index('game_sessions_game_idx').on(t.gameId),
-  statusIdx:  index('game_sessions_status_idx').on(t.status),
-  villageIdx: index('game_sessions_village_idx').on(t.villageId),
+  // memberIdx:  index('game_sessions_member_idx').on(t.memberId),
+  // gameIdx:    index('game_sessions_game_idx').on(t.gameId),
+  // statusIdx:  index('game_sessions_status_idx').on(t.status),
+  // villageIdx: index('game_sessions_village_idx').on(t.villageId),
 }));
  
 /**
@@ -110,7 +110,7 @@ export const gameEvents = pgTable('game_events', {
  * Prestige Scores — the game-native reputation metric
  * NEVER decremented by game losses. Only upward.
  */
-export const prestigeScores = pgTable('prestige_scores', {
+// export const prestigeScores = pgTable('prestige_scores', {
   id:          uuid('id').defaultRandom().primaryKey(),
   memberId:    varchar('member_id', { length: 255 }).notNull().unique(),
   totalPoints: integer('total_points').default(0).notNull(),
@@ -124,13 +124,13 @@ export const prestigeScores = pgTable('prestige_scores', {
  
   lastUpdated: timestamp('last_updated').defaultNow().notNull(),
 }, (t) => ({
-  memberIdx: index('prestige_scores_member_idx').on(t.memberId),
+  // memberIdx: index('prestige_scores_member_idx').on(t.memberId),
 }));
  
 /**
  * Prestige Ledger — immutable record of every award
  */
-export const prestigeLedger = pgTable('prestige_ledger', {
+// export const prestigeLedger = pgTable('prestige_ledger', {
   id:          uuid('id').defaultRandom().primaryKey(),
   memberId:    varchar('member_id', { length: 255 }).notNull(),
   sessionId:   uuid('session_id').references(() => gameSessions.id),
@@ -139,7 +139,7 @@ export const prestigeLedger = pgTable('prestige_ledger', {
   description: text('description'),
   createdAt:   timestamp('created_at').defaultNow().notNull(),
 }, (t) => ({
-  memberIdx: index('prestige_ledger_member_idx').on(t.memberId),
+  // memberIdx: index('prestige_ledger_member_idx').on(t.memberId),
 }));
  
 /**
@@ -191,7 +191,7 @@ export const villageTournaments = pgTable('village_tournaments', {
   createdAt:   timestamp('created_at').defaultNow().notNull(),
 });
  
-import type { GameState } from '@ubuntu/games/types';
+// TODO: Orphaned Reference - import type { GameState } from '@ubuntu/games/types';
 
 export type GameSession = Omit<typeof gameSessions.$inferSelect, 'completedAt' | 'durationMs' | 'finalScore' | 'villageId' | 'metadata' | 'stateSnapshot'> & {
   completedAt: Date | undefined;
@@ -199,9 +199,9 @@ export type GameSession = Omit<typeof gameSessions.$inferSelect, 'completedAt' |
   finalScore: number | undefined;
   villageId: string | undefined;
   metadata: unknown | undefined;
-  stateSnapshot: GameState | undefined;
+  // stateSnapshot: GameState | undefined;
 };
 export type GameSessionInsert = typeof gameSessions.$inferInsert;
 export type GameEvent        = typeof gameEvents.$inferSelect;
-export type PrestigeScore    = typeof prestigeScores.$inferSelect;
+// export type PrestigeScore    = typeof prestigeScores.$inferSelect;
 export type GameTelemetry    = typeof gameTelemetry.$inferSelect;

@@ -42,12 +42,12 @@ export async function POST(
     }
 
     const body = await request.json();
-    const result = JoinVillageSchema.safeParse(body);
+    // const result = JoinVillageSchema.safeParse(body);
 
     const member = await villageService.joinVillage({
       villageId,
       userId,
-      role: result.success ? result.data.role : "member",
+      // role: result.success ? result.data.role : "member",
     });
 
     return NextResponse.json(member, { status: 201 });

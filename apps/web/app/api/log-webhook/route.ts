@@ -250,7 +250,7 @@ async function recordContributor(contributor: GitHubEvent["sender"]) {
     .values({
       githubId: contributor.id.toString(),
       username: contributor.login,
-      profileUrl: contributor.html_url,
+      // profileUrl: contributor.html_url,
       joinedAt: new Date(),
     })
     .onConflictDoNothing();

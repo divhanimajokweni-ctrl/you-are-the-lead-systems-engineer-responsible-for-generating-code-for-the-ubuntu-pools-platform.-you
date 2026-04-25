@@ -28,7 +28,7 @@ export function LindiweChat() {
     };
     return [initialMessage];
   });
-  const [input, setInput] = useState('');
+  // const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -56,12 +56,12 @@ export function LindiweChat() {
   }, [messages]);
 
   const handleSend = () => {
-    if (!input.trim()) return;
+    // if (!input.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input,
+      // content: input,
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMessage]);
@@ -180,9 +180,9 @@ export function LindiweChat() {
 
       <div className="p-4 border-t border-[color:var(--border)]">
         <div className="flex gap-2">
-          <input
+          // <input
             type="text"
-            value={input}
+            // value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask Lindiwe..."
@@ -190,7 +190,7 @@ export function LindiweChat() {
           />
           <button
             onClick={handleSend}
-            disabled={!input.trim()}
+            // disabled={!input.trim()}
             className="w-10 h-10 rounded-full bg-[color:var(--accent-gold)] text-white flex items-center justify-center disabled:opacity-50 transition-opacity"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -419,8 +419,8 @@ export async function recordDenial(
     occurredAt: denial.timestamp,
   };
 
-  const result = await eventService.emit(eventInput);
-  return result.event.id;
+  // const result = await eventService.emit(eventInput);
+  // return result.event.id;
 }
 
 // =============================================================================

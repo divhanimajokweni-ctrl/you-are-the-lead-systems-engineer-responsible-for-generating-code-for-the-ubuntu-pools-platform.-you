@@ -3,20 +3,20 @@
  * High-level business logic used by API routes.
  */
 import { db } from '@ubuntu/db/client';
-import { gameSessions, prestigeScores, gameTelemetry } from '@ubuntu/db/schema-games';
+// import { gameSessions, prestigeScores, gameTelemetry } from '@ubuntu/db/schema-games';
 import { eq, desc, and } from 'drizzle-orm';
-import { startSession, submitAction } from '@ubuntu/games/engine';
-import { buildFingerprint } from '@ubuntu/games/telemetry';
-import { GAME_DEFINITIONS } from '@ubuntu/games/registry';
-import type { GameId, LeaderboardEntry } from '@ubuntu/games/types';
+// TODO: Orphaned Reference - import { startSession, submitAction } from '@ubuntu/games/engine';
+// TODO: Orphaned Reference - import { buildFingerprint } from '@ubuntu/games/telemetry';
+// TODO: Orphaned Reference - import { GAME_DEFINITIONS } from '@ubuntu/games/registry';
+// TODO: Orphaned Reference - import type { GameId, LeaderboardEntry } from '@ubuntu/games/types';
  
-export class GameService {
+// export class GameService {
  
   static getDefinitions() {
     return Object.values(GAME_DEFINITIONS);
   }
  
-  static async startGame(memberId: string, gameId: GameId, opts: { villageId?: string } = {}) {
+  // static async startGame(memberId: string, gameId: GameId, opts: { villageId?: string } = {}) {
     return startSession(memberId, gameId, opts);
   }
  
@@ -33,14 +33,14 @@ export class GameService {
   }
  
   static async getPrestige(memberId: string) {
-    return db.query.prestigeScores.findFirst({
-      where: eq(prestigeScores.memberId, memberId),
+    // return db.query.prestigeScores.findFirst({
+      // where: eq(prestigeScores.memberId, memberId),
     });
   }
  
   static async getLeaderboard(limit = 20): Promise<LeaderboardEntry[]> {
-    const scores = await db.query.prestigeScores.findMany({
-      orderBy: [desc(prestigeScores.totalPoints)],
+    // const scores = await db.query.prestigeScores.findMany({
+      // orderBy: [desc(prestigeScores.totalPoints)],
       limit,
     });
  
@@ -48,13 +48,13 @@ export class GameService {
       rank:        i + 1,
       memberId:    s.memberId,
       displayName: `Member ${s.memberId.slice(-6)}`,
-      prestige:    s.totalPoints,
+      // prestige:    s.totalPoints,
       level:       s.level,
       gamesPlayed: Object.values(s.byGame as Record<string, number>).reduce((a, b) => a + (b > 0 ? 1 : 0), 0),
     }));
   }
  
-  static async getLindiwefingerprint(memberId: string) {
+  // static async getLindiwefingerprint(memberId: string) {
     return buildFingerprint(memberId);
   }
  

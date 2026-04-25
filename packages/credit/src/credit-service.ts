@@ -173,144 +173,143 @@ function stdDev(values: number[]): number {
   return Math.sqrt(squaredDiffs.reduce((a, b) => a + b, 0) / values.length);
 }
 
-export function calculatePoolHealthFromInput(input: PoolHealthInput): {
-  poolHealth: number;
-  bufferStrength: number;
-  defaultStrength: number;
-  supportStrength?: number;
-} {
-  const eps = 1e-9;
-  const targetBufferRatio = 0.20;
-  const targetDefaultRate = 0.05;
+// export function calculatePoolHealthFromInput(input: PoolHealthInput): {
+//   poolHealth: number;
+//   bufferStrength: number;
+//   defaultStrength: number;
+//   supportStrength?: number;
+// } {
+//   const eps = 1e-9;
+//   const targetBufferRatio = 0.20;
+//   const targetDefaultRate = 0.05;
 
-  const bufferRatio = input.totalExposure > 0 
-    ? input.bufferBalance / (input.totalExposure + eps) 
-    : 1;
-  const bufferStrength = clamp(bufferRatio / targetBufferRatio, 0, 1);
+//   const bufferRatio = input.totalExposure > 0 
+//     ? input.bufferBalance / (input.totalExposure + eps) 
+//     : 1;
+//   const bufferStrength = clamp(bufferRatio / targetBufferRatio, 0, 1);
 
-  const defaultRate = input.activeLoanCount > 0 
-    ? input.defaultCount / input.activeLoanCount 
-    : 0;
-  const defaultStrength = 1 - clamp(defaultRate / targetDefaultRate, 0, 1);
+//   const defaultRate = input.activeLoanCount > 0 
+//     ? input.defaultCount / input.activeLoanCount 
+//     : 0;
+//   const defaultStrength = 1 - clamp(defaultRate / targetDefaultRate, 0, 1);
 
-  let poolHealth: number;
-  if (input.supportSuccessRate !== undefined) {
-    const supportStrength = clamp(input.supportSuccessRate, 0, 1);
-    poolHealth = weightedAvg(
-      [bufferStrength, defaultStrength, supportStrength],
-      [0.50, 0.40, 0.10]
-    );
-    return { poolHealth, bufferStrength, defaultStrength, supportStrength };
-  } else {
-    poolHealth = weightedAvg([bufferStrength, defaultStrength], [0.55, 0.45]);
-    return { poolHealth, bufferStrength, defaultStrength };
-  }
-}
+//   let poolHealth: number;
+//   if (input.supportSuccessRate !== undefined) {
+//     const supportStrength = clamp(input.supportSuccessRate, 0, 1);
+//     poolHealth = weightedAvg(
+//       [bufferStrength, defaultStrength, supportStrength],
+//       [0.50, 0.40, 0.10]
+//     );
+//     return { poolHealth, bufferStrength, defaultStrength, supportStrength };
+//   } else {
+//     poolHealth = weightedAvg([bufferStrength, defaultStrength], [0.55, 0.45]);
+//     return { poolHealth, bufferStrength, defaultStrength };
+//   }
+// }
 
-export function calculateUbuntuScore(
-  history: MemberContributionHistory,
-  poolHealthInput: PoolHealthInput
-): UbuntuScoreResult {
-  const eps = 1e-9;
-  const k = 2.0;
+// // export function calculateUbuntuScore(
+//   history: MemberContributionHistory,
+//   poolHealthInput: PoolHealthInput
+// ): UbuntuScoreResult {
+//   const eps = 1e-9;
+//   const k = 2.0;
+// 
+//   const periods = history.periods;
+//   const W = periods.length;
+// 
+//   if (W === 0) {
+//     return {
+//       score: 50,
+//       memberCore: 0.5,
+//       poolMultiplier: 1.0,
+//       components: { coverage: 0.5, timeliness: 0.5, consistency: 0.5, stress: 0.5 },
+//       poolHealth: 1.0,
+//       poolComponents: { bufferStrength: 1.0, defaultStrength: 1.0 },
+//     };
+//   }
 
-  const periods = history.periods;
-  const W = periods.length;
+//   const now = new Date();
+//   const sumRequired = periods.reduce((sum, p) => sum + p.required, 0);
+//   const sumPaid = periods.reduce((sum, p) => {
+//     const categoryWeight = p.category ? CATEGORY_WEIGHTS[p.category] : 1.0;
+//     const ageMonths = p.occurredAt
+//       ? (now.getTime() - new Date(p.occurredAt).getTime()) / (30.44 * 24 * 60 * 60 * 1000)
+//       : 0;
+//     const decay = timeDecay(Math.max(0, ageMonths));
+//     const cpMultiplier = p.counterpartyScore !== undefined
+//       ? counterpartyMultiplier(p.counterpartyScore)
+//       : 1.0;
+//     return sum + p.paid * categoryWeight * decay * cpMultiplier;
+//   }, 0);
+//   const sumRequiredWeighted = periods.reduce((sum, p) => {
+//     const categoryWeight = p.category ? CATEGORY_WEIGHTS[p.category] : 1.0;
+//     return sum + p.required * categoryWeight;
+//   }, 0);
+//   const coverage = clamp(sumPaid / (sumRequiredWeighted + eps), 0, 1);
 
-  if (W === 0) {
-    return {
-      score: 50,
-      memberCore: 0.5,
-      poolMultiplier: 1.0,
-      components: { coverage: 0.5, timeliness: 0.5, consistency: 0.5, stress: 0.5 },
-      poolHealth: 1.0,
-      poolComponents: { bufferStrength: 1.0, defaultStrength: 1.0 },
-    };
-  }
+//   const ontimeCount = periods.filter(p => p.ontime).length;
+//   const timeliness = ontimeCount / (W + eps);
 
-  const now = new Date();
+//   const ratios = periods.map(p => 
+//     p.required > 0 ? p.paid / (p.required + eps) : 1
+//   );
+//   const volatility = stdDev(ratios);
+//   const consistency = Math.exp(-k * volatility);
 
-  const sumRequired = periods.reduce((sum, p) => sum + p.required, 0);
-  const sumPaid = periods.reduce((sum, p) => {
-    const categoryWeight = p.category ? CATEGORY_WEIGHTS[p.category] : 1.0;
-    const ageMonths = p.occurredAt
-      ? (now.getTime() - new Date(p.occurredAt).getTime()) / (30.44 * 24 * 60 * 60 * 1000)
-      : 0;
-    const decay = timeDecay(Math.max(0, ageMonths));
-    const cpMultiplier = p.counterpartyScore !== undefined
-      ? counterpartyMultiplier(p.counterpartyScore)
-      : 1.0;
-    return sum + p.paid * categoryWeight * decay * cpMultiplier;
-  }, 0);
-  const sumRequiredWeighted = periods.reduce((sum, p) => {
-    const categoryWeight = p.category ? CATEGORY_WEIGHTS[p.category] : 1.0;
-    return sum + p.required * categoryWeight;
-  }, 0);
-  const coverage = clamp(sumPaid / (sumRequiredWeighted + eps), 0, 1);
+//   const missCount = periods.filter(p => p.missed).length;
+//   const missRate = missCount / (W + eps);
+//   const stress = 1 - clamp(missRate, 0, 1);
 
-  const ontimeCount = periods.filter(p => p.ontime).length;
-  const timeliness = ontimeCount / (W + eps);
+//   const memberCore = weightedAvg(
+//     [coverage, timeliness, consistency, stress],
+//     [0.35, 0.25, 0.20, 0.20]
+//   );
 
-  const ratios = periods.map(p => 
-    p.required > 0 ? p.paid / (p.required + eps) : 1
-  );
-  const volatility = stdDev(ratios);
-  const consistency = Math.exp(-k * volatility);
+//   const poolResult = calculatePoolHealthFromInput(poolHealthInput);
+//   const poolMultiplier = 0.75 + 0.25 * poolResult.poolHealth;
 
-  const missCount = periods.filter(p => p.missed).length;
-  const missRate = missCount / (W + eps);
-  const stress = 1 - clamp(missRate, 0, 1);
+//   const score = Math.round(100 * clamp(memberCore * poolMultiplier, 0, 1));
 
-  const memberCore = weightedAvg(
-    [coverage, timeliness, consistency, stress],
-    [0.35, 0.25, 0.20, 0.20]
-  );
+//   return {
+//     score,
+//     memberCore: Math.round(memberCore * 100) / 100,
+//     poolMultiplier: Math.round(poolMultiplier * 100) / 100,
+//     components: {
+//       coverage: Math.round(coverage * 100) / 100,
+//       timeliness: Math.round(timeliness * 100) / 100,
+//       consistency: Math.round(consistency * 100) / 100,
+//       stress: Math.round(stress * 100) / 100,
+//     },
+//     poolHealth: Math.round(poolResult.poolHealth * 100) / 100,
+//     poolComponents: {
+//       bufferStrength: Math.round(poolResult.bufferStrength * 100) / 100,
+//       defaultStrength: Math.round(poolResult.defaultStrength * 100) / 100,
+//       supportStrength: poolResult.supportStrength 
+//         ? Math.round(poolResult.supportStrength * 100) / 100 
+//         : undefined,
+//     },
+//   };
+// }
 
-  const poolResult = calculatePoolHealthFromInput(poolHealthInput);
-  const poolMultiplier = 0.75 + 0.25 * poolResult.poolHealth;
+// export interface VillageHealthInput {
+//   memberScores: number[];
+//   transactionCount: number;
+// }
 
-  const score = Math.round(100 * clamp(memberCore * poolMultiplier, 0, 1));
+// export function calculateVillageHealth(input: VillageHealthInput): number {
+//   const { memberScores, transactionCount } = input;
+//   const memberCount = memberScores.length;
+//   if (memberCount === 0) return 0;
 
-  return {
-    score,
-    memberCore: Math.round(memberCore * 100) / 100,
-    poolMultiplier: Math.round(poolMultiplier * 100) / 100,
-    components: {
-      coverage: Math.round(coverage * 100) / 100,
-      timeliness: Math.round(timeliness * 100) / 100,
-      consistency: Math.round(consistency * 100) / 100,
-      stress: Math.round(stress * 100) / 100,
-    },
-    poolHealth: Math.round(poolResult.poolHealth * 100) / 100,
-    poolComponents: {
-      bufferStrength: Math.round(poolResult.bufferStrength * 100) / 100,
-      defaultStrength: Math.round(poolResult.defaultStrength * 100) / 100,
-      supportStrength: poolResult.supportStrength 
-        ? Math.round(poolResult.supportStrength * 100) / 100 
-        : undefined,
-    },
-  };
-}
+//   const avgScore = memberScores.reduce((a, b) => a + b, 0) / memberCount;
+//   const txPerMember = transactionCount / memberCount;
 
-export interface VillageHealthInput {
-  memberScores: number[];
-  transactionCount: number;
-}
+//   // Normalize: txPerMember of 10+ gives full credit
+//   const txFactor = clamp(txPerMember / 10, 0, 1);
+//   const health = txFactor * avgScore;
 
-export function calculateVillageHealth(input: VillageHealthInput): number {
-  const { memberScores, transactionCount } = input;
-  const memberCount = memberScores.length;
-  if (memberCount === 0) return 0;
-
-  const avgScore = memberScores.reduce((a, b) => a + b, 0) / memberCount;
-  const txPerMember = transactionCount / memberCount;
-
-  // Normalize: txPerMember of 10+ gives full credit
-  const txFactor = clamp(txPerMember / 10, 0, 1);
-  const health = txFactor * avgScore;
-
-  return Math.round(clamp(health, 0, 100));
-}
+//   return Math.round(clamp(health, 0, 100));
+// }
 
 export class CreditService {
   private poolConfigs: Map<string, CreditPoolConfig> = new Map();

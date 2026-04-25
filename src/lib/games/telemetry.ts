@@ -1,6 +1,6 @@
 /**
  * Ubuntu Pools Games — Lindiwe Telemetry Processor
- * Extracts behavioural signals from game sessions and routes them
+ // * Extracts behavioural signals from game sessions and routes them
  * to the Lindiwe backbone for credit model and governance role scoring.
  *
  * POPIA: All signals are derived, not raw. Members can erase via sovereignty layer.
@@ -8,14 +8,14 @@
  */
 import { db } from '@ubuntu/db/client';
 import { gameTelemetry } from '@ubuntu/db/schema-games';
-import { ubuntuBackbone, type GameBehavioralSignals } from '@ubuntu/lindiwe';
-import type { GameId, GameState, BehaviouralSignal, SessionTelemetry, SignalType } from './types';
+// TODO: Orphaned Reference - import { ubuntuBackbone, type GameBehavioralSignals } from '@ubuntu/lindiwe';
+// import type { GameId, GameState, BehaviouralSignal, SessionTelemetry, SignalType } from './types';
  
 // ── Signal Extractors — one per game ──────────────────────────────────────────
  
-type SignalExtractor = (state: GameState) => BehaviouralSignal[];
+// type SignalExtractor = (state: GameState) => BehaviouralSignal[];
  
-const extractors: Partial<Record<GameId, SignalExtractor>> = {
+// const extractors: Partial<Record<GameId, SignalExtractor>> = {
  
   ubuntu_monopoly: (state) => {
     const decisions  = state.decisions ?? [];
@@ -150,8 +150,8 @@ async function updateBackboneProfileWithGameSignals(memberId: string): Promise<v
     ),
   };
 
-  // Update the backbone profile with game signals
-  ubuntuBackbone.updateMemberGameSignals(memberId, gameSignals);
+ //  // Update the backbone profile with game signals
+  // ubuntuBackbone.updateMemberGameSignals(memberId, gameSignals);
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -159,8 +159,8 @@ async function updateBackboneProfileWithGameSignals(memberId: string): Promise<v
 export async function extractSignals(
   memberId:  string,
   sessionId: string,
-  gameId:    GameId,
-  state:     GameState
+  // gameId:    GameId,
+  // state:     GameState
 ): Promise<BehaviouralSignal[]> {
   const extractor = extractors[gameId];
   if (!extractor) return [];
@@ -181,7 +181,7 @@ export async function extractSignals(
       }))
     );
 
-    // Update backbone profile with aggregated game signals
+   //  // Update backbone profile with aggregated game signals
     await updateBackboneProfileWithGameSignals(memberId);
   }
 
@@ -201,12 +201,12 @@ export async function buildFingerprint(memberId: string): Promise<Record<SignalT
     aggregated[key]!.push(s.value);
   }
  
-  const result = {} as Record<SignalType, number>;
+  // const result = {} as Record<SignalType, number>;
   for (const [key, values] of Object.entries(aggregated)) {
-    result[key as SignalType] = Math.round(
+    // result[key as SignalType] = Math.round(
       values!.reduce((a, b) => a + b, 0) / values!.length
     );
   }
  
-  return result;
+  // return result;
 }

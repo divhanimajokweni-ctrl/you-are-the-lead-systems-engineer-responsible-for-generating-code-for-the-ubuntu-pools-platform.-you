@@ -20,7 +20,7 @@ const playSound = (soundUrl: string, loop = false) => {
 };
 
 export default function GameModal({ game, onClose, onEnd }: { game: Game; onClose: () => void; onEnd: (score: number, meta: any) => void }) {
-  const [gameState, setGameState] = useState<'intro' | 'playing' | 'result'>('intro');
+//  //  // const [gameState, setGameState] = useState<'intro' | 'playing' | 'result'>('intro');
   const [score, setScore] = useState(0);
   const [meta, setMeta] = useState<any>({});
   const [timeLeft, setTimeLeft] = useState(game.timebox);
@@ -33,7 +33,7 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
   const [activeAudio, setActiveAudio] = useState<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    if (gameState === 'playing') {
+    // if (gameState === 'playing') {
       const timer = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
@@ -45,11 +45,11 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [gameState]);
+  // }, [gameState]);
 
   // Crash Game Logic
   useEffect(() => {
-    if (game.id === 'crop' && gameState === 'playing' && !isCrashed) {
+    // if (game.id === 'crop' && gameState === 'playing' && !isCrashed) {
       const interval = setInterval(() => {
         setMultiplier(prev => {
           const next = prev + 0.05;
@@ -65,7 +65,7 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
       }, 100);
       return () => clearInterval(interval);
     }
-  }, [game.id, gameState, isCrashed]);
+  // }, [game.id, gameState, isCrashed]);
 
   const handleDecision = (finalScore: number, finalMeta: any) => {
     const decisionTime = Date.now() - startTime;
@@ -86,15 +86,15 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
       audio.currentTime = 0;
       setActiveAudio(null);
 
-      const result = [
+      // const result = [
         symbols[Math.floor(Math.random() * symbols.length)],
         symbols[Math.floor(Math.random() * symbols.length)],
         symbols[Math.floor(Math.random() * symbols.length)],
       ];
-      setReels(result);
+      // setReels(result);
       setIsSpinning(false);
 
-      const isWin = result[0] === result[1] && result[1] === result[2];
+      // const isWin = result[0] === result[1] && result[1] === result[2];
       const winScore = isWin ? bet * 10 : bet;
 
       if (isWin) playSound(SOUNDS.win);
@@ -102,7 +102,7 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
 
       setScore(winScore);
       setMeta({ isAltruistic: false, risk: 'extreme' });
-      setGameState('result');
+     //  // setGameState('result');
     }, 2000);
   };
 
@@ -130,7 +130,7 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
                   <span>Bet Amount</span>
                   <span>R{bet}</span>
                 </div>
-                <input
+                // <input
                   type="range"
                   min="100"
                   max="2000"
@@ -155,7 +155,7 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
                   playSound(SOUNDS.bailout);
                   handleDecision(1100, { isAltruistic: true, risk: 'low' });
                   setScore(1100);
-                  setGameState('result');
+                 //  // setGameState('result');
                 }}
                 className="text-cyber-cyan underline text-sm hover:text-cyber-pink transition-colors"
               >
@@ -204,14 +204,14 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
                   <span>Initial Investment</span>
                   <span>R{bet}</span>
                 </div>
-                <input
+                // <input
                   type="range"
                   min="100"
                   max="5000"
                   step="100"
                   value={bet}
                   onChange={(e) => setBet(Number(e.target.value))}
-                  disabled={gameState === 'playing'}
+                  // disabled={gameState === 'playing'}
                   className="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-cyber-cyan"
                 />
               </div>
@@ -224,7 +224,7 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
                     playSound(SOUNDS.win);
                     setScore(finalScore);
                     setMeta({ risk: multiplier > 2 ? 'extreme' : 'medium', isAltruistic: false });
-                    setGameState('result');
+                   //  // setGameState('result');
                   }}
                   className={`w-full py-6 font-black text-2xl rounded-xl transition-all uppercase tracking-widest ${isCrashed ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-cyber-cyan text-black hover:bg-cyber-pink active:scale-95'}`}
                 >
@@ -235,7 +235,7 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
                     onClick={() => {
                       setScore(0);
                       setMeta({ risk: 'extreme', isAltruistic: false });
-                      setGameState('result');
+                     //  // setGameState('result');
                     }}
                     className="w-full py-4 border-2 border-casino-red text-casino-red font-bold rounded-xl hover:bg-casino-red hover:text-white transition-all"
                   >
@@ -273,7 +273,7 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
                     playSound(SOUNDS.bailout);
                     setScore(1500);
                     setMeta({ isAltruistic: true, risk: 'medium' });
-                    setGameState('result');
+                   //  // setGameState('result');
                   }, 2000);
                 }}
                 className="w-full p-5 bg-cyber-pink text-black font-black uppercase tracking-widest rounded-xl hover:opacity-90 active:scale-95 transition-all"
@@ -286,7 +286,7 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
                   playSound(SOUNDS.loss);
                   setScore(800);
                   setMeta({ isAltruistic: false, risk: 'low' });
-                  setGameState('result');
+                 //  // setGameState('result');
                 }}
                 className="w-full p-4 border-2 border-gray-600 text-gray-400 font-bold uppercase tracking-widest rounded-xl hover:border-cyber-cyan hover:text-cyber-cyan transition-all"
               >
@@ -327,17 +327,17 @@ export default function GameModal({ game, onClose, onEnd }: { game: Game; onClos
           <h2 className="text-3xl font-bold uppercase tracking-widest">{game.name}</h2>
         </div>
 
-        {gameState === 'intro' ? (
+        // {gameState === 'intro' ? (
           <div className="text-center space-y-6">
             <p className="text-gray-400 leading-relaxed">{game.description}</p>
             <button
-              onClick={() => setGameState('playing')}
+              // onClick={() => setGameState('playing')}
               className="px-12 py-4 bg-cyber-cyan text-black font-bold rounded-full hover:bg-cyber-pink transition-colors uppercase tracking-widest"
             >
               Start Mission
             </button>
           </div>
-        ) : gameState === 'playing' ? (
+        // ) : gameState === 'playing' ? (
           renderGameContent()
         ) : (
           <div className={`text-center space-y-6 p-8 rounded-2xl transition-all ${score > 1000 ? 'win-flash' : ''}`}>

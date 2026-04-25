@@ -33,8 +33,8 @@ export class EventSourcingCore {
     return this.queries;
   }
 
-  hashEvent(input: EventHashInput): HashResult {
-    return computeEventHash(input);
+  // hashEvent(input: EventHashInput): HashResult {
+    // return computeEventHash(input);
   }
 
   verifyEvent(event: EventStore): boolean {
@@ -64,10 +64,10 @@ export class EventSourcingCore {
       prevHash: e.prevHash,
     }));
 
-    const result = verifyHashChain(typedEvents);
+    // const result = verifyHashChain(typedEvents);
     return {
-      valid: result.valid,
-      errors: result.errors,
+      // valid: result.valid,
+      // errors: result.errors,
     };
   }
 

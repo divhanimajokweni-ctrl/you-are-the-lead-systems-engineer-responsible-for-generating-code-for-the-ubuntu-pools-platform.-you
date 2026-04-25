@@ -14,7 +14,7 @@ export interface IntentTag {
 
 export interface SovereigntyState {
   sovereigntyEnabled: boolean;
-  profileType: string;
+  // profileType: string;
   intentTags: IntentTag[];
   aggregatedScore: number;
   allowedSources: string[];
@@ -40,15 +40,15 @@ export function SovereigntyToggle({
   const [isEnabled, setIsEnabled] = useState(initialState?.sovereigntyEnabled ?? false);
   const [isLoading, setIsLoading] = useState(false);
   const [tags, setTags] = useState<IntentTag[]>(initialState?.intentTags || []);
-  const [profileType, setProfileType] = useState(initialState?.profileType || 'blank');
+  // const [profileType, setProfileType] = useState(initialState?.profileType || 'blank');
   const [score, setScore] = useState(initialState?.aggregatedScore || 0);
 
   useEffect(() => {
     if (initialState?.intentTags) {
       setTags(initialState.intentTags);
     }
-    if (initialState?.profileType) {
-      setProfileType(initialState.profileType);
+    // if (initialState?.profileType) {
+      // setProfileType(initialState.profileType);
     }
     if (initialState?.aggregatedScore) {
       setScore(initialState.aggregatedScore);
@@ -69,7 +69,7 @@ export function SovereigntyToggle({
         const data = await response.json();
         setIsEnabled(data.sovereigntyEnabled);
         setTags(data.intentTags || []);
-        setProfileType(data.profileType || 'blank');
+        // setProfileType(data.profileType || 'blank');
         setScore(data.aggregatedScore || 0);
         onToggle?.(data.sovereigntyEnabled);
       }
@@ -140,7 +140,7 @@ export function SovereigntyToggle({
               <div className="up-card p-4 bg-slate-800/50">
                 <p className="text-xs text-slate-500 uppercase tracking-wider">Profile Type</p>
                 <p className="text-lg font-bold text-white mt-1">
-                  {getProfileTypeLabel(profileType)}
+                  // {getProfileTypeLabel(profileType)}
                 </p>
               </div>
               <div className="up-card p-4 bg-slate-800/50">

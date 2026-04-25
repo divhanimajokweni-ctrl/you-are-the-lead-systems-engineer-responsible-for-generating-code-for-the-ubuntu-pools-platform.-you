@@ -1,10 +1,10 @@
 // src/lib/games/games/crop_finance.ts
-import type { GameState, GameDecision } from '../types';
+// import type { GameState, GameDecision } from '../types';
 
 const seasons = ['Planting', 'Growing', 'Harvest', 'Market'];
 const weatherRisks = ['Drought', 'Flood', 'Pest', 'Perfect'];
 
-export async function processAction(currentState: GameState, action: { type: string; payload: Record<string, unknown> }) {
+// export async function processAction(currentState: GameState, action: { type: string; payload: Record<string, unknown> }) {
   if (action.type !== 'plant') throw new Error('Invalid action');
 
   const { cropChoice, insuranceChoice } = action.payload as { cropChoice: string; insuranceChoice: boolean };
@@ -28,7 +28,7 @@ export async function processAction(currentState: GameState, action: { type: str
     timestamp: Date.now(),
   };
 
-  const newState: GameState = {
+  // const newState: GameState = {
     ...currentState,
     round: currentState.round + 1,
     score: currentState.score + finalMoney,

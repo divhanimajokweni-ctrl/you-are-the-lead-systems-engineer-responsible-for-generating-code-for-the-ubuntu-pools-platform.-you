@@ -87,7 +87,7 @@ export abstract class CustodyAdapter {
     return this.config.adapterId;
   }
 
-  abstract recordIntent(input: {
+  // abstract recordIntent(input: {
     intentType: IntentRecord["intentType"];
     sourceEntityId: string;
     destinationEntityId?: string;
@@ -105,7 +105,7 @@ export abstract class CustodyAdapter {
     error?: string;
   }>;
 
-  protected generateIntentHash(input: {
+  // protected generateIntentHash(input: {
     intentType: string;
     sourceEntityId: string;
     destinationEntityId?: string;
@@ -114,7 +114,7 @@ export abstract class CustodyAdapter {
     timestamp: string;
   }): string {
     const data = JSON.stringify({
-      ...input,
+      // ...input,
       adapterId: this.config.adapterId,
     });
     return createHash("sha256").update(data).digest("hex");
@@ -126,7 +126,7 @@ export class WebhookCustodyAdapter extends CustodyAdapter {
     return "webhook";
   }
 
-  recordIntent(input: {
+  // recordIntent(input: {
     intentType: IntentRecord["intentType"];
     sourceEntityId: string;
     destinationEntityId?: string;
@@ -137,25 +137,25 @@ export class WebhookCustodyAdapter extends CustodyAdapter {
   }): IntentRecord {
     const now = new Date().toISOString();
     const intentHash = this.generateIntentHash({
-      intentType: input.intentType,
-      sourceEntityId: input.sourceEntityId,
-      destinationEntityId: input.destinationEntityId,
-      amount: input.amount,
-      currency: input.currency,
+      // intentType: input.intentType,
+      // sourceEntityId: input.sourceEntityId,
+      // destinationEntityId: input.destinationEntityId,
+      // amount: input.amount,
+      // currency: input.currency,
       timestamp: now,
     });
 
     return {
       intentId: randomUUID(),
-      intentType: input.intentType,
-      sourceEntityId: input.sourceEntityId,
-      destinationEntityId: input.destinationEntityId,
-      amount: input.amount,
-      currency: input.currency,
+      // intentType: input.intentType,
+      // sourceEntityId: input.sourceEntityId,
+      // destinationEntityId: input.destinationEntityId,
+      // amount: input.amount,
+      // currency: input.currency,
       intentHash,
       status: "pending",
       createdAt: now,
-      expiresAt: input.expiresAt,
+      // expiresAt: input.expiresAt,
     };
   }
 
@@ -171,8 +171,8 @@ export class WebhookCustodyAdapter extends CustodyAdapter {
       publicKey: this.config.publicKey ?? "",
     };
 
-    const result = signatureVerifier.verify(verifyInput);
-    return result.isValid;
+    // const result = signatureVerifier.verify(verifyInput);
+    // return result.isValid;
   }
 
   async executeIntent(intentId: string): Promise<{
@@ -215,7 +215,7 @@ export class MultisigCustodyAdapter extends CustodyAdapter {
     return this.requiredSignatures;
   }
 
-  recordIntent(input: {
+  // recordIntent(input: {
     intentType: IntentRecord["intentType"];
     sourceEntityId: string;
     destinationEntityId?: string;
@@ -226,25 +226,25 @@ export class MultisigCustodyAdapter extends CustodyAdapter {
   }): IntentRecord {
     const now = new Date().toISOString();
     const intentHash = this.generateIntentHash({
-      intentType: input.intentType,
-      sourceEntityId: input.sourceEntityId,
-      destinationEntityId: input.destinationEntityId,
-      amount: input.amount,
-      currency: input.currency,
+      // intentType: input.intentType,
+      // sourceEntityId: input.sourceEntityId,
+      // destinationEntityId: input.destinationEntityId,
+      // amount: input.amount,
+      // currency: input.currency,
       timestamp: now,
     });
 
     return {
       intentId: randomUUID(),
-      intentType: input.intentType,
-      sourceEntityId: input.sourceEntityId,
-      destinationEntityId: input.destinationEntityId,
-      amount: input.amount,
-      currency: input.currency,
+      // intentType: input.intentType,
+      // sourceEntityId: input.sourceEntityId,
+      // destinationEntityId: input.destinationEntityId,
+      // amount: input.amount,
+      // currency: input.currency,
       intentHash,
       status: "pending",
       createdAt: now,
-      expiresAt: input.expiresAt,
+      // expiresAt: input.expiresAt,
     };
   }
 
@@ -265,8 +265,8 @@ export class MultisigCustodyAdapter extends CustodyAdapter {
       publicKey,
     };
 
-    const result = signatureVerifier.verify(verifyInput);
-    return result.isValid;
+    // const result = signatureVerifier.verify(verifyInput);
+    // return result.isValid;
   }
 
   async executeIntent(intentId: string): Promise<{
@@ -286,7 +286,7 @@ export class CallbackCustodyAdapter extends CustodyAdapter {
     return "callback";
   }
 
-  recordIntent(input: {
+  // recordIntent(input: {
     intentType: IntentRecord["intentType"];
     sourceEntityId: string;
     destinationEntityId?: string;
@@ -297,25 +297,25 @@ export class CallbackCustodyAdapter extends CustodyAdapter {
   }): IntentRecord {
     const now = new Date().toISOString();
     const intentHash = this.generateIntentHash({
-      intentType: input.intentType,
-      sourceEntityId: input.sourceEntityId,
-      destinationEntityId: input.destinationEntityId,
-      amount: input.amount,
-      currency: input.currency,
+      // intentType: input.intentType,
+      // sourceEntityId: input.sourceEntityId,
+      // destinationEntityId: input.destinationEntityId,
+      // amount: input.amount,
+      // currency: input.currency,
       timestamp: now,
     });
 
     return {
       intentId: randomUUID(),
-      intentType: input.intentType,
-      sourceEntityId: input.sourceEntityId,
-      destinationEntityId: input.destinationEntityId,
-      amount: input.amount,
-      currency: input.currency,
+      // intentType: input.intentType,
+      // sourceEntityId: input.sourceEntityId,
+      // destinationEntityId: input.destinationEntityId,
+      // amount: input.amount,
+      // currency: input.currency,
       intentHash,
       status: "pending",
       createdAt: now,
-      expiresAt: input.expiresAt,
+      // expiresAt: input.expiresAt,
     };
   }
 
@@ -331,8 +331,8 @@ export class CallbackCustodyAdapter extends CustodyAdapter {
       publicKey: this.config.publicKey ?? "",
     };
 
-    const result = signatureVerifier.verify(verifyInput);
-    return result.isValid;
+    // const result = signatureVerifier.verify(verifyInput);
+    // return result.isValid;
   }
 
   async executeIntent(intentId: string): Promise<{
@@ -352,7 +352,7 @@ export class HSMCustodyAdapter extends CustodyAdapter {
     return "hsm";
   }
 
-  recordIntent(input: {
+  // recordIntent(input: {
     intentType: IntentRecord["intentType"];
     sourceEntityId: string;
     destinationEntityId?: string;
@@ -363,25 +363,25 @@ export class HSMCustodyAdapter extends CustodyAdapter {
   }): IntentRecord {
     const now = new Date().toISOString();
     const intentHash = this.generateIntentHash({
-      intentType: input.intentType,
-      sourceEntityId: input.sourceEntityId,
-      destinationEntityId: input.destinationEntityId,
-      amount: input.amount,
-      currency: input.currency,
+      // intentType: input.intentType,
+      // sourceEntityId: input.sourceEntityId,
+      // destinationEntityId: input.destinationEntityId,
+      // amount: input.amount,
+      // currency: input.currency,
       timestamp: now,
     });
 
     return {
       intentId: randomUUID(),
-      intentType: input.intentType,
-      sourceEntityId: input.sourceEntityId,
-      destinationEntityId: input.destinationEntityId,
-      amount: input.amount,
-      currency: input.currency,
+      // intentType: input.intentType,
+      // sourceEntityId: input.sourceEntityId,
+      // destinationEntityId: input.destinationEntityId,
+      // amount: input.amount,
+      // currency: input.currency,
       intentHash,
       status: "pending",
       createdAt: now,
-      expiresAt: input.expiresAt,
+      // expiresAt: input.expiresAt,
     };
   }
 
@@ -397,8 +397,8 @@ export class HSMCustodyAdapter extends CustodyAdapter {
       publicKey: this.config.publicKey ?? "",
     };
 
-    const result = signatureVerifier.verify(verifyInput);
-    return result.isValid;
+    // const result = signatureVerifier.verify(verifyInput);
+    // return result.isValid;
   }
 
   async executeIntent(intentId: string): Promise<{

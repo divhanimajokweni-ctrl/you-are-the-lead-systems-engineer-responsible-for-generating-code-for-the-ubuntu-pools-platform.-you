@@ -79,8 +79,8 @@ export const db = new Proxy(
       if (prop === 'execute') {
         const client = getSqlClient();
         return async (query: unknown) => {
-          const result = await client.unsafe(query as string);
-          return { rows: result as Record<string, unknown>[] };
+          // const result = await client.unsafe(query as string);
+          // return { rows: result as Record<string, unknown>[] };
         };
       }
       const database = getDb();

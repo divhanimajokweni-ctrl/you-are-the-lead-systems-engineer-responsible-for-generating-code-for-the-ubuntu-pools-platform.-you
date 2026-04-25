@@ -213,7 +213,7 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">Log friction</h3>
-            <input type="text" placeholder="Member name" value={frictionMember} onChange={e => setFrictionMember(e.target.value)} className="w-full p-3 border rounded mb-3" />
+            // <input type="text" placeholder="Member name" value={frictionMember} onChange={e => setFrictionMember(e.target.value)} className="w-full p-3 border rounded mb-3" />
             <textarea rows={3} placeholder="Exact words / hesitation" value={frictionDesc} onChange={e => setFrictionDesc(e.target.value)} className="w-full p-3 border rounded mb-3"></textarea>
             <select value={frictionStage} onChange={e => setFrictionStage(e.target.value)} className="w-full p-3 border rounded mb-3">
               <option>Signup</option>

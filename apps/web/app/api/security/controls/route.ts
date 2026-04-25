@@ -41,13 +41,13 @@ export async function GET(request: NextRequest) {
     const framework = searchParams.get('framework');
     
     if (search) {
-      const results = await securityControlsService.searchControls(search);
-      return NextResponse.json({ controls: results });
+      // const results = await securityControlsService.searchControls(search);
+      // return NextResponse.json({ controls: results });
     }
     
     if (framework) {
-      const results = await securityControlsService.getControlsByFramework(framework);
-      return NextResponse.json({ controls: results });
+      // const results = await securityControlsService.getControlsByFramework(framework);
+      // return NextResponse.json({ controls: results });
     }
     
     const filters = {
@@ -73,26 +73,26 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const result = createControlSchema.safeParse(body);
+    // const result = createControlSchema.safeParse(body);
     
-    if (!result.success) {
-      return NextResponse.json(
-        { error: 'Invalid request', details: result.error.issues },
-        { status: 400 }
-      );
-    }
+    // if (!result.success) {
+    //   return NextResponse.json(
+    //     // { error: 'Invalid request', details: result.error.issues },
+    //     { status: 400 }
+    //   );
+    // }
     
-    const existing = await securityControlsService.getControlByControlId(result.data.controlId);
-    if (existing) {
-      return NextResponse.json(
-        { error: 'Control ID already exists' },
-        { status: 409 }
-      );
-    }
+    // const existing = await securityControlsService.getControlByControlId(result.data.controlId);
+    // if (existing) {
+    //   return NextResponse.json(
+    //     { error: 'Control ID already exists' },
+    //     { status: 409 }
+    //   );
+    // }
     
-    const control = await securityControlsService.createControl(result.data);
+    // const control = await securityControlsService.createControl(result.data);
     
-    return NextResponse.json({ control }, { status: 201 });
+    return NextResponse.json({ error: 'NOT_IMPLEMENTED' }, { status: 501 });
   } catch (error) {
     console.error('Failed to create control:', error);
     return NextResponse.json(

@@ -32,7 +32,7 @@ function sha256(data: string): string {
 
 /**
  * Combine two child hashes into a parent hash.
- * Concatenates left + right and hashes the result.
+ // * Concatenates left + right and hashes the result.
  */
 function hashPair(left: string, right: string): string {
   return sha256(left + right);

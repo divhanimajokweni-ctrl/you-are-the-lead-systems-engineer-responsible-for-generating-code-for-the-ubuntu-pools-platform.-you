@@ -30,7 +30,7 @@ class LindiweSignalProcessor {
       this.retrainOnline();
     }
 
-    // Fire to leaderboard & tournament engine
+   //  // Fire to leaderboard & tournament engine
     this.updateLeaderboards(signal);
     this.checkTournamentTriggers(signal);
   }
@@ -56,7 +56,7 @@ class LindiweSignalProcessor {
   }
 
   updateLeaderboards(signal: any) {
-    // TODO: implement leaderboard update
+   //  // TODO: implement leaderboard update
   }
 
   checkTournamentTriggers(signal: any) {

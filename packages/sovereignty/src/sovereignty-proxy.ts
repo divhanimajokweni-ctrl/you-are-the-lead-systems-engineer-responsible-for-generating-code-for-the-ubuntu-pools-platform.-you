@@ -34,7 +34,7 @@ export interface SanitizedProfile {
   memberId: string;
   sovereigntyEnabled: boolean;
   intentTags: IntentTag[];
-  profileType: 'blank' | 'esg_focused' | 'community_anchor' | 'entrepreneur' | 'mixed';
+  // profileType: 'blank' | 'esg_focused' | 'community_anchor' | 'entrepreneur' | 'mixed';
   aggregatedScore: number;
   lastUpdated: Date;
 }
@@ -157,28 +157,28 @@ function calculateKeywordStrength(content: string, keyword: string): number {
   return Math.min(baseStrength + recencyBonus, 1);
 }
 
-export function determineProfileType(tags: IntentTag[]): SanitizedProfile['profileType'] {
-  const categoryStrength: Record<string, number> = {};
+// export function determineProfileType(tags: IntentTag[]): SanitizedProfile['profileType'] {
+  //   const categoryStrength: Record<string, number> = {};
   
-  for (const tag of tags) {
-    categoryStrength[tag.category] = (categoryStrength[tag.category] || 0) + tag.strength;
-  }
+  //   for (const tag of tags) {
+  //     categoryStrength[tag.category] = (categoryStrength[tag.category] || 0) + tag.strength;
+  //   }
   
-  const categories = Object.entries(categoryStrength)
-    .sort(([, a], [, b]) => b - a);
+  //   const categories = Object.entries(categoryStrength)
+  //     .sort(([, a], [, b]) => b - a);
   
-  if (categories.length === 0) return 'blank';
-  if (categories.length === 1) {
-    const [top] = categories;
-    if (top![0] === 'ESG' || top![0] === 'Energy') return 'esg_focused';
-    if (top![0] === 'Community' || top![0] === 'Housing') return 'community_anchor';
-    if (top![0] === 'Entrepreneur' || top![0] === 'Tech') return 'entrepreneur';
-  }
+  //   if (categories.length === 0) return 'blank';
+  //   if (categories.length === 1) {
+  //     const [top] = categories;
+  //     if (top![0] === 'ESG' || top![0] === 'Energy') return 'esg_focused';
+  //     if (top![0] === 'Community' || top![0] === 'Housing') return 'community_anchor';
+  //     if (top![0] === 'Entrepreneur' || top![0] === 'Tech') return 'entrepreneur';
+  //   }
   
-  return 'mixed';
-}
+  //   return 'mixed';
+  // }
 
-export function calculateAggregatedScore(tags: IntentTag[]): number {
+  export function calculateAggregatedScore(tags: IntentTag[]): number {
   if (tags.length === 0) return 0;
   
   const categoryScores: Record<string, number[]> = {};
@@ -205,23 +205,23 @@ export function calculateAggregatedScore(tags: IntentTag[]): number {
 
 export class SovereigntyProxy {
   private settings: Map<string, SovereigntySettings> = new Map();
-  private profiles: Map<string, SanitizedProfile> = new Map();
+  // private profiles: Map<string, SanitizedProfile> = new Map();
   private rawData: Map<string, { content: string; source: string; timestamp: Date }[]> = new Map();
 
   configureMember(settings: z.infer<typeof SovereigntySettingsSchema>): SovereigntySettings {
     const validated = SovereigntySettingsSchema.parse(settings);
     this.settings.set(validated.memberId, validated);
     
-    if (!this.profiles.has(validated.memberId)) {
-      this.profiles.set(validated.memberId, {
-        memberId: validated.memberId,
-        sovereigntyEnabled: validated.sovereigntyEnabled,
-        intentTags: [],
-        profileType: 'blank',
-        aggregatedScore: 0,
-        lastUpdated: new Date(),
-      });
-    }
+//   if (!this.profiles.has(validated.memberId)) {
+//     this.profiles.set(validated.memberId, {
+//       memberId: validated.memberId,
+//       sovereigntyEnabled: validated.sovereigntyEnabled,
+//       intentTags: [],
+//       // profileType: 'blank',
+//       aggregatedScore: 0,
+//       lastUpdated: new Date(),
+//     });
+//   }
     
     return validated;
   }
@@ -239,13 +239,13 @@ export class SovereigntyProxy {
     settings.sovereigntyEnabled = enabled;
     this.settings.set(memberId, settings);
     
-    const profile = this.profiles.get(memberId);
-    if (profile) {
-      profile.sovereigntyEnabled = enabled;
-      profile.lastUpdated = new Date();
-    }
-    
-    return this.getSanitizedProfile(memberId);
+    // const profile = this.profiles.get(memberId);
+    // if (profile) {
+      // profile.sovereigntyEnabled = enabled;
+      //       // profile.lastUpdated = new Date();
+//     }
+//     
+//     return this.getSanitizedProfile(memberId);
   }
 
   ingestData(memberId: string, content: string, source: 'instagram' | 'tiktok' | 'stitch' | 'manual'): IntentTag[] {
@@ -264,125 +264,126 @@ export class SovereigntyProxy {
     
     const newTags = extractIntentTags(content, source, settings.ttlDays);
     
-    let profile = this.profiles.get(memberId);
-    if (!profile) {
-      profile = {
-        memberId,
-        sovereigntyEnabled: settings.sovereigntyEnabled,
-        intentTags: [],
-        profileType: 'blank',
-        aggregatedScore: 0,
-        lastUpdated: new Date(),
-      };
-      this.profiles.set(memberId, profile);
-    }
+    // let profile = this.profiles.get(memberId);
+    // if (!profile) {
+      // profile = {
+      //   memberId,
+      //   sovereigntyEnabled: settings.sovereigntyEnabled,
+      //   intentTags: [],
+      //   // profileType: 'blank',
+      //   aggregatedScore: 0,
+      //   lastUpdated: new Date(),
+      // };
+      // this.profiles.set(memberId, profile);
+    // }
     
     for (const newTag of newTags) {
       const allowed = this.isTagAllowed(newTag, settings);
       if (!allowed) continue;
       
-      const existingIndex = profile.intentTags.findIndex(
-        t => t.category === newTag.category && t.source === newTag.source
-      );
-      
-      if (existingIndex >= 0) {
-        const existing = profile.intentTags[existingIndex];
-        existing!.strength = Math.max(existing!.strength, newTag.strength);
-        existing!.lastSeen = newTag.lastSeen;
-      } else {
-        profile.intentTags.push(newTag);
+//       // const existingIndex = profile.intentTags.findIndex(
+//         t => t.category === newTag.category && t.source === newTag.source
+//       );
+//       
+//       if (existingIndex >= 0) {
+//         // const existing = profile.intentTags[existingIndex];
+//         existing!.strength = Math.max(existing!.strength, newTag.strength);
+//         existing!.lastSeen = newTag.lastSeen;
+//       } else {
+        // profile.intentTags.push(newTag);
       }
     }
     
-    profile.intentTags = profile.intentTags.filter(t => t.expiresAt > new Date());
-    profile.profileType = determineProfileType(profile.intentTags);
-    profile.aggregatedScore = calculateAggregatedScore(profile.intentTags);
-    profile.lastUpdated = new Date();
+    // profile.intentTags = profile.intentTags.filter(t => t.expiresAt > new Date());
+    // profile.profileType = determineProfileType(profile.intentTags);
+    // profile.aggregatedScore = calculateAggregatedScore(profile.intentTags);
+    // profile.lastUpdated = new Date();
     
-    this.profiles.set(memberId, profile);
+    // this.profiles.set(memberId, profile);
     
-    return newTags;
+    //     // return newTags;
   }
 
-  private isTagAllowed(tag: IntentTag, settings: SovereigntySettings): boolean {
-    const categoryMap: Record<string, keyof SovereigntySettings['tagCategories']> = {
-      'ESG': 'esg',
-      'Energy': 'esg',
-      'Community': 'community',
-      'Housing': 'community',
-      'Entrepreneur': 'entrepreneur',
-      'Tech': 'entrepreneur',
-      'Health': 'lifestyle',
-      'Education': 'lifestyle',
-    };
-    
-    const categoryKey = categoryMap[tag.category];
-    if (!categoryKey) return true;
-    
-    return settings.tagCategories[categoryKey];
-  }
+  // private isTagAllowed(tag: IntentTag, settings: SovereigntySettings): boolean {
+//     const categoryMap: Record<string, keyof SovereigntySettings['tagCategories']> = {
+//       'ESG': 'esg',
+//       'Energy': 'esg',
+//       'Community': 'community',
+//       'Housing': 'community',
+//       'Entrepreneur': 'entrepreneur',
+//       'Tech': 'entrepreneur',
+//       'Health': 'lifestyle',
+//       'Education': 'lifestyle',
+//     };
+//     
+//     const categoryKey = categoryMap[tag.category];
+//     if (!categoryKey) return true;
+//     
+//     return settings.tagCategories[categoryKey];
+//   }
 
-  getSanitizedProfile(memberId: string): SanitizedProfile {
-    const profile = this.profiles.get(memberId);
-    if (!profile) {
-      return {
-        memberId,
-        sovereigntyEnabled: false,
-        intentTags: [],
-        profileType: 'blank',
-        aggregatedScore: 0,
-        lastUpdated: new Date(),
-      };
-    }
-    
-    if (!profile.sovereigntyEnabled) {
-      return {
-        ...profile,
-        intentTags: [],
-        profileType: 'blank',
-        aggregatedScore: 0,
-      };
-    }
-    
-    return { ...profile };
-  }
-
-  getIntentTags(memberId: string): IntentTag[] {
-    return this.profiles.get(memberId)?.intentTags || [];
-  }
-
-  clearExpiredTags(memberId: string): number {
-    const profile = this.profiles.get(memberId);
-    if (!profile) return 0;
-
-    const before = profile.intentTags.length;
-    profile.intentTags = profile.intentTags.filter(t => t.expiresAt > new Date());
-    profile.profileType = determineProfileType(profile.intentTags);
-    profile.aggregatedScore = calculateAggregatedScore(profile.intentTags);
-
-    return before - profile.intentTags.length;
-  }
-
-  /**
-   * Erase game telemetry data for a member (POPIA compliance)
-   * This marks telemetry records as erased but keeps the record for audit purposes
-   * Does not affect real-world pool standing or Ubuntu Score
-   */
-  async eraseGameTelemetry(memberId: string): Promise<{ erased: boolean }> {
-    await db.update(gameTelemetry)
-      .set({ erased: true })
-      .where(eq(gameTelemetry.memberId, memberId));
-
-    return { erased: true };
-  }
-}
-
+// //   getSanitizedProfile(memberId: string): SanitizedProfile {
+//     // const profile = this.profiles.get(memberId);
+//     // if (!profile) {
+// //       return {
+// //         memberId,
+// //         sovereigntyEnabled: false,
+// //         intentTags: [],
+// //         // profileType: 'blank',
+// //         aggregatedScore: 0,
+// //         lastUpdated: new Date(),
+// //       };
+// //     }
+//     
+// //     // if (!profile.sovereigntyEnabled) {
+// //       return {
+// //         // ...profile,
+// //         intentTags: [],
+// //         // profileType: 'blank',
+// //         aggregatedScore: 0,
+// //       };
+// //     }
+//     
+//     // return { ...profile };
+//   }
+// 
+//   getIntentTags(memberId: string): IntentTag[] {
+    // return this.profiles.get(memberId)?.intentTags || [];
+//   }
+// 
+//   clearExpiredTags(memberId: string): number {
+//     // const profile = this.profiles.get(memberId);
+//     // if (!profile) return 0;
+// 
+//     // const before = profile.intentTags.length;
+//     // profile.intentTags = profile.intentTags.filter(t => t.expiresAt > new Date());
+//     // profile.profileType = determineProfileType(profile.intentTags);
+//     // profile.aggregatedScore = calculateAggregatedScore(profile.intentTags);
+// 
+//     // return before - profile.intentTags.length;
+//   }
+// 
+//   /**
+//    * Erase game telemetry data for a member (POPIA compliance)
+//    * This marks telemetry records as erased but keeps the record for audit purposes
+//    * Does not affect real-world pool standing or Ubuntu Score
+//    */
+//   async eraseGameTelemetry(memberId: string): Promise<{ erased: boolean }> {
+//     await db.update(gameTelemetry)
+//       .set({ erased: true })
+//       .where(eq(gameTelemetry.memberId, memberId));
+// 
+//     return { erased: true };
+//   }
+// }
+// 
+// export const sovereigntyProxy = new SovereigntyProxy();
+// 
+// export function sanitizeForMatchmaker(memberId: string): SanitizedProfile {
+//   return sovereigntyProxy.getSanitizedProfile(memberId);
+// }
+// 
+// export function configureSovereignty(settings: z.infer<typeof SovereigntySettingsSchema>): SovereigntySettings {
+//   return sovereigntyProxy.configureMember(settings);
+// }
 export const sovereigntyProxy = new SovereigntyProxy();
-
-export function sanitizeForMatchmaker(memberId: string): SanitizedProfile {
-  return sovereigntyProxy.getSanitizedProfile(memberId);
-}
-
-export function configureSovereignty(settings: z.infer<typeof SovereigntySettingsSchema>): SovereigntySettings {
-  return sovereigntyProxy.configureMember(settings);
-}
