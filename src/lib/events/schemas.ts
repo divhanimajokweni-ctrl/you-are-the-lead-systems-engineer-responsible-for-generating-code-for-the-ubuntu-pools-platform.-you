@@ -100,7 +100,7 @@ export const sha256HashSchema = z
  * The hash field is computed by the event emission library, not the caller.
  */
 export const baseEventSchema = z.object({
-  /** UUID primary key (DB-generated, omitted on input) */
+ //  /** UUID primary key (DB-generated, omitted on input) */
   id: uuidSchema.optional(),
 
   /**
@@ -460,7 +460,7 @@ export const governanceProposalExecutedPayloadSchema = z.object({
   executedBy: uuidSchema,
   executionResult: z.enum(["success", "partial", "failed"]),
   executedAt: z.iso.datetime(),
-  resultPayload: z.record(z.string(), z.unknown()).optional(),
+  // resultPayload: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type GovernanceProposalExecutedPayload = z.infer<
@@ -635,7 +635,7 @@ export const gameSessionCompletedPayloadSchema = z.object({
   memberId: uuidSchema,
   finalScore: z.number().int().min(0),
   durationMs: z.number().int().positive(),
-  prestigeAwarded: z.number().int().min(0),
+  // prestigeAwarded: z.number().int().min(0),
 });
 
 export type GameSessionCompletedPayload = z.infer<typeof gameSessionCompletedPayloadSchema>;
@@ -837,8 +837,8 @@ export const gameTelemetryEmittedEventSchema = baseEventSchema.extend({
 });
 
 export const gamePrestigeAwardedEventSchema = baseEventSchema.extend({
-  eventType: z.literal("game.prestige_awarded"),
-  entityType: z.literal("prestige_score"),
+  // eventType: z.literal("game.prestige_awarded"),
+  // entityType: z.literal("prestige_score"),
   payload: gamePrestigeAwardedPayloadSchema,
 });
 
@@ -935,13 +935,13 @@ export type SafeParseResult<T> =
   | { success: false; error: z.ZodError };
 
 /**
- * Validates a raw event input before emission.
- * Returns a typed result with success/failure.
+ // * Validates a raw event input before emission.
+ // * Returns a typed result with success/failure.
  */
 export function validateEventInput(
-  input: unknown
+  // input: unknown
 ): SafeParseResult<CreateEventInput> {
-  return createEventInputSchema.safeParse(input) as SafeParseResult<CreateEventInput>;
+  // return createEventInputSchema.safeParse(input) as SafeParseResult<CreateEventInput>;
 }
 
 /**
@@ -956,7 +956,7 @@ export function validateCompleteEvent(
 
 /**
  * Validates a payload against a specific event type's schema.
- * Returns a typed result.
+ // * Returns a typed result.
  */
 export function validatePayloadForEventType(
   eventType: string,
@@ -993,13 +993,13 @@ export function validatePayloadForEventType(
     "games.session_started": gameSessionStartedPayloadSchema,
     "games.session_completed": gameSessionCompletedPayloadSchema,
     "games.telemetry_emitted": gameTelemetryEmittedPayloadSchema,
-    "games.prestige_awarded": gamePrestigeAwardedPayloadSchema,
+    // "games.prestige_awarded": gamePrestigeAwardedPayloadSchema,
   };
 
   const schema = schemaMap[eventType];
   if (!schema) {
-    const result = z.record(z.string(), z.unknown()).safeParse(payload);
-    return result;
+    // const result = z.record(z.string(), z.unknown()).safeParse(payload);
+    // return result;
   }
 
   return schema.safeParse(payload);

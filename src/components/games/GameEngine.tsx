@@ -3,15 +3,15 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { GAME_DEFINITIONS } from '@/lib/games/registry';
-import type { GameId, GameState, GameSession } from '@/lib/games/types';
+// import type { GameId, GameState, GameSession } from '@/lib/games/types';
  
-interface GameEngineProps { gameId: GameId; }
+// interface GameEngineProps { gameId: GameId; }
  
 export function GameEngine({ gameId }: GameEngineProps) {
   const router   = useRouter();
   const def      = GAME_DEFINITIONS[gameId];
   const [session,   setSession]   = useState<GameSession | null>(null);
-  const [state,     setState]     = useState<GameState | null>(null);
+  // const [state,     setState]     = useState<GameState | null>(null);
   const [loading,   setLoading]   = useState(false);
   const [completed, setCompleted] = useState(false);
   const [error,     setError]     = useState<string | null>(null);
@@ -19,7 +19,7 @@ export function GameEngine({ gameId }: GameEngineProps) {
   const startGame = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await fetch('/api/games/sessions', {
+      // const r = await fetch('/api/games/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gameId }),
@@ -38,7 +38,7 @@ export function GameEngine({ gameId }: GameEngineProps) {
     if (!session) return;
     setLoading(true);
     try {
-      const r = await fetch(`/api/games/sessions/${session.id}/action`, {
+      // const r = await fetch(`/api/games/sessions/${session.id}/action`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: actionType, payload }),
@@ -154,7 +154,7 @@ export function GameEngine({ gameId }: GameEngineProps) {
           <p className="text-[#8A9A8E] mb-6">Final Score: <span className="text-white font-bold text-xl">{state.score}</span></p>
           <div className="bg-[#0D1F16] rounded-lg p-4 mb-6 text-left">
             <p className="text-[#8A9A8E] text-sm">Prestige Awarded</p>
-            <p className="text-[#C8962B] text-2xl font-bold">+{session?.prestigeAwarded ?? '…'} pts</p>
+            // <p className="text-[#C8962B] text-2xl font-bold">+{session?.prestigeAwarded ?? '…'} pts</p>
           </div>
           <div className="flex gap-3 justify-center">
             <button onClick={startGame} className="bg-[#C8962B] text-[#0D1F16] px-6 py-2 rounded-lg font-bold hover:bg-[#FFD580] transition-colors">

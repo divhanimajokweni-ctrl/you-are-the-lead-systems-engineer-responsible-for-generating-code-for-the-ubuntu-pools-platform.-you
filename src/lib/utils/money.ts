@@ -17,8 +17,8 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-export function parseCurrency(input: string): number {
+// export function parseCurrency(input: string): number {
   // Remove currency symbols and parse
-  const cleaned = input.replace(/R|\s|,/g, '');
+  // const cleaned = input.replace(/R|\s|,/g, '');
   return parseFloat(cleaned) || 0;
 }

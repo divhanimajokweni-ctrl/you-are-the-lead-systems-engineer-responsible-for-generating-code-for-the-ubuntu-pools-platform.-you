@@ -11,7 +11,7 @@ interface StitchLinkOnSuccess {
 }
 
 interface StitchLinkOptions {
-  onSuccess: (result: StitchLinkOnSuccess) => void;
+  // onSuccess: (result: StitchLinkOnSuccess) => void;
   onExit?: () => void;
   onEvent?: (eventName: string, metadata?: Record<string, unknown>) => void;
 }
@@ -22,7 +22,7 @@ declare global {
       Link: {
         initialize: (config: {
           linkToken: string;
-          onSuccess: (result: { publicToken: string; institution: { institution_id: string; name: string } }) => void;
+          // onSuccess: (result: { publicToken: string; institution: { institution_id: string; name: string } }) => void;
           onExit: () => void;
           onEvent: (eventName: string) => void;
         }) => {
@@ -74,12 +74,12 @@ export function StitchLink({ onSuccess, onExit, onEvent }: StitchLinkOptions) {
 
       const link = window.Stitch.Link.initialize({
         linkToken: data.link_token,
-        onSuccess: (result) => {
+        // onSuccess: (result) => {
           onSuccess({
-            publicToken: result.publicToken,
+            // publicToken: result.publicToken,
             institution: {
-              id: result.institution.institution_id,
-              name: result.institution.name,
+              // id: result.institution.institution_id,
+              // name: result.institution.name,
             },
           });
           setLoading(false);

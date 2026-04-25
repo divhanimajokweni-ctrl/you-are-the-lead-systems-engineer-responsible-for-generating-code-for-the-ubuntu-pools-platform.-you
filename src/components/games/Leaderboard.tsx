@@ -7,7 +7,7 @@ export function Leaderboard() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
  
   useEffect(() => {
-    fetch('/api/games/leaderboard').then(r => r.json()).then(setEntries);
+    // fetch('/api/games/leaderboard').then(r => r.json()).then(setEntries);
   }, []);
  
   return (
@@ -28,7 +28,7 @@ export function Leaderboard() {
               <p className="text-[#8A9A8E] text-xs">{e.gamesPlayed} games played</p>
             </div>
             <div className="text-right">
-              <p className="text-[#C8962B] font-bold">{e.prestige} pts</p>
+              // <p className="text-[#C8962B] font-bold">{e.prestige} pts</p>
               <p className="text-[#8A9A8E] text-xs">Level {e.level}</p>
             </div>
           </div>

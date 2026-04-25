@@ -1,7 +1,7 @@
 // src/lib/games/games/dice_strategy.ts
-import type { GameState, GameDecision } from '../types';
+// import type { GameState, GameDecision } from '../types';
 
-export async function processAction(currentState: GameState, action: { type: string; payload: Record<string, unknown> }) {
+// export async function processAction(currentState: GameState, action: { type: string; payload: Record<string, unknown> }) {
   if (action.type !== 'roll') throw new Error('Invalid action');
 
   const { betAmount, targetMultiplier } = action.payload as { betAmount: number; targetMultiplier: number };
@@ -31,7 +31,7 @@ export async function processAction(currentState: GameState, action: { type: str
     timestamp: Date.now(),
   };
 
-  const newState: GameState = {
+  // const newState: GameState = {
     ...currentState,
     round: currentState.round + 1,
     score: currentState.score + profit,

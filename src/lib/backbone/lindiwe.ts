@@ -65,7 +65,7 @@ export interface ShieldConfirmation {
 export interface LindiweExplanation {
   id: string;
   ts: number;
-  inputs: {
+  // inputs: {
     bufferRatio: number;
     anxiety: number;
     stability: number;
@@ -182,7 +182,7 @@ export class LindiweAI {
       }
     }
 
-    const result: LindiweReasoningResult = {
+    // const result: LindiweReasoningResult = {
       reasoning,
       confidence,
       recommendedAction,
@@ -197,7 +197,7 @@ export class LindiweAI {
     if (isEscalation && this.pendingShieldConfirmation === null) {
       // First signal — open confirmation window, return maintain instead
       this.pendingShieldConfirmation = {
-        pendingResult: result,
+        // pendingResult: result,
         requestedAt: new Date(),
         windowMs: this.confirmationWindowMs,
       };
@@ -224,7 +224,7 @@ export class LindiweAI {
     if (isEscalation && this.pendingShieldConfirmation !== null) {
       // Second signal confirms — clear pending and allow escalation
       this.pendingShieldConfirmation = null;
-      result.riskFlags.push('DUAL_VALIDATED');
+      // result.riskFlags.push('DUAL_VALIDATED');
     }
 
     if (!isEscalation) {
@@ -232,14 +232,14 @@ export class LindiweAI {
       this.pendingShieldConfirmation = null;
     }
 
-    this.recordExplanation(bufferRatio, villagePulse, poolHealthContext, recentOutcomes, result);
+    // this.recordExplanation(bufferRatio, villagePulse, poolHealthContext, recentOutcomes, result);
 
-    this.reasoningHistory.push(result);
+    // this.reasoningHistory.push(result);
     if (this.reasoningHistory.length > 100) {
       this.reasoningHistory.shift();
     }
 
-    return result;
+    // return result;
   }
 
   analyzeTransactionPatterns(transactions: BankTransaction[]): {
@@ -380,12 +380,12 @@ export class LindiweAI {
     pulse: VillagePulse,
     poolHealth: PoolHealthContext,
     recentOutcomes: 'success' | 'failure' | 'mixed',
-    result: LindiweReasoningResult
+    // result: LindiweReasoningResult
   ): void {
     const explanation: LindiweExplanation = {
       id: randomUUID(),
       ts: Date.now(),
-      inputs: {
+      // inputs: {
         bufferRatio,
         anxiety: pulse.anxiety,
         stability: pulse.stability,
@@ -395,10 +395,10 @@ export class LindiweAI {
       },
       decisions: [
         {
-          mode: result.recommendedAction,
-          activated: result.recommendedAction !== 'maintain',
-          requiresApproval: result.recommendedAction === 'emergency',
-          reason: result.reasoning,
+          // mode: result.recommendedAction,
+          // activated: result.recommendedAction !== 'maintain',
+          // requiresApproval: result.recommendedAction === 'emergency',
+          // reason: result.reasoning,
           thresholds: {
             emergencyBuffer: 0.1,
             emergencyAnxiety: 0.7,

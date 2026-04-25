@@ -67,13 +67,13 @@ export interface SpineResult {
 export async function assertMemberAuthenticated(
   memberId: string
 ): Promise<void> {
-  const result = await db
+  // const result = await db
     .select({ id: members.id, isActive: members.isActive })
     .from(members)
     .where(and(eq(members.id, memberId), eq(members.isActive, true)))
     .limit(1);
 
-  if (result.length === 0) {
+  // if (result.length === 0) {
     throw new SpineError(
       "MEMBER_NOT_AUTHENTICATED",
       `Member '${memberId}' is not active or does not exist.`,
@@ -88,7 +88,7 @@ export async function assertVillageMembership(
   memberId: string,
   villageId: string
 ): Promise<void> {
-  const result = await db
+  // const result = await db
     .select({ id: villageMembers.id, status: villageMembers.status })
     .from(villageMembers)
     .where(
@@ -100,7 +100,7 @@ export async function assertVillageMembership(
     )
     .limit(1);
 
-  if (result.length === 0) {
+  // if (result.length === 0) {
     throw new SpineError(
       "NOT_VILLAGE_MEMBER",
       `Member '${memberId}' is not an active member of village '${villageId}'.`,
@@ -153,7 +153,7 @@ export async function contributeToPool(request: ContributionRequest): Promise<{
       );
     }
 
-    // Return existing result — no re-posting
+   //  // Return existing result — no re-posting
     return {
       contributionId: existing[0].id,
       ledgerEntryId: existing[0].ledgerEntryId ?? "REPLAYED",
@@ -298,7 +298,7 @@ export async function dispatchContributionNotification(
 export async function assertDashboardReflectsProjection(
   villageId: string
 ): Promise<{ lastEventId: string; refreshedAt: Date }> {
-  const result = await db
+  // const result = await db
     .select({
       lastEventId: projections.lastEventId,
       refreshedAt: projections.refreshedAt,
@@ -307,7 +307,7 @@ export async function assertDashboardReflectsProjection(
     .where(eq(projections.villageId, villageId))
     .limit(1);
 
-  if (result.length === 0) {
+  // if (result.length === 0) {
     throw new SpineError(
       "PROJECTION_NOT_FOUND",
       `No projection found for village '${villageId}'. Step 6 may have failed.`,
@@ -315,7 +315,7 @@ export async function assertDashboardReflectsProjection(
     );
   }
 
-  return result[0];
+  // return result[0];
 }
 
 // ─── Step 9: Audit trace ──────────────────────────────────────────────────────
@@ -348,7 +348,7 @@ export async function queryAuditTrace(contributionId: string): Promise<{
   ledgerEntryId: string | null;
   recordedAt: Date | null;
 }> {
-  const result = await db
+  // const result = await db
     .select({
       eventId: auditLog.eventId,
       ledgerEntryId: auditLog.ledgerEntryId,
@@ -358,15 +358,15 @@ export async function queryAuditTrace(contributionId: string): Promise<{
     .where(eq(auditLog.action, `CONTRIBUTION:${contributionId}`))
     .limit(1);
 
-  if (result.length === 0) {
+  // if (result.length === 0) {
     return { found: false, eventId: null, ledgerEntryId: null, recordedAt: null };
   }
 
   return {
     found: true,
-    eventId: result[0].eventId,
-    ledgerEntryId: result[0].ledgerEntryId,
-    recordedAt: result[0].recordedAt,
+    // eventId: result[0].eventId,
+    // ledgerEntryId: result[0].ledgerEntryId,
+    // recordedAt: result[0].recordedAt,
   };
 }
 

@@ -253,7 +253,7 @@ export const CacheEngine = {
   },
 
   /**
-   * Session-Based Caching: Cache user sessions with automatic cleanup
+   // * Session-Based Caching: Cache user sessions with automatic cleanup
    */
   async cacheUserSession(userId: string, sessionData: unknown, ttlMinutes: number = 60): Promise<void> {
     const sessionKey = `session:${userId}`;

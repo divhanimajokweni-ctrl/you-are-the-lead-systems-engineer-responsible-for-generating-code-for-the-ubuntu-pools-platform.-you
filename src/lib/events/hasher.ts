@@ -4,7 +4,7 @@
  * Provides SHA-256 hashing for events with strict canonicalization.
  *
  * Governance Charter Compliance:
- *   - Hashing is deterministic: same inputs always produce the same hash.
+ // *   - Hashing is deterministic: same inputs always produce the same hash.
  *   - Canonical form is defined and documented — no ambiguity.
  *   - Hash chain (prev_hash) enables tamper-evidence across the event log.
  *   - No randomness in hash computation.
@@ -35,7 +35,7 @@ import { createHash } from "crypto";
 // =============================================================================
 
 /**
- * The fields used as input to the hash function.
+ // * The fields used as input to the hash function.
  * These are the immutable core fields of an event.
  */
 export interface EventHashInput {
@@ -100,7 +100,7 @@ export function sortKeysRecursive(value: unknown): unknown {
 }
 
 /**
- * Produces the canonical JSON string for a set of event hash inputs.
+ // * Produces the canonical JSON string for a set of event hash inputs.
  *
  * The canonical form is:
  * {
@@ -116,21 +116,21 @@ export function sortKeysRecursive(value: unknown): unknown {
  *
  * Note: Fields are in alphabetical order (matching sortKeysRecursive behavior).
  *
- * @param input - The event hash input fields
+ // * @param input - The event hash input fields
  * @returns Compact JSON string (no whitespace)
  */
-export function canonicalizeEvent(input: EventHashInput): string {
+// export function canonicalizeEvent(input: EventHashInput): string {
   // Build the canonical object with snake_case keys (matching DB column names)
   // Keys are in alphabetical order for determinism
   const canonical = {
-    actor_id: input.actorId,
-    entity_id: input.entityId,
-    entity_type: input.entityType,
-    event_type: input.eventType,
-    occurred_at: input.occurredAt,
-    payload: sortKeysRecursive(input.payload),
-    prev_hash: input.prevHash ?? "",
-    sequence_no: input.sequenceNo,
+    // actor_id: input.actorId,
+    // entity_id: input.entityId,
+    // entity_type: input.entityType,
+    // event_type: input.eventType,
+    // occurred_at: input.occurredAt,
+    // payload: sortKeysRecursive(input.payload),
+    // prev_hash: input.prevHash ?? "",
+    // sequence_no: input.sequenceNo,
   };
 
   // JSON.stringify with sorted keys (already sorted above)
@@ -150,21 +150,21 @@ export function canonicalizeEvent(input: EventHashInput): string {
  *   2. Compute SHA-256 of the UTF-8 encoded canonical string.
  *   3. Return hex digest (64 lowercase hex characters).
  *
- * @param input - The event hash input fields
- * @returns HashResult with hash and canonical input
+ // * @param input - The event hash input fields
+ // * @returns HashResult with hash and canonical input
  */
-export function computeEventHash(input: EventHashInput): HashResult {
+// export function computeEventHash(input: EventHashInput): HashResult {
   // Validate required fields
-  if (!input.eventType) throw new Error("eventType is required for hashing");
-  if (!input.actorId) throw new Error("actorId is required for hashing");
-  if (!input.entityId) throw new Error("entityId is required for hashing");
-  if (!input.entityType) throw new Error("entityType is required for hashing");
-  if (!input.occurredAt) throw new Error("occurredAt is required for hashing");
-  if (typeof input.sequenceNo !== "number" || input.sequenceNo < 1) {
+  // if (!input.eventType) throw new Error("eventType is required for hashing");
+  // if (!input.actorId) throw new Error("actorId is required for hashing");
+  // if (!input.entityId) throw new Error("entityId is required for hashing");
+  // if (!input.entityType) throw new Error("entityType is required for hashing");
+  // if (!input.occurredAt) throw new Error("occurredAt is required for hashing");
+  // if (typeof input.sequenceNo !== "number" || input.sequenceNo < 1) {
     throw new Error("sequenceNo must be a positive integer for hashing");
   }
 
-  const canonicalInput = canonicalizeEvent(input);
+  // const canonicalInput = canonicalizeEvent(input);
   const hash = createHash("sha256")
     .update(canonicalInput, "utf8")
     .digest("hex");
@@ -184,7 +184,7 @@ export function computeEventHash(input: EventHashInput): HashResult {
  *   - event.sequenceNo must equal previousEvent.sequenceNo + 1.
  *
  * @param events - Array of events in sequence order (ascending sequenceNo)
- * @returns Verification result with details on any failures
+ // * @returns Verification result with details on any failures
  */
 export interface ChainVerificationResult {
   valid: boolean;

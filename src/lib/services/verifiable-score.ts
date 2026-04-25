@@ -12,20 +12,20 @@ export interface ScoredContribution {
 
 export function computeVerifiableScore(events: ScoredContribution[]): {
   score: number;
-  inputHash: string;
+  // inputHash: string;
 } {
   if (events.length === 0) {
-    return { score: 0, inputHash: "" };
+    // return { score: 0, inputHash: "" };
   }
 
   const hashes = events.map((e) => e.hash);
-  const inputHash = computeMerkleRoot(hashes);
+  // const inputHash = computeMerkleRoot(hashes);
 
   const totalImpact = events.reduce((sum, e) => sum + e.impactValue, 0);
   // Normalize: 100 impact points = score of 50, 200+ = 100, capped
   const score = Math.min(100, Math.round((totalImpact / 200) * 100));
 
-  return { score, inputHash };
+  // return { score, inputHash };
 }
 
 export function verifyScoreComputation(

@@ -176,7 +176,7 @@ function stdDev(values: number[]): number {
   return Math.sqrt(squaredDiffs.reduce((a, b) => a + b, 0) / values.length);
 }
 
-export function calculatePoolHealthFromInput(input: PoolHealthInput): {
+// export function calculatePoolHealthFromInput(input: PoolHealthInput): {
   poolHealth: number;
   bufferStrength: number;
   defaultStrength: number;
@@ -186,19 +186,19 @@ export function calculatePoolHealthFromInput(input: PoolHealthInput): {
   const targetBufferRatio = 0.20;
   const targetDefaultRate = 0.05;
 
-  const bufferRatio = input.totalExposure > 0 
-    ? input.bufferBalance / (input.totalExposure + eps) 
+  // const bufferRatio = input.totalExposure > 0 
+    // ? input.bufferBalance / (input.totalExposure + eps) 
     : 1;
   const bufferStrength = clamp(bufferRatio / targetBufferRatio, 0, 1);
 
-  const defaultRate = input.activeLoanCount > 0 
-    ? input.defaultCount / input.activeLoanCount 
+  // const defaultRate = input.activeLoanCount > 0 
+    // ? input.defaultCount / input.activeLoanCount 
     : 0;
   const defaultStrength = 1 - clamp(defaultRate / targetDefaultRate, 0, 1);
 
   let poolHealth: number;
-  if (input.supportSuccessRate !== undefined) {
-    const supportStrength = clamp(input.supportSuccessRate, 0, 1);
+  // if (input.supportSuccessRate !== undefined) {
+    // const supportStrength = clamp(input.supportSuccessRate, 0, 1);
     poolHealth = weightedAvg(
       [bufferStrength, defaultStrength, supportStrength],
       [0.50, 0.40, 0.10]
@@ -300,8 +300,8 @@ export interface VillageHealthInput {
   transactionCount: number;
 }
 
-export function calculateVillageHealth(input: VillageHealthInput): number {
-  const { memberScores, transactionCount } = input;
+// export function calculateVillageHealth(input: VillageHealthInput): number {
+  // const { memberScores, transactionCount } = input;
   const memberCount = memberScores.length;
   if (memberCount === 0) return 0;
 
@@ -488,14 +488,14 @@ export class CreditService {
     if (request.signature && request.signerPublicKey) {
       const verifier = new SignatureVerifier();
       const { poolId, memberId, amount, termDays, purpose } = request;
-      const result = verifier.verify({
+      // const result = verifier.verify({
         data: { poolId, memberId, amount, termDays, purpose: purpose || null } as Record<string, unknown>,
         signature: request.signature,
         algorithm: 'ed25519' as const,
         publicKey: request.signerPublicKey,
       });
-      if (!result.isValid) {
-        return { approved: false, reason: `Invalid signature: ${result.error || 'verification failed'}` };
+      // if (!result.isValid) {
+        // return { approved: false, reason: `Invalid signature: ${result.error || 'verification failed'}` };
       }
     }
 

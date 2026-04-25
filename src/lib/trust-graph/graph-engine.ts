@@ -30,18 +30,18 @@ export class TrustGraphEngine {
     return `node-${this.nextId++}`;
   }
 
-  upsertNode(input: GraphNodeInput): GraphNode {
-    const key = `${input.entityId}:${input.entityType}`;
+  // upsertNode(input: GraphNodeInput): GraphNode {
+    // const key = `${input.entityId}:${input.entityType}`;
     const existingId = this.entityIndex.get(key);
 
     if (existingId) {
       const existing = this.nodes.get(existingId)!;
       const updated: GraphNode = {
         ...existing,
-        label: input.label,
-        metadata: input.metadata ?? existing.metadata,
-        accessLevel: input.accessLevel ?? existing.accessLevel,
-        isVerified: input.isVerified ?? existing.isVerified,
+        // label: input.label,
+        // metadata: input.metadata ?? existing.metadata,
+        // accessLevel: input.accessLevel ?? existing.accessLevel,
+        // isVerified: input.isVerified ?? existing.isVerified,
       };
       this.nodes.set(existingId, updated);
       return updated;
@@ -49,31 +49,31 @@ export class TrustGraphEngine {
 
     const node: GraphNode = {
       id: this.genId(),
-      entityId: input.entityId,
-      entityType: input.entityType,
-      label: input.label,
+      // entityId: input.entityId,
+      // entityType: input.entityType,
+      // label: input.label,
       trustScore: 0,
       pageRank: 0,
-      accessLevel: input.accessLevel ?? "public",
-      isVerified: input.isVerified ?? false,
-      metadata: input.metadata,
+      // accessLevel: input.accessLevel ?? "public",
+      // isVerified: input.isVerified ?? false,
+      // metadata: input.metadata,
     };
     this.nodes.set(node.id, node);
     this.entityIndex.set(key, node.id);
     return node;
   }
 
-  upsertEdge(input: GraphEdgeInput): GraphEdge {
-    const edgeKey = `${input.sourceNodeId}:${input.targetNodeId}:${input.edgeType}`;
+  // upsertEdge(input: GraphEdgeInput): GraphEdge {
+    // const edgeKey = `${input.sourceNodeId}:${input.targetNodeId}:${input.edgeType}`;
     const existingId = this.edgeIndex.get(edgeKey);
 
     if (existingId) {
       const existing = this.edges.get(existingId)!;
-      const sourceNode = this.nodes.get(input.sourceNodeId);
+      // const sourceNode = this.nodes.get(input.sourceNodeId);
       const interactionCount = existing.interactionCount + 1;
       const frequencyFactor = calculateFrequencyFactor(interactionCount);
       const reputationMultiplier = calculateReputationMultiplier(sourceNode?.trustScore ?? 0);
-      const transactionValue = input.transactionValue ?? existing.transactionValue;
+      // const transactionValue = input.transactionValue ?? existing.transactionValue;
       const weight = calculateEdgeWeight({ transactionValue, reputationMultiplier, frequencyFactor });
 
       const updated: GraphEdge = {
@@ -83,29 +83,29 @@ export class TrustGraphEngine {
         reputationMultiplier,
         transactionValue,
         weight,
-        metadata: input.metadata ?? existing.metadata,
+        // metadata: input.metadata ?? existing.metadata,
       };
       this.edges.set(existingId, updated);
       return updated;
     }
 
-    const sourceNode = this.nodes.get(input.sourceNodeId);
+    // const sourceNode = this.nodes.get(input.sourceNodeId);
     const frequencyFactor = calculateFrequencyFactor(1);
     const reputationMultiplier = calculateReputationMultiplier(sourceNode?.trustScore ?? 0);
-    const transactionValue = input.transactionValue ?? 0;
+    // const transactionValue = input.transactionValue ?? 0;
     const weight = calculateEdgeWeight({ transactionValue, reputationMultiplier, frequencyFactor });
 
     const edge: GraphEdge = {
       id: this.genId(),
-      sourceNodeId: input.sourceNodeId,
-      targetNodeId: input.targetNodeId,
-      edgeType: input.edgeType,
+      // sourceNodeId: input.sourceNodeId,
+      // targetNodeId: input.targetNodeId,
+      // edgeType: input.edgeType,
       weight,
       transactionValue,
       reputationMultiplier,
       frequencyFactor,
       interactionCount: 1,
-      metadata: input.metadata,
+      // metadata: input.metadata,
     };
     this.edges.set(edge.id, edge);
     this.edgeIndex.set(edgeKey, edge.id);

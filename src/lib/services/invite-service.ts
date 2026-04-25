@@ -157,8 +157,8 @@ export class InviteChainService {
     };
   }
 
-  async createInvite(input: CreateInviteInput): Promise<InviteResult> {
-    const canInvite = await this.canInvite(input.inviterId);
+  // async createInvite(input: CreateInviteInput): Promise<InviteResult> {
+    // const canInvite = await this.canInvite(input.inviterId);
 
     if (!canInvite.canInvite) {
       return {
@@ -173,12 +173,12 @@ export class InviteChainService {
     const [invite] = await db
       .insert(invites)
       .values({
-        inviterId: input.inviterId,
-        inviterVillageId: input.inviterVillageId,
-        inviteeEmail: input.inviteeEmail,
-        inviteeName: input.inviteeName,
+        // inviterId: input.inviterId,
+        // inviterVillageId: input.inviterVillageId,
+        // inviteeEmail: input.inviteeEmail,
+        // inviteeName: input.inviteeName,
         inviteCode: this.generateInviteCode(),
-        villageId: input.villageId,
+        // villageId: input.villageId,
         status: "pending",
         tier: "novice",
         expiresAt,
@@ -193,11 +193,11 @@ export class InviteChainService {
     };
   }
 
-  async acceptInvite(input: AcceptInviteInput): Promise<InviteResult> {
+  // async acceptInvite(input: AcceptInviteInput): Promise<InviteResult> {
     const [invite] = await db
       .select()
       .from(invites)
-      .where(eq(invites.inviteCode, input.inviteCode))
+      // .where(eq(invites.inviteCode, input.inviteCode))
       .limit(1);
 
     if (!invite) {
@@ -238,7 +238,7 @@ export class InviteChainService {
 
       await tx.insert(inviteRelationships).values({
         inviterId: invite.inviterId,
-        inviteeId: input.inviteeId,
+        // inviteeId: input.inviteeId,
         inviteId: invite.id,
         villageId: invite.villageId,
         trustLevel: 100 - invite.inviterRiskShare,
@@ -252,19 +252,19 @@ export class InviteChainService {
     };
   }
 
-  async recordPenalty(input: RecordPenaltyInput): Promise<void> {
+  // async recordPenalty(input: RecordPenaltyInput): Promise<void> {
     await db.insert(invitePenalties).values({
-      inviterId: input.inviterId,
-      inviteeId: input.inviteeId,
-      reason: input.reason,
+      // inviterId: input.inviterId,
+      // inviteeId: input.inviteeId,
+      // reason: input.reason,
       penaltyPoints: INVITE_CONFIG.RISK_SHARE_PERCENT,
-      description: input.description,
+      // description: input.description,
     });
 
     const [member] = await db
       .select()
       .from(villageMembers)
-      .where(eq(villageMembers.id, input.inviterId))
+      // .where(eq(villageMembers.id, input.inviterId))
       .limit(1);
 
     if (member) {
@@ -272,7 +272,7 @@ export class InviteChainService {
       await db
         .update(villageMembers)
         .set({ ubuntuScore: newScore })
-        .where(eq(villageMembers.id, input.inviterId));
+        // .where(eq(villageMembers.id, input.inviterId));
     }
   }
 
@@ -299,7 +299,7 @@ export class InviteChainService {
     return { success: true };
   }
 
-  async registerAnchor(input: {
+  // async registerAnchor(input: {
     anchorId: string;
     anchorName: string;
     anchorTitle?: string;
@@ -308,12 +308,12 @@ export class InviteChainService {
     inviteQuota?: number;
   }): Promise<void> {
     await db.insert(anchorInvitations).values({
-      anchorId: input.anchorId,
-      anchorName: input.anchorName,
-      anchorTitle: input.anchorTitle,
-      villageId: input.villageId,
-      communityType: input.communityType,
-      inviteQuota: input.inviteQuota || 50,
+      // anchorId: input.anchorId,
+      // anchorName: input.anchorName,
+      // anchorTitle: input.anchorTitle,
+      // villageId: input.villageId,
+      // communityType: input.communityType,
+      // inviteQuota: input.inviteQuota || 50,
       verifiedAt: new Date(),
     });
   }

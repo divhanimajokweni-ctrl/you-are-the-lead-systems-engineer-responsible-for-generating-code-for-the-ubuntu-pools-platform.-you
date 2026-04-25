@@ -65,7 +65,7 @@ TRUST:
 - Months as active member: ${signals.membershipMonths}
 - Loan repayment rate (if applicable): ${signals.repaymentRate ?? "N/A"}%
 `.trim();
-const result = await this.router.infer({
+// const result = await this.router.infer({
 task: "ubuntu_score",
 prompt,
 systemPrompt: SCORE_SYSTEM,
@@ -73,7 +73,7 @@ sensitiveData: true, // NEVER leaves platform
 maxTokens: 350,
 });
 try {
-const parsed = JSON.parse(result.text.replace(/```json|```/g, "").trim());
+// const parsed = JSON.parse(result.text.replace(/```json|```/g, "").trim());
         // Persist to DB
         await db.insert(ubuntuScores).values({
           userId: memberId,
@@ -90,7 +90,7 @@ const parsed = JSON.parse(result.text.replace(/```json|```/g, "").trim());
             updatedAt: new Date(),
           },
         });
-return { ...parsed, inferredLocally: result.tier === "local" };
+// return { ...parsed, inferredLocally: result.tier === "local" };
 } catch {
 return this.fallbackScore(signals);
 }

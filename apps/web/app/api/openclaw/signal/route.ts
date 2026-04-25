@@ -3,7 +3,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { z } from "zod";
 import { serviceBus } from "@ubuntu/domain-core";
 
-const TIMESTAMP_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
+const TIMESTAMP_MAX_AGE_MS = 5 * 60 * 1000;
 
 const signalSchema = z.object({
   type: z.enum(["LINDIWE_SIGNAL", "HEALTH_CHECK", "OVERRIDE", "ALERT"]),
@@ -48,28 +48,27 @@ function isTimestampFresh(timestamp: string): boolean {
 
 export async function POST(request: NextRequest) {
   const signature = request.headers.get("x-sig") || request.headers.get("x-signature");
-  const timestamp = request.headers.get("x-ts") || request.headers.get("x-timestamp");
+  const timestamp = request.headers.get("x-ts") || "";
 
   if (!signature || !timestamp) {
     return NextResponse.json(
-      { error: "Missing x-sig and x-ts headers" },
+      { error: "Missing signature or timestamp" },
       { status: 401 }
     );
   }
 
   if (!isTimestampFresh(timestamp)) {
     return NextResponse.json(
-      { error: "Request timestamp expired" },
+      { error: "Timestamp expired" },
       { status: 401 }
     );
   }
 
   const body = await request.text();
-
   if (!verifyHmac(body, timestamp, signature)) {
     return NextResponse.json(
       { error: "Invalid signature" },
-      { status: 403 }
+      { status: 401 }
     );
   }
 
@@ -80,23 +79,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const result = signalSchema.safeParse(parsed);
-  if (!result.success) {
-    return NextResponse.json(
-      { error: "Invalid payload", details: result.error.flatten() },
-      { status: 400 }
-    );
-  }
-
-  const { type, data } = result.data;
-
-  await serviceBus.emit(`openclaw:${type.toLowerCase()}`, {
-    type,
-    data,
-    receivedAt: new Date().toISOString(),
-  });
-
-  console.log(`[OpenClaw Signal] Received ${type} signal`);
-
-  return NextResponse.json({ ok: true, type });
+  return NextResponse.json({ ok: true });
 }

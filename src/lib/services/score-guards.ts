@@ -89,8 +89,8 @@ export function detectCircularFlow(transactions: TransactionRecord[]): {
  * Weights an attestation by voter credibility.
  * Low-score voters have diminished influence.
  */
-export function weightAttestation(input: AttestationInput): number {
-  const { rating, voterScore } = input;
+// export function weightAttestation(input: AttestationInput): number {
+  // const { rating, voterScore } = input;
   return rating * Math.log2(voterScore + 1);
 }
 
@@ -103,11 +103,11 @@ export function verifySignedAttestation(
   publicKey: string
 ): { valid: boolean; error?: string } {
   const verifier = new SignatureVerifier();
-  const result = verifier.verify({
+  // const result = verifier.verify({
     data: attestation as Record<string, unknown>,
     signature,
     algorithm: "ed25519" as const,
     publicKey,
   });
-  return { valid: result.isValid, error: result.error };
+  // return { valid: result.isValid, error: result.error };
 }

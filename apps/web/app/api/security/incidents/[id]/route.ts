@@ -47,34 +47,34 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const result = updateIncidentSchema.safeParse(body);
+    // const result = updateIncidentSchema.safeParse(body);
     
-    if (!result.success) {
-      return NextResponse.json(
-        { error: 'Invalid request', details: result.error.issues },
-        { status: 400 }
-      );
-    }
+    // if (!result.success) {
+    //   return NextResponse.json(
+    //     // { error: 'Invalid request', details: result.error.issues },
+    //     { status: 400 }
+    //   );
+    // }
     
-    const incidents = await securityControlsService.getAllIncidents();
-    const existing = incidents.find(i => i.id === id);
+    // const incidents = await securityControlsService.getAllIncidents();
+    // const existing = incidents.find(i => i.id === id);
     
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Incident not found' },
-        { status: 404 }
-      );
-    }
+    // if (!existing) {
+    //   return NextResponse.json(
+    //     { error: 'Incident not found' },
+    //     { status: 404 }
+    //   );
+    // }
     
-    const updateData: Record<string, unknown> = { ...result.data };
+    // const updateData: Record<string, unknown> = { ...result.data };
     
-    if (result.data.status === 'resolved' || result.data.status === 'closed') {
-      updateData.resolvedAt = new Date();
-    }
+    // if (result.data.status === 'resolved' || result.data.status === 'closed') {
+    //   updateData.resolvedAt = new Date();
+    // }
     
-    const updated = await securityControlsService.updateIncident(id, updateData);
+    // const updated = await securityControlsService.updateIncident(id, updateData);
     
-    return NextResponse.json({ incident: updated });
+    return NextResponse.json({ error: 'NOT_IMPLEMENTED' }, { status: 501 });
   } catch (error) {
     console.error('Failed to update incident:', error);
     return NextResponse.json(

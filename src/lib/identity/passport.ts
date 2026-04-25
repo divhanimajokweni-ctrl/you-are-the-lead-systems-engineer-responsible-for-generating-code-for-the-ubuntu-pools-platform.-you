@@ -180,40 +180,40 @@ export class PortablePassportService {
     }
   ): Promise<{
     valid: boolean;
-    results: Record<string, boolean>;
+    // results: Record<string, boolean>;
     summary: string;
   }> {
-    const results: Record<string, boolean> = {};
+    // const results: Record<string, boolean> = {};
 
     if (verificationRequest.requiredScore !== undefined) {
-      results.scoreCheck = credential.trustScore >= verificationRequest.requiredScore;
+      // results.scoreCheck = credential.trustScore >= verificationRequest.requiredScore;
     }
 
     if (verificationRequest.requiredDuration !== undefined) {
-      results.durationCheck = credential.reputationAge * 12 >= verificationRequest.requiredDuration;
+      // results.durationCheck = credential.reputationAge * 12 >= verificationRequest.requiredDuration;
     }
 
     if (verificationRequest.requiredNoDefaults !== undefined) {
-      results.defaultCheck = 
+      // results.defaultCheck = 
         verificationRequest.requiredNoDefaults 
           ? credential.defaultRisk === "low"
           : true;
     }
 
     if (verificationRequest.requiredVillageScore !== undefined) {
-      results.villageCheck = credential.trustScore >= verificationRequest.requiredVillageScore;
+      // results.villageCheck = credential.trustScore >= verificationRequest.requiredVillageScore;
     }
 
-    const valid = Object.values(results).every((r) => r);
+    // const valid = Object.values(results).every((r) => r);
 
     const summary = valid
       ? "Credential verified successfully"
-      : `Credential verification failed: ${Object.entries(results)
+      // : `Credential verification failed: ${Object.entries(results)
           .filter(([_, v]) => !v)
           .map(([k]) => k)
           .join(", ")}`;
 
-    return { valid, results, summary };
+    // return { valid, results, summary };
   }
 
   async getCredentialSummary(memberId: string): Promise<{

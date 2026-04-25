@@ -29,10 +29,10 @@ export async function GET(
     );
 
     const components = calculateGraphTrustScore(node.id, edges, engine.getAllNodes());
-    const profile = generateTrustProfile(node, accessLevel, edges, components);
+    // const profile = generateTrustProfile(node, accessLevel, edges, components);
 
-    return NextResponse.json({ profile });
+    // return NextResponse.json({ profile });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+    // return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
   }
 }

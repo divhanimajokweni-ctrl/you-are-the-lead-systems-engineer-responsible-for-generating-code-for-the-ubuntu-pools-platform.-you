@@ -155,7 +155,7 @@ function GiveHelpForm() {
       
       <div>
         <label className="block text-sm text-neutral-400 mb-1">What did you help with?</label>
-        <input
+        // <input
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}

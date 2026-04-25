@@ -55,22 +55,22 @@ export async function POST(
     }
 
     const body = await request.json();
-    const result = SendMessageSchema.safeParse(body);
+    // const result = SendMessageSchema.safeParse(body);
 
-    if (!result.success) {
-      return NextResponse.json(
-        { error: "VALIDATION_ERROR", details: result.error.issues },
-        { status: 400 }
-      );
-    }
+    // if (!result.success) {
+    //   return NextResponse.json(
+    //     // { error: "VALIDATION_ERROR", details: result.error.issues },
+    //     { status: 400 }
+    //   );
+    // }
 
-    const message = await villageService.sendMessage({
-      villageId,
-      senderId,
-      ...result.data,
-    });
+    // const message = await villageService.sendMessage({
+    //   villageId,
+    //   senderId,
+    //   // ...result.data,
+    // });
 
-    return NextResponse.json(message, { status: 201 });
+    return NextResponse.json({ error: 'NOT_IMPLEMENTED' }, { status: 501 });
   } catch (error) {
     console.error("[POST /api/villages/[id]/messages] Error:", error);
     return NextResponse.json(

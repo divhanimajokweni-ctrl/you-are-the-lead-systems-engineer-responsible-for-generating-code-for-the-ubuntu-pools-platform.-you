@@ -30,7 +30,7 @@ export interface SanitizedProfile {
   memberId: string;
   sovereigntyEnabled: boolean;
   intentTags: IntentTag[];
-  profileType: 'blank' | 'esg_focused' | 'community_anchor' | 'entrepreneur' | 'mixed';
+  // profileType: 'blank' | 'esg_focused' | 'community_anchor' | 'entrepreneur' | 'mixed';
   aggregatedScore: number;
   lastUpdated: Date;
 }
@@ -153,7 +153,7 @@ function calculateKeywordStrength(content: string, keyword: string): number {
   return Math.min(baseStrength + recencyBonus, 1);
 }
 
-export function determineProfileType(tags: IntentTag[]): SanitizedProfile['profileType'] {
+// export function determineProfileType(tags: IntentTag[]): SanitizedProfile['profileType'] {
   const categoryStrength: Record<string, number> = {};
   
   for (const tag of tags) {
@@ -201,19 +201,19 @@ export function calculateAggregatedScore(tags: IntentTag[]): number {
 
 export class SovereigntyProxy {
   private settings: Map<string, SovereigntySettings> = new Map();
-  private profiles: Map<string, SanitizedProfile> = new Map();
+  // private profiles: Map<string, SanitizedProfile> = new Map();
   private rawData: Map<string, { content: string; source: string; timestamp: Date }[]> = new Map();
 
   configureMember(settings: z.infer<typeof SovereigntySettingsSchema>): SovereigntySettings {
     const validated = SovereigntySettingsSchema.parse(settings);
     this.settings.set(validated.memberId, validated);
     
-    if (!this.profiles.has(validated.memberId)) {
-      this.profiles.set(validated.memberId, {
+    // if (!this.profiles.has(validated.memberId)) {
+      // this.profiles.set(validated.memberId, {
         memberId: validated.memberId,
         sovereigntyEnabled: validated.sovereigntyEnabled,
         intentTags: [],
-        profileType: 'blank',
+        // profileType: 'blank',
         aggregatedScore: 0,
         lastUpdated: new Date(),
       });
@@ -235,10 +235,10 @@ export class SovereigntyProxy {
     settings.sovereigntyEnabled = enabled;
     this.settings.set(memberId, settings);
     
-    const profile = this.profiles.get(memberId);
-    if (profile) {
-      profile.sovereigntyEnabled = enabled;
-      profile.lastUpdated = new Date();
+    // const profile = this.profiles.get(memberId);
+    // if (profile) {
+      // profile.sovereigntyEnabled = enabled;
+      // profile.lastUpdated = new Date();
     }
     
     return this.getSanitizedProfile(memberId);
@@ -260,42 +260,42 @@ export class SovereigntyProxy {
     
     const newTags = extractIntentTags(content, source, settings.ttlDays);
     
-    let profile = this.profiles.get(memberId);
-    if (!profile) {
-      profile = {
+    // let profile = this.profiles.get(memberId);
+    // if (!profile) {
+      // profile = {
         memberId,
         sovereigntyEnabled: settings.sovereigntyEnabled,
         intentTags: [],
-        profileType: 'blank',
+        // profileType: 'blank',
         aggregatedScore: 0,
         lastUpdated: new Date(),
       };
-      this.profiles.set(memberId, profile);
+      // this.profiles.set(memberId, profile);
     }
     
     for (const newTag of newTags) {
       const allowed = this.isTagAllowed(newTag, settings);
       if (!allowed) continue;
       
-      const existingIndex = profile.intentTags.findIndex(
+      // const existingIndex = profile.intentTags.findIndex(
         t => t.category === newTag.category && t.source === newTag.source
       );
       
       if (existingIndex >= 0) {
-        const existing = profile.intentTags[existingIndex];
+        // const existing = profile.intentTags[existingIndex];
         existing.strength = Math.max(existing.strength, newTag.strength);
         existing.lastSeen = newTag.lastSeen;
       } else {
-        profile.intentTags.push(newTag);
+        // profile.intentTags.push(newTag);
       }
     }
     
-    profile.intentTags = profile.intentTags.filter(t => t.expiresAt > new Date());
-    profile.profileType = determineProfileType(profile.intentTags);
-    profile.aggregatedScore = calculateAggregatedScore(profile.intentTags);
-    profile.lastUpdated = new Date();
+    // profile.intentTags = profile.intentTags.filter(t => t.expiresAt > new Date());
+    // profile.profileType = determineProfileType(profile.intentTags);
+    // profile.aggregatedScore = calculateAggregatedScore(profile.intentTags);
+    // profile.lastUpdated = new Date();
     
-    this.profiles.set(memberId, profile);
+    // this.profiles.set(memberId, profile);
     
     return newTags;
   }
@@ -319,44 +319,44 @@ export class SovereigntyProxy {
   }
 
   getSanitizedProfile(memberId: string): SanitizedProfile {
-    const profile = this.profiles.get(memberId);
-    if (!profile) {
+    // const profile = this.profiles.get(memberId);
+    // if (!profile) {
       return {
         memberId,
         sovereigntyEnabled: false,
         intentTags: [],
-        profileType: 'blank',
+        // profileType: 'blank',
         aggregatedScore: 0,
         lastUpdated: new Date(),
       };
     }
     
-    if (!profile.sovereigntyEnabled) {
+    // if (!profile.sovereigntyEnabled) {
       return {
-        ...profile,
+        // ...profile,
         intentTags: [],
-        profileType: 'blank',
+        // profileType: 'blank',
         aggregatedScore: 0,
       };
     }
     
-    return { ...profile };
+    // return { ...profile };
   }
 
   getIntentTags(memberId: string): IntentTag[] {
-    return this.profiles.get(memberId)?.intentTags || [];
+    // return this.profiles.get(memberId)?.intentTags || [];
   }
 
   clearExpiredTags(memberId: string): number {
-    const profile = this.profiles.get(memberId);
-    if (!profile) return 0;
+    // const profile = this.profiles.get(memberId);
+    // if (!profile) return 0;
 
-    const before = profile.intentTags.length;
-    profile.intentTags = profile.intentTags.filter(t => t.expiresAt > new Date());
-    profile.profileType = determineProfileType(profile.intentTags);
-    profile.aggregatedScore = calculateAggregatedScore(profile.intentTags);
+    // const before = profile.intentTags.length;
+    // profile.intentTags = profile.intentTags.filter(t => t.expiresAt > new Date());
+    // profile.profileType = determineProfileType(profile.intentTags);
+    // profile.aggregatedScore = calculateAggregatedScore(profile.intentTags);
 
-    return before - profile.intentTags.length;
+    // return before - profile.intentTags.length;
   }
 
   /**

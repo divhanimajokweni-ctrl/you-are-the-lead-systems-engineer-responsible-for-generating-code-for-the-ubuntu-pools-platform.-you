@@ -159,19 +159,19 @@ export function calculateNegativeSignalPenalty(
 }
 
 export function applyReputationFriction(
-  input: ReputationFrictionInput,
+  // input: ReputationFrictionInput,
   negativeSignals: number = 0
 ): ReputationFrictionResult {
-  const accountCreatedAt = new Date(input.accountCreatedAt);
-  const lastActiveAt = new Date(input.lastActiveAt);
+  // const accountCreatedAt = new Date(input.accountCreatedAt);
+  // const lastActiveAt = new Date(input.lastActiveAt);
   const currentDate = new Date();
   
   const reputationAgeYears = calculateReputationAge(accountCreatedAt, lastActiveAt, currentDate);
-  const reputationAgeMultiplier = applyReputationAgeMultiplier(input.baseScore, reputationAgeYears);
+  // const reputationAgeMultiplier = applyReputationAgeMultiplier(input.baseScore, reputationAgeYears);
   
-  const diversityPenalty = calculateDiversityPenalty(input.endorsements, input.interactions);
+  // const diversityPenalty = calculateDiversityPenalty(input.endorsements, input.interactions);
   
-  const maxInfluenceCap = applyMaxInfluenceCap(input.endorsements);
+  // const maxInfluenceCap = applyMaxInfluenceCap(input.endorsements);
   
   const activityDecay = REPUTATION_FRICTION_CONFIG.ACTIVITY_DECAY_ENABLED 
     ? calculateActivityDecay(lastActiveAt, currentDate)
@@ -180,8 +180,8 @@ export function applyReputationFriction(
   const negativePenalty = calculateNegativeSignalPenalty(negativeSignals);
   
   const finalScore = Math.round(
-    input.baseScore *
-    (reputationAgeMultiplier / input.baseScore) *
+    // input.baseScore *
+    // (reputationAgeMultiplier / input.baseScore) *
     diversityPenalty *
     maxInfluenceCap *
     activityDecay *

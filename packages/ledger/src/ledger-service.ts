@@ -14,7 +14,7 @@
  * Usage:
  *   const service = new LedgerService(db, eventService);
  *   const account = await service.openAccount({ ... });
- *   const result = await service.postEvent(eventId);
+ // *   const result = await service.postEvent(eventId);
  */
 
 import { eq } from "drizzle-orm";
@@ -151,77 +151,77 @@ export class LedgerService {
    *   1. Emit 'ledger.account_opened' event.
    *   2. Insert ledger_accounts row referencing the event.
    *
-   * @param input - Account creation input
+   // * @param input - Account creation input
    * @returns The created LedgerAccount
    * @throws If account code already exists or event emission fails
    */
-  async openAccount(input: OpenAccountInput): Promise<LedgerAccount> {
-    // Validate currency format
-    if (!/^[A-Z]{3}$/.test(input.currency)) {
-      throw new Error(
-        `Invalid currency code '${input.currency}'. Must be 3 uppercase letters.`
-      );
-    }
+  // async openAccount(input: OpenAccountInput): Promise<LedgerAccount> {
+    // // Validate currency format
+    // if (!/^[A-Z]{3}$/.test(input.currency)) {
+    //   throw new Error(
+    //     `Invalid currency code '${input.currency}'. Must be 3 uppercase letters.`
+    //   );
+    // }
 
-    // Validate account code format
-    if (!/^[A-Z0-9_-]+$/.test(input.code)) {
-      throw new Error(
-        `Invalid account code '${input.code}'. Must be uppercase alphanumeric with hyphens/underscores.`
-      );
-    }
+    // // Validate account code format
+    // if (!/^[A-Z0-9_-]+$/.test(input.code)) {
+    //   throw new Error(
+    //     `Invalid account code '${input.code}'. Must be uppercase alphanumeric with hyphens/underscores.`
+    //   );
+    // }
 
-    // Check for duplicate code
-    const existing = await this.queries.getAccountByCode(input.code);
-    if (existing) {
-      throw new Error(
-        `Ledger account with code '${input.code}' already exists (ID: ${existing.id})`
-      );
-    }
+    // // Check for duplicate code
+    // const existing = await this.queries.getAccountByCode(input.code);
+    // if (existing) {
+    //   throw new Error(
+    //     `Ledger account with code '${input.code}' already exists (ID: ${existing.id})`
+    //   );
+    // }
 
-    // Emit the account_opened event
-    // The entity_id for this event is a new UUID (the account's future ID)
-    // We use a deterministic approach: emit event, then insert account with event ID
-    const { event } = await this.eventService.emit({
-      eventType: "ledger.account_opened",
-      actorId: input.actorId,
-      entityId: crypto.randomUUID(), // account's entity ID (will be the account ID)
-      entityType: "ledger_account",
-      payload: {
-        accountCode: input.code,
-        accountName: input.name,
-        accountType: input.accountType,
-        currency: input.currency,
-        ...(input.entityId ? { entityId: input.entityId } : {}),
-        ...(input.entityType ? { entityType: input.entityType } : {}),
-      },
-      occurredAt: new Date().toISOString(),
-    });
+    // // Emit the account_opened event
+    // // The entity_id for this event is a new UUID (the account's future ID)
+    // // We use a deterministic approach: emit event, then insert account with event ID
+    // const { event } = await this.eventService.emit({
+    //   eventType: "ledger.account_opened",
+    //   // actorId: input.actorId,
+    //   entityId: crypto.randomUUID(), // account's entity ID (will be the account ID)
+    //   entityType: "ledger_account",
+    //   payload: {
+    //     // accountCode: input.code,
+    //     // accountName: input.name,
+    //     // accountType: input.accountType,
+    //     // currency: input.currency,
+    //     // ...(input.entityId ? { entityId: input.entityId } : {}),
+    //     // ...(input.entityType ? { entityType: input.entityType } : {}),
+    //   },
+    //   occurredAt: new Date().toISOString(),
+    // });
 
-    // Insert the ledger account, referencing the event
-    const newAccount: NewLedgerAccount = {
-      code: input.code,
-      name: input.name,
-      accountType: input.accountType,
-      currency: input.currency,
-      entityId: input.entityId ?? null,
-      entityType: input.entityType ?? null,
-      createdByEventId: event.id,
-    };
+    // // Insert the ledger account, referencing the event
+    // const newAccount: NewLedgerAccount = {
+    //   // code: input.code,
+    //   // name: input.name,
+    //   // accountType: input.accountType,
+    //   // currency: input.currency,
+    //   // entityId: input.entityId ?? null,
+    //   // entityType: input.entityType ?? null,
+    //   createdByEventId: event.id,
+    // };
 
-    const [account] = await this.db
-      .insert(ledgerAccounts)
-      .values(newAccount)
-      .returning();
+    // const [account] = await this.db
+    //   .insert(ledgerAccounts)
+    //   .values(newAccount)
+    //   .returning();
 
-    if (!account) {
-      throw new Error(`Failed to insert ledger account for code '${input.code}'`);
-    }
+    // if (!account) {
+    //   // throw new Error(`Failed to insert ledger account for code '${input.code}'`);
+    // }
 
-    // Transition the event to 'posted' (account creation is immediate)
-    await this.eventService.transitionStatus(event.id, "posted");
+    // // Transition the event to 'posted' (account creation is immediate)
+    // await this.eventService.transitionStatus(event.id, "posted");
 
-    return account;
-  }
+    // return account;
+  // }
 
   // ---------------------------------------------------------------------------
   // POSTING RULE MANAGEMENT
@@ -234,81 +234,74 @@ export class LedgerService {
    *   1. Emit 'ledger.posting_rule_created' event.
    *   2. Insert posting_rules row referencing the event.
    *
-   * @param input - Posting rule creation input
+   // * @param input - Posting rule creation input
    * @returns The created PostingRule
    */
-  async createPostingRule(input: CreatePostingRuleInput): Promise<PostingRule> {
-    // Determine version (increment if rule for this event type already exists)
-    const existingRules = await this.queries.getPostingRules({
-      eventType: input.eventType,
-    });
-    const maxVersion = existingRules.reduce(
-      (max, r) => Math.max(max, r.version),
-      0
-    );
-    const newVersion = maxVersion + 1;
+  // // async createPostingRule(input: CreatePostingRuleInput): Promise<PostingRule> {
+    // // Determine version (increment if rule for this event type already exists)
+    // const existingRules = await this.queries.getPostingRules({
+    //   // eventType: input.eventType,
+    // });
+    // const maxVersion = existingRules.reduce(
+    //   (max, r) => Math.max(max, r.version),
+    //   0
+    // );
+    // const newVersion = maxVersion + 1;
 
-    // Deactivate existing rules for this event type
-    if (existingRules.length > 0) {
-      for (const rule of existingRules.filter((r) => r.isActive)) {
-        await this.db
-          .update(postingRules)
-          .set({ isActive: false })
-          // Only update the is_active flag (non-identifying field)
-          // This is permitted by the immutability trigger
-          // (identifying fields: id, event_type, account codes, paths, version, created_at, created_by_event_id)
-          // is_active is configuration state, not event data
-          .where(eq(postingRules.id, rule.id));
-      }
-    }
+    // // Deactivate existing rules for this event type
+    // if (existingRules.length > 0) {
+    //   for (const rule of existingRules.filter((r) => r.isActive)) {
+//     await this.db
+    //   }
+    // }
 
-    // Emit the posting_rule_created event
-    const { event } = await this.eventService.emit({
-      eventType: "ledger.posting_rule_created",
-      actorId: input.actorId,
-      entityId: crypto.randomUUID(),
-      entityType: "posting_rule",
-      payload: {
-        targetEventType: input.eventType,
-        ruleName: input.ruleName,
-        debitAccountCode: input.debitAccountCode,
-        creditAccountCode: input.creditAccountCode,
-        amountPayloadPath: input.amountPayloadPath,
-        currencyPayloadPath: input.currencyPayloadPath,
-        descriptionTemplate: input.descriptionTemplate ?? "",
-        version: newVersion,
-      },
-      occurredAt: new Date().toISOString(),
-    });
+    // // Emit the posting_rule_created event
+  //   const { event } = await this.eventService.emit({
+  //     eventType: "ledger.posting_rule_created",
+  //     // actorId: input.actorId,
+  //     entityId: crypto.randomUUID(),
+  //     entityType: "posting_rule",
+  //     payload: {
+        // targetEventType: input.eventType,
+        // ruleName: input.ruleName,
+        // debitAccountCode: input.debitAccountCode,
+        // creditAccountCode: input.creditAccountCode,
+        // amountPayloadPath: input.amountPayloadPath,
+        // currencyPayloadPath: input.currencyPayloadPath,
+//       descriptionTemplate: input.descriptionTemplate ?? "",
+//       version: newVersion,
+//     },
+//     occurredAt: new Date().toISOString(),
+//     });
 
-    // Insert the posting rule
-    const newRule: NewPostingRule = {
-      eventType: input.eventType,
-      ruleName: input.ruleName,
-      debitAccountCode: input.debitAccountCode,
-      creditAccountCode: input.creditAccountCode,
-      amountPayloadPath: input.amountPayloadPath,
-      currencyPayloadPath: input.currencyPayloadPath,
-      descriptionTemplate: input.descriptionTemplate ?? "",
-      isActive: true,
-      createdByEventId: event.id,
-      version: newVersion,
-    };
+//     // Insert the posting rule
+//     const newRule: NewPostingRule = {
+//       // eventType: input.eventType,
+//       // ruleName: input.ruleName,
+//       // debitAccountCode: input.debitAccountCode,
+//       // creditAccountCode: input.creditAccountCode,
+//       // amountPayloadPath: input.amountPayloadPath,
+//       // currencyPayloadPath: input.currencyPayloadPath,
+// //       // descriptionTemplate: input.descriptionTemplate ?? "",
+// //       isActive: true,
+// //       createdByEventId: event.id,
+// //       version: newVersion,
+// //     };
+// 
+// //     const [rule] = await this.db
+// //       .insert(postingRules)
+// //       .values(newRule)
+// //       .returning();
+// 
+// //     if (!rule) {
+// //       // throw new Error(`Failed to insert posting rule for event type '${input.eventType}'`);
+// //     }
 
-    const [rule] = await this.db
-      .insert(postingRules)
-      .values(newRule)
-      .returning();
-
-    if (!rule) {
-      throw new Error(`Failed to insert posting rule for event type '${input.eventType}'`);
-    }
-
-    // Transition the event to 'posted'
-    await this.eventService.transitionStatus(event.id, "posted");
-
-    return rule;
-  }
+//     // Transition the event to 'posted'
+//     await this.eventService.transitionStatus(event.id, "posted");
+// 
+//     return rule;
+//   }
 
   // ---------------------------------------------------------------------------
   // POSTING

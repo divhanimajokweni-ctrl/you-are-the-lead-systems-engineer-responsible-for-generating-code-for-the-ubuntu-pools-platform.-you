@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     return NextResponse.json(contribution, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid input", details: error.flatten() }, { status: 400 });
+      // return NextResponse.json({ error: "Invalid input", details: error.flatten() }, { status: 400 });
     }
     console.error('Failed to create contribution:', error);
     return NextResponse.json({ error: "Failed to create contribution" }, { status: 500 });

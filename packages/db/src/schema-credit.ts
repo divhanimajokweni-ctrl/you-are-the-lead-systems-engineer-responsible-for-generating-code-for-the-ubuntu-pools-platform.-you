@@ -81,7 +81,7 @@ export const creditPoolConfig = pgTable(
 );
 
 export const memberCreditProfile = pgTable(
-  "member_credit_profile",
+  // "member_credit_profile",
   {
     id: uuid("id").defaultRandom().primaryKey(),
     memberId: uuid("member_id").notNull(),
@@ -116,8 +116,8 @@ export const memberCreditProfile = pgTable(
     updatedAt: timestamptz("updated_at").notNull().defaultNow(),
   },
   (table) => ({
-    memberPoolIdx: uniqueIndex("member_credit_profile_member_pool_unique").on(table.memberId, table.poolId),
-    memberIdx: index("idx_member_credit_profile_member").on(table.memberId),
+    // memberPoolIdx: uniqueIndex("member_credit_profile_member_pool_unique").on(table.memberId, table.poolId),
+    // memberIdx: index("idx_member_credit_profile_member").on(table.memberId),
   })
 );
 

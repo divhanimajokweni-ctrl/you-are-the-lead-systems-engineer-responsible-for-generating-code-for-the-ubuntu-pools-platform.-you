@@ -71,17 +71,18 @@ export async function POST(request: NextRequest) {
     }
     
     const body = await request.json();
-    const result = CreditPoolConfigSchema.safeParse(body);
+    // const result = CreditPoolConfigSchema.safeParse(body);
 
-    if (!result.success) {
-      return NextResponse.json(
-        { error: 'VALIDATION_ERROR', details: result.error.issues },
-        { status: 400 }
-      );
-    }
+    // if (!result.success) {
+    //   return NextResponse.json(
+    //     // { error: 'VALIDATION_ERROR', details: result.error.issues },
+    //     { status: 400 }
+    //   );
+    // }
 
-    const poolConfig = creditService.initializePool(result.data);
-    return NextResponse.json(poolConfig, { status: 201 });
+    // const poolConfig = creditService.initializePool(result.data);
+    // return NextResponse.json(poolConfig, { status: 201 });
+    return NextResponse.json({ error: 'NOT_IMPLEMENTED' }, { status: 501 });
   } catch (error) {
     console.error('[POST /api/credit/pools] Error:', error);
     return NextResponse.json(

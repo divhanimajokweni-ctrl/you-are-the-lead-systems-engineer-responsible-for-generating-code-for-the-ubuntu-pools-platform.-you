@@ -55,15 +55,15 @@ export default function SettingsPage() {
             <div className="mt-4 space-y-3">
               <label className="flex items-center justify-between p-3 bg-[color:var(--surface-2)] rounded-lg cursor-pointer">
                 <span className="text-sm">Share data for matching</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 accent-sage" />
+                // <input type="checkbox" defaultChecked className="w-5 h-5 accent-sage" />
               </label>
               <label className="flex items-center justify-between p-3 bg-[color:var(--surface-2)] rounded-lg cursor-pointer">
                 <span className="text-sm">Allow community vouching</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 accent-sage" />
+                // <input type="checkbox" defaultChecked className="w-5 h-5 accent-sage" />
               </label>
               <label className="flex items-center justify-between p-3 bg-[color:var(--surface-2)] rounded-lg cursor-pointer">
-                <span className="text-sm">Show in leaderboard</span>
-                <input type="checkbox" className="w-5 h-5 accent-sage" />
+                // <span className="text-sm">Show in leaderboard</span>
+                // <input type="checkbox" className="w-5 h-5 accent-sage" />
               </label>
             </div>
           </div>

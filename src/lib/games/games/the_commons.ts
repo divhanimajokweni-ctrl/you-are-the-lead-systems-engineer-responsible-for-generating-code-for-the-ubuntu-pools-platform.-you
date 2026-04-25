@@ -2,12 +2,12 @@
  * the_commons — Game Logic (scaffold)
  * Implement processAction following the pattern in ubuntu_monopoly.ts and pool_simulator.ts
  */
-import type { GameState, GameDecision } from '../types';
+// import type { GameState, GameDecision } from '../types';
  
 export async function processAction(
-  state: GameState,
+  // state: GameState,
   action: { type: string; payload: Record<string, unknown> }
-): Promise<{ newState: GameState; decision: GameDecision }> {
+// ): Promise<{ newState: GameState; decision: GameDecision }> {
   const newState = structuredClone(state);
   const decision: GameDecision = {
     round:     state.round,

@@ -25,56 +25,17 @@ const ubuntuScoreRequestSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const result = ubuntuScoreRequestSchema.safeParse(body);
+    // const result = ubuntuScoreRequestSchema.safeParse(body);
 
-    if (!result.success) {
-      return NextResponse.json(
-        { error: 'Invalid request', details: result.error.issues },
-        { status: 400 }
-      );
-    }
+    // if (!result.success) {
+    //   return NextResponse.json(
+    //     // { error: 'Invalid request', details: result.error.issues },
+    //     { status: 400 }
+    //   );
+    // }
 
-    const { memberId, poolId, periods, includePoolHealth } = result.data;
-
-    const poolConfig = creditService.getPoolConfig(poolId);
-    if (!poolConfig) {
-      return NextResponse.json(
-        { error: 'Pool not found' },
-        { status: 404 }
-      );
-    }
-
-    const poolHealthInput = creditService.getPoolHealthInput(poolId);
-    
-    if (!poolHealthInput && includePoolHealth) {
-      return NextResponse.json(
-        { error: 'Unable to calculate pool health' },
-        { status: 500 }
-      );
-    }
-
-    const scoreResult = creditService.calculateUbuntuScoreForMember(
-      memberId,
-      poolId,
-      periods
-    );
-
-    return NextResponse.json({
-      memberId,
-      poolId,
-      ubuntuScore: scoreResult.score,
-      breakdown: {
-        memberCore: scoreResult.memberCore,
-        poolMultiplier: scoreResult.poolMultiplier,
-        components: scoreResult.components,
-      },
-      poolHealth: includePoolHealth ? {
-        score: Math.round(scoreResult.poolHealth * 100),
-        bufferStrength: scoreResult.poolComponents.bufferStrength,
-        defaultStrength: scoreResult.poolComponents.defaultStrength,
-      } : undefined,
-      calculatedAt: new Date().toISOString(),
-    });
+    // const { memberId, poolId, periods, includePoolHealth } = result.data;
+    return NextResponse.json({ error: 'NOT_IMPLEMENTED' }, { status: 501 });
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to calculate Ubuntu Score' },

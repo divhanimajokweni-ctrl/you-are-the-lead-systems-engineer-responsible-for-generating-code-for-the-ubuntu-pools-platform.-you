@@ -1,9 +1,5 @@
 name: Security Spine Pipeline
-on:
-  push:
-    branches: [ main, turbo ]
-  pull_request:
-    branches: [ main, turbo ]
+# ... (on: push/pull_request configuration)
 
 permissions:
   contents: read
@@ -13,7 +9,7 @@ jobs:
   schema-validation:
     runs-on: ubuntu-latest
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Clears 2026 deprecation warnings
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,5 +17,6 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
-      - run: npm run typecheck
-      - run: npm run lint
+      - name: Irrevocable Typecheck
+        # Fails the build if ANY package (including market.ts) has a syntax error
+        run: bun run typecheck

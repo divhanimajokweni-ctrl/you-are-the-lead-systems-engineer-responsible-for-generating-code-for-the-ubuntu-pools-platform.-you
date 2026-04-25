@@ -2,7 +2,7 @@
  * Pool Simulator — Game Logic
  * Manage a ROSCA pool of 8 simulated members through 12 months of realistic disruptions.
  */
-import type { GameState, GameDecision } from '../types';
+// import type { GameState, GameDecision } from '../types';
  
 const EVENTS = [
   { month: 2,  type: 'missed_contribution', member: 3, description: 'Member 3 missed contribution — medical emergency' },
@@ -12,9 +12,9 @@ const EVENTS = [
 ];
  
 export async function processAction(
-  state: GameState,
+  // state: GameState,
   action: { type: string; payload: Record<string, unknown> }
-): Promise<{ newState: GameState; decision: GameDecision }> {
+// ): Promise<{ newState: GameState; decision: GameDecision }> {
   const newState = structuredClone(state);
   let outcome: 'positive' | 'negative' | 'neutral' = 'neutral';
   let reasoning = '';

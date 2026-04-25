@@ -140,13 +140,13 @@ export class LedgerQueries {
    * @returns The account, or null if not found
    */
   async getAccountById(accountId: string): Promise<LedgerAccount | null> {
-    const results = await this.db
+    // const results = await this.db
       .select()
       .from(ledgerAccounts)
       .where(eq(ledgerAccounts.id, accountId))
       .limit(1);
 
-    return results[0] ?? null;
+    // return results[0] ?? null;
   }
 
   /**
@@ -156,13 +156,13 @@ export class LedgerQueries {
    * @returns The account, or null if not found
    */
   async getAccountByCode(code: string): Promise<LedgerAccount | null> {
-    const results = await this.db
+    // const results = await this.db
       .select()
       .from(ledgerAccounts)
       .where(eq(ledgerAccounts.code, code))
       .limit(1);
 
-    return results[0] ?? null;
+    // return results[0] ?? null;
   }
 
   // ---------------------------------------------------------------------------
@@ -183,7 +183,7 @@ export class LedgerQueries {
     const account = await this.getAccountById(accountId);
     if (!account) return null;
 
-    const result = await this.db
+    // const result = await this.db
       .select({
         debitTotal: sql<number>`COALESCE(SUM(CASE WHEN ${journalEntries.side} = 'debit' THEN ${journalEntries.amount} ELSE 0 END), 0)`,
         creditTotal: sql<number>`COALESCE(SUM(CASE WHEN ${journalEntries.side} = 'credit' THEN ${journalEntries.amount} ELSE 0 END), 0)`,
@@ -193,7 +193,7 @@ export class LedgerQueries {
       .from(journalEntries)
       .where(eq(journalEntries.accountId, accountId));
 
-    const row = result[0];
+    // const row = result[0];
     const debitTotal = Number(row?.debitTotal ?? 0);
     const creditTotal = Number(row?.creditTotal ?? 0);
     const rawBalance = debitTotal - creditTotal;
@@ -281,12 +281,12 @@ export class LedgerQueries {
       query = query.where(lte(journalEntries.postedAt, options.to));
     }
 
-    const results = await query
+    // const results = await query
       .orderBy(desc(journalEntries.postedAt))
       .limit(limit)
       .offset(offset);
 
-    return results as JournalEntryWithContext[];
+    // return results as JournalEntryWithContext[];
   }
 
   /**
@@ -346,7 +346,7 @@ export class LedgerQueries {
       imbalance: number;
     }>
   > {
-    const results = await this.db.execute(sql`
+    // const results = await this.db.execute(sql`
       SELECT
         transaction_id,
         event_id,
@@ -361,7 +361,7 @@ export class LedgerQueries {
              SUM(CASE WHEN side = 'credit' THEN amount ELSE 0 END)
     `);
 
-    return (results as Array<Record<string, unknown>>).map((row) => ({
+    // return (results as Array<Record<string, unknown>>).map((row) => ({
       transactionId: String(row.transaction_id),
       eventId: String(row.event_id),
       currency: String(row.currency),
@@ -426,7 +426,7 @@ export class LedgerQueries {
     failed: number;
     total: number;
   }> {
-    const results = await this.db
+    // const results = await this.db
       .select({
         status: events.status,
         count: count(events.id),
@@ -435,7 +435,7 @@ export class LedgerQueries {
       .groupBy(events.status);
 
     const counts = { pending: 0, posted: 0, failed: 0, total: 0 };
-    for (const row of results) {
+    // for (const row of results) {
       counts[row.status] = Number(row.count);
       counts.total += Number(row.count);
     }

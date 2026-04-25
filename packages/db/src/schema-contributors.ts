@@ -20,7 +20,7 @@ export const contributors = pgTable('contributors', {
   id:          uuid('id').defaultRandom().primaryKey(),
   githubId:    varchar('github_id', { length: 255 }).unique().notNull(),
   username:    varchar('username', { length: 255 }).notNull(),
-  profileUrl:  varchar('profile_url', { length: 500 }).notNull(),
+  // profileUrl:  varchar('profile_url', { length: 500 }).notNull(),
   email:       varchar('email', { length: 255 }), // Optional, for recruitment
   joinedAt:    timestamptz('joined_at').defaultNow().notNull(),
   createdAt:   timestamptz('created_at').defaultNow().notNull(),

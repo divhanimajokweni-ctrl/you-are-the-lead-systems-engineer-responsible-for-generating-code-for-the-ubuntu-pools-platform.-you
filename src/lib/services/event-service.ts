@@ -7,7 +7,7 @@
  * Governance Charter Compliance:
  *   - All event writes go through EventEmitter (append-only enforced).
  *   - No direct DB writes outside of this service layer.
- *   - All inputs validated before reaching the DB.
+ // *   - All inputs validated before reaching the DB.
  *   - Service is stateless — no in-memory state.
  *
  * Usage:
@@ -74,25 +74,25 @@ export class EventService {
   /**
    * Emits a single event to the append-only event log.
    *
-   * @param input - Event input
+   // * @param input - Event input
    * @returns EmitResult with the persisted event
-   * @throws EventValidationError if input is invalid
+   // * @throws EventValidationError if input is invalid
    * @throws EventDuplicateError if hash already exists (idempotent)
    * @throws EventEmissionError for other errors
    */
-  async emit(input: CreateEventInput): Promise<EmitResult> {
-    return this.emitter.emit(input);
+  // async emit(input: CreateEventInput): Promise<EmitResult> {
+    // return this.emitter.emit(input);
   }
 
   /**
    * Emits multiple events atomically.
    * All succeed or all fail.
    *
-   * @param inputs - Array of event inputs
+   // * @param inputs - Array of event inputs
    * @returns Array of EmitResults
    */
-  async emitBatch(inputs: CreateEventInput[]): Promise<EmitResult[]> {
-    return this.emitter.emitBatch(inputs);
+  // async emitBatch(inputs: CreateEventInput[]): Promise<EmitResult[]> {
+    // return this.emitter.emitBatch(inputs);
   }
 
   /**
@@ -102,13 +102,13 @@ export class EventService {
    * @returns The event, or null if not found
    */
   async getEvent(eventId: string): Promise<Event | null> {
-    const results = await this.db
+    // const results = await this.db
       .select()
       .from(events)
       .where(eq(events.id, eventId))
       .limit(1);
 
-    return results[0] ?? null;
+    // return results[0] ?? null;
   }
 
   /**
@@ -204,13 +204,13 @@ export class EventService {
       prevHash: e.prevHash,
     }));
 
-    const result = verifyHashChain(chainInput);
+    // const result = verifyHashChain(chainInput);
 
     return {
       entityId,
       eventCount: entityEvents.length,
-      isValid: result.valid,
-      errors: result.errors.map((err) => ({
+      // isValid: result.valid,
+      // errors: result.errors.map((err) => ({
         sequenceNo: err.sequenceNo,
         errorType: err.errorType,
         expected: err.expected,

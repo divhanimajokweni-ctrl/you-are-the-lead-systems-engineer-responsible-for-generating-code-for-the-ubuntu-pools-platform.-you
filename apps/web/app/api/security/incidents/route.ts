@@ -54,21 +54,21 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const result = createIncidentSchema.safeParse(body);
+    // const result = createIncidentSchema.safeParse(body);
     
-    if (!result.success) {
-      return NextResponse.json(
-        { error: 'Invalid request', details: result.error.issues },
-        { status: 400 }
-      );
-    }
+    // if (!result.success) {
+    //   return NextResponse.json(
+    //     // { error: 'Invalid request', details: result.error.issues },
+    //     { status: 400 }
+    //   );
+    // }
     
-    const incident = await securityControlsService.createIncident({
-      ...result.data,
-      status: 'open',
-    });
+    // const incident = await securityControlsService.createIncident({
+    //   ...result.data,
+    //   status: 'open',
+    // });
     
-    return NextResponse.json({ incident }, { status: 201 });
+    return NextResponse.json({ error: 'NOT_IMPLEMENTED' }, { status: 501 });
   } catch (error) {
     console.error('Failed to create incident:', error);
     return NextResponse.json(

@@ -3,7 +3,7 @@
  * Core rule: collective property syndicates outperform individual monopolies.
  * Rent income splits between owner and village fund each round.
  */
-import type { GameState, GameDecision } from '../types';
+// import type { GameState, GameDecision } from '../types';
  
 type Action =
   | { type: 'acquire_property';  payload: { propertyId: string; price: number } }
@@ -14,9 +14,9 @@ type Action =
   | { type: 'end_turn';          payload: Record<string, never> };
  
 export async function processAction(
-  state: GameState,
+  // state: GameState,
   action: { type: string; payload: Record<string, unknown> }
-): Promise<{ newState: GameState; decision: GameDecision }> {
+// ): Promise<{ newState: GameState; decision: GameDecision }> {
   const newState = structuredClone(state);
   let outcome: 'positive' | 'negative' | 'neutral' = 'neutral';
   let reasoning = '';

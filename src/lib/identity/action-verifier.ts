@@ -12,13 +12,13 @@ export function verifySignedAction(
   signature: string,
   publicKey: string
 ): { valid: boolean; error?: string } {
-  const result = verifier.verify({
+  // const result = verifier.verify({
     data: payload,
     signature,
     algorithm: "ed25519",
     publicKey,
   });
-  return { valid: result.isValid, error: result.error };
+  // return { valid: result.isValid, error: result.error };
 }
 
 export function createSignedAction(

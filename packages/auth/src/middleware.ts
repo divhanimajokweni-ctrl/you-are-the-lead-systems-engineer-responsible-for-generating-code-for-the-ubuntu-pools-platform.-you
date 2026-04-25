@@ -82,17 +82,18 @@ export function authenticateRequest(request: NextRequest): AuthResult {
 }
 
 export function requireAuth(request: NextRequest): AuthResult {
-  const result = authenticateRequest(request);
+  // const result = authenticateRequest(request);
   
-  if (!result.success) {
-    return result;
-  }
+  // if (!result.success) {
+  //   return result;
+  // }
   
-  if (result.user?.id === 'public') {
-    return { success: false, error: 'Authentication required' };
-  }
+  // if (result.user?.id === 'public') {
+  //   return { success: false, error: 'Authentication required' };
+  // }
   
-  return result;
+  // return result;
+  return { success: false, error: 'Authentication required' };
 }
 
 export function requireRole(request: NextRequest, allowedRoles: AuthUser['role'][]): AuthResult {

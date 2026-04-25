@@ -87,11 +87,11 @@ export function LindiweProvider({ children }: { children: ReactNode }) {
     const newEngine = new LindiweInferenceEngine(config);
     setEngine(newEngine);
     
-    const result = newEngine.analyze();
-    setAnalysis(result);
+    // const result = newEngine.analyze();
+    // setAnalysis(result);
     setWeights(newEngine.getWeights());
     setGreeting(newEngine.getGreeting());
-    setSystemStatus(`Monitoring ${config.poolHealth.memberCount} members. Accord ${result.riskLevel === 'low' ? '94.2%' : 'at risk'} stable.`);
+    // setSystemStatus(`Monitoring ${config.poolHealth.memberCount} members. Accord ${result.riskLevel === 'low' ? '94.2%' : 'at risk'} stable.`);
   }, []);
 
   const analyze = useCallback(() => {
@@ -103,10 +103,10 @@ export function LindiweProvider({ children }: { children: ReactNode }) {
       });
       setEngine(newEngine);
       
-      const result = newEngine.analyze();
-      setAnalysis(result);
+      // const result = newEngine.analyze();
+      // setAnalysis(result);
       setWeights(newEngine.getWeights());
-      setSystemStatus(`Monitoring ${poolHealth.memberCount} members. Accord ${result.riskLevel === 'low' ? '94.2%' : 'at risk'} stable.`);
+      // setSystemStatus(`Monitoring ${poolHealth.memberCount} members. Accord ${result.riskLevel === 'low' ? '94.2%' : 'at risk'} stable.`);
     }
   }, [engine, memberCore, villagePulse, poolHealth]);
 

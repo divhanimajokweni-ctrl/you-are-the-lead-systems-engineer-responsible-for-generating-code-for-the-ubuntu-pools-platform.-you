@@ -237,14 +237,14 @@ export class GovernanceRuleEngine {
   }
 
   evaluateRules(context: RuleEvaluationContext): RuleEvaluationResult[] {
-    const results: RuleEvaluationResult[] = [];
+    // const results: RuleEvaluationResult[] = [];
 
     for (const rule of this.constitution.rules) {
-      const result = this.evaluateRule(rule, context);
-      results.push(result);
+      // const result = this.evaluateRule(rule, context);
+      // results.push(result);
     }
 
-    return results;
+    // return results;
   }
 
   evaluateRule(rule: GovernanceRule, context: RuleEvaluationContext): RuleEvaluationResult {
@@ -392,20 +392,20 @@ export class GovernanceRuleEngine {
   }
 
   canApprove(context: RuleEvaluationContext): boolean {
-    const results = this.evaluateRules(context);
-    return results.every(r => r.allowed);
+    // const results = this.evaluateRules(context);
+    // return results.every(r => r.allowed);
   }
 
   canExecute(context: RuleEvaluationContext): boolean {
-    const results = this.evaluateRules(context);
-    const denied = results.filter(r => !r.allowed);
+    // const results = this.evaluateRules(context);
+    // const denied = results.filter(r => !r.allowed);
     
     if (denied.length > 0) {
       return false;
     }
 
-    const quorum = results.find(r => r.ruleId === "rule-001");
-    const threshold = results.find(r => r.ruleId === "rule-002");
+    // const quorum = results.find(r => r.ruleId === "rule-001");
+    // const threshold = results.find(r => r.ruleId === "rule-002");
     
     return quorum?.allowed === true && threshold?.allowed === true;
   }
@@ -474,7 +474,7 @@ export interface ValidationError {
   code: string;
 }
 
-export function validateProposalInput(input: {
+// export function validateProposalInput(input: {
   title: string;
   description: string;
   proposalType: string;
@@ -483,10 +483,10 @@ export function validateProposalInput(input: {
   constitutionVersion: number;
 }): ValidationError[] {
   const errors: ValidationError[] = [];
-  const constitution = getConstitution(input.constitutionVersion) ?? getLatestConstitution();
+  // const constitution = getConstitution(input.constitutionVersion) ?? getLatestConstitution();
   const params = constitution.params;
 
-  if (input.title.length < params.minProposalTitleLength) {
+  // if (input.title.length < params.minProposalTitleLength) {
     errors.push({
       field: "title",
       message: `Title must be at least ${params.minProposalTitleLength} characters`,
@@ -494,7 +494,7 @@ export function validateProposalInput(input: {
     });
   }
 
-  if (input.description.length < params.minProposalDescriptionLength) {
+  // if (input.description.length < params.minProposalDescriptionLength) {
     errors.push({
       field: "description",
       message: `Description must be at least ${params.minProposalDescriptionLength} characters`,
@@ -502,7 +502,7 @@ export function validateProposalInput(input: {
     });
   }
 
-  const votingEnd = new Date(input.votingPeriodEnd);
+  // const votingEnd = new Date(input.votingPeriodEnd);
   const now = new Date();
   const minEnd = new Date(now.getTime() + params.minVotingPeriodSeconds * 1000);
   const maxEnd = new Date(now.getTime() + params.maxVotingPeriodSeconds * 1000);

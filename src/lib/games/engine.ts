@@ -23,7 +23,7 @@ function getEventEmitter() {
 }
 
 import type {
-  GameId, GameState, GameDecision, GameEventRecord, StartSessionResponse
+ //  // GameId, GameState, GameDecision, GameEventRecord, StartSessionResponse
 } from './types';
 import { extractSignals } from './telemetry';
 import { awardPrestige } from './scoring';
@@ -33,7 +33,7 @@ import { GAME_DEFINITIONS } from './registry';
  
 export async function startSession(
   memberId: string,
-  gameId: GameId,
+  // gameId: GameId,
   options: { villageId?: string; isMultiplayer?: boolean } = {}
 ): Promise<StartSessionResponse> {
   const definition = GAME_DEFINITIONS[gameId];
@@ -68,9 +68,9 @@ export async function startSession(
     startedAt: session.startedAt,
     completedAt: session.completedAt ?? undefined,
     durationMs: session.durationMs ?? undefined,
-    stateSnapshot: session.stateSnapshot as GameState | undefined,
+    // stateSnapshot: session.stateSnapshot as GameState | undefined,
     finalScore: session.finalScore ?? undefined,
-    prestigeAwarded: session.prestigeAwarded,
+    // prestigeAwarded: session.prestigeAwarded,
     isMultiplayer: session.isMultiplayer,
     villageId: session.villageId ?? undefined,
     metadata: session.metadata ?? undefined,
@@ -85,7 +85,7 @@ export async function submitAction(
   sessionId: string,
   memberId: string,
   action: { type: string; payload: Record<string, unknown> }
-): Promise<{ newState: GameState; completed: boolean }> {
+// ): Promise<{ newState: GameState; completed: boolean }> {
   const session = await db.query.gameSessions.findFirst({
     where: and(eq(gameSessions.id, sessionId), eq(gameSessions.memberId, memberId)),
   });
@@ -93,7 +93,7 @@ export async function submitAction(
   if (!session)        throw new Error('Session not found');
   if (session.status !== 'active') throw new Error(`Session is ${session.status}`);
  
-  const currentState = session.stateSnapshot as GameState;
+  // const currentState = session.stateSnapshot as GameState;
  
   // Get the game-specific processor
   const { processAction } = await import(`./games/${session.gameId}`);
@@ -116,7 +116,7 @@ export async function submitAction(
   const completed = newState.round >= newState.maxRounds || newState.phase === 'ended';
  
   if (completed) {
-    await completeSession(session.id, memberId, session.gameId as GameId, newState);
+    // await completeSession(session.id, memberId, session.gameId as GameId, newState);
   } else {
     await db.update(gameSessions)
       .set({ stateSnapshot: newState, updatedAt: new Date() })
@@ -129,8 +129,8 @@ export async function submitAction(
 async function completeSession(
   sessionId: string,
   memberId: string,
-  gameId: GameId,
-  finalState: GameState
+  // gameId: GameId,
+  // finalState: GameState
 ): Promise<void> {
   const startTime  = Date.now();
   const signals    = await extractSignals(memberId, sessionId, gameId, finalState);
@@ -141,7 +141,7 @@ async function completeSession(
     completedAt: new Date(),
     durationMs:  Date.now() - startTime,
     finalScore:  finalState.score,
-    prestigeAwarded: total,
+    // prestigeAwarded: total,
     stateSnapshot: finalState,
     updatedAt: new Date(),
   }).where(eq(gameSessions.id, sessionId));
@@ -151,7 +151,7 @@ async function completeSession(
       actorId: memberId,
       entityId: sessionId,
       entityType: 'game_session',
-      payload: { sessionId, memberId, gameId, finalScore: finalState.score, prestigeAwarded: total, signalCount: signals.length, source: 'games_engine' },
+      // payload: { sessionId, memberId, gameId, finalScore: finalState.score, prestigeAwarded: total, signalCount: signals.length, source: 'games_engine' },
       occurredAt: new Date().toISOString(),
     });
 
@@ -176,8 +176,8 @@ function hashGameEvent(
   return crypto.createHash('sha256').update(data).digest('hex');
 }
  
-export function buildInitialState(gameId: GameId): GameState {
-  const bases: Record<GameId, Partial<GameState>> = {
+// export function buildInitialState(gameId: GameId): GameState {
+ //  // const bases: Record<GameId, Partial<GameState>> = {
     ubuntu_monopoly:  { maxRounds: 20, phase: 'property_phase', data: { properties: [], villagefund: 0, syndicates: [] } },
     pool_simulator:   { maxRounds: 12, phase: 'setup',          data: { members: [], buffer: 0, health: 100 } },
     credit_ladder:    { maxRounds: 15, phase: 'deal',           data: { hand: [], creditScore: 500, debt: 0 } },
@@ -194,5 +194,5 @@ export function buildInitialState(gameId: GameId): GameState {
     decisions: [],
     events:    [],
     ...bases[gameId],
-  } as GameState;
+  // } as GameState;
 }

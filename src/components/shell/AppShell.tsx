@@ -47,7 +47,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
        { name: 'Notifications', path: '/notifications', icon: 'bell' },
        { name: 'Search', path: '/search', icon: 'search' },
        { name: 'Village', path: '/village', icon: 'users' },
-       { name: 'Profile', path: '/profile', icon: 'user' },
+       // { name: 'Profile', path: '/profile', icon: 'user' },
        { name: 'Ledger', path: '/ledger', icon: 'ledger' },
        { name: 'Privacy', path: '/privacy', icon: 'shield' },
        { name: 'Settings', path: '/settings', icon: 'settings' },

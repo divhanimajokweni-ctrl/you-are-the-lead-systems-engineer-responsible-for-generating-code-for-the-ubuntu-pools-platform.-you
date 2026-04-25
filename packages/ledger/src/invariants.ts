@@ -90,7 +90,7 @@ export async function postLedgerEntry(
       .limit(1);
 
     if (existing.length > 0) {
-      // Idempotent replay — return existing result, do not re-post
+     //  // Idempotent replay — return existing result, do not re-post
       const found = existing[0];
       if (!found) {
         throw new LedgerInvariantViolation(
@@ -163,40 +163,29 @@ export async function getPoolBalanceFromProjection(
   villageId: string,
   poolId: string
 ): Promise<{ balance: bigint; eventCount: number; lastEventId: string | null }> {
-  const result = await db
-    .select({
-      balance: sql<string>`
-        COALESCE(SUM(
-          CASE
-            WHEN le.lines::jsonb @> '[{"accountType":"CREDIT"}]'
-            THEN (
-              SELECT SUM((line->>'amount')::bigint)
-              FROM jsonb_array_elements(le.lines::jsonb) AS line
-              WHERE line->>'accountType' = 'CREDIT'
-              AND line->>'accountId' = ${poolId}
-            )
-            ELSE 0
-          END
-          -
-          CASE
-            WHEN le.lines::jsonb @> '[{"accountType":"DEBIT"}]'
-            THEN (
-              SELECT SUM((line->>'amount')::bigint)
-              FROM jsonb_array_elements(le.lines::jsonb) AS line
-              WHERE line->>'accountType' = 'DEBIT'
-              AND line->>'accountId' = ${poolId}
-            )
-            ELSE 0
-          END
-        ), 0)
-      `.as("balance"),
-      eventCount: sql<number>`COUNT(*)`.as("eventCount"),
-      lastEventId: sql<string>`MAX(le.event_id)`.as("lastEventId"),
-    })
-    .from(ledgerEntries)
-    .where(eq(ledgerEntries.villageId, villageId));
+  //   // const result = await db
+  //     .select({
+  //       balance: sql<string>`
+  //         COALESCE(SUM(
+  //           CASE
+  //             WHEN le.lines::jsonb @> '[{"accountType":"CREDIT"}]'
+  //             THEN (
+  //               SELECT SUM((line->>'amount')::bigint)
+  //               FROM jsonb_array_elements(le.lines::jsonb) AS line
+  //               WHERE line->>'accountType' = 'CREDIT'
+  //               AND line->>'accountId' = ${poolId}
+  //             )
+//             ELSE 0
+  //           END
+  //         ), 0)
+  //       `.as("balance"),
+  //       eventCount: sql<number>`COUNT(*)`.as("eventCount"),
+  //       lastEventId: sql<string>`MAX(le.event_id)`.as("lastEventId"),
+  //     })
+  //     .from(ledgerEntries)
+  //     .where(eq(ledgerEntries.villageId, villageId));
 
-  const row = result[0];
+  // const row = result[0];
   if (!row) {
     return { balance: 0n, eventCount: 0, lastEventId: null };
   }

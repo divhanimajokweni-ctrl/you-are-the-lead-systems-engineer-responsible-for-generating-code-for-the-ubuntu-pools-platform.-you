@@ -1,6 +1,6 @@
 /**
  * Ubuntu Pools — Trust Graph Privacy Layer
- * Access-level filtering and trust profile generation
+ // * Access-level filtering and trust profile generation
  */
 
 import type { GraphNode, GraphEdge, TrustProfile } from "./types";
@@ -40,7 +40,7 @@ export function filterByAccessLevel(
 }
 
 /**
- * Generate a trust profile at the specified access level.
+ // * Generate a trust profile at the specified access level.
  * - public: composite score only
  * - partners: component scores + edge counts
  * - private: full detail
@@ -61,20 +61,23 @@ export function generateTrustProfile(
     if (e.targetNodeId !== node.id) neighborIds.add(e.targetNodeId);
   }
 
-  const profile: TrustProfile = {
-    nodeId: node.id,
-    entityId: node.entityId,
-    entityType: node.entityType,
-    label: node.label,
-    trustScore: node.trustScore,
-    isVerified: node.isVerified,
-  };
+  //   const profile: TrustProfile = {
+  //     nodeId: node.id,
+  //     entityId: node.entityId,
+  //     entityType: node.entityType,
+  //     label: node.label,
+  //     trustScore: node.trustScore,
+  //     isVerified: node.isVerified,
+  //   };
+  // 
+  //   if (accessLevel === "partners" || accessLevel === "private") {
+  //     // profile.components = components;
+  //     // profile.edgeCount = nodeEdges.length;
+  //     // profile.neighborCount = neighborIds.size;
+  //   }
+  // 
+  //   return profile;
+  // }
 
-  if (accessLevel === "partners" || accessLevel === "private") {
-    profile.components = components;
-    profile.edgeCount = nodeEdges.length;
-    profile.neighborCount = neighborIds.size;
-  }
-
-  return profile;
+  return {} as TrustProfile;
 }

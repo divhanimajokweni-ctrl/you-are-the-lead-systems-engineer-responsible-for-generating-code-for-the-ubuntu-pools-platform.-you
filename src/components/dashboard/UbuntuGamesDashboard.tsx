@@ -11,7 +11,7 @@ interface UbuntuGamesDashboardProps {
 
 export function UbuntuGamesDashboard({ compact = false }: UbuntuGamesDashboardProps) {
   const [games, setGames] = useState<GameDefinition[]>([]);
-  const [activeTab, setActiveTab] = useState<'play' | 'leaderboard'>('play');
+  // const [activeTab, setActiveTab] = useState<'play' | 'leaderboard'>('play');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export function UbuntuGamesDashboard({ compact = false }: UbuntuGamesDashboardPr
       </div>
 
       <div className="flex gap-1 p-2 bg-[color:var(--surface-1)]">
-        {(['play', 'leaderboard'] as const).map(tab => (
+        // {(['play', 'leaderboard'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}

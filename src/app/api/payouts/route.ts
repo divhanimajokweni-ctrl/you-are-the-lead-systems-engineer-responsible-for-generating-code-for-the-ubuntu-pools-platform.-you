@@ -112,7 +112,7 @@ export async function POST(request: Request) {
     return NextResponse.json(payout, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid input", details: error.flatten() }, { status: 400 });
+      // return NextResponse.json({ error: "Invalid input", details: error.flatten() }, { status: 400 });
     }
     console.error('Failed to create payout:', error);
     return NextResponse.json({ error: "Failed to create payout" }, { status: 500 });

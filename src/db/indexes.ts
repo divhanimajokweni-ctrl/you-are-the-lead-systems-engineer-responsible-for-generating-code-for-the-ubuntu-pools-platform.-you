@@ -22,9 +22,9 @@ CREATE INDEX IF NOT EXISTS idx_credit_loans_status_issued ON credit_loans (statu
 CREATE INDEX IF NOT EXISTS idx_credit_loans_member_status ON credit_loans (member_id, status);
 CREATE INDEX IF NOT EXISTS idx_credit_loans_pool_status ON credit_loans (pool_id, status);
 
--- Member credit profile indexes
-CREATE INDEX IF NOT EXISTS idx_member_credit_profile_lookup ON member_credit_profile (member_id, pool_id);
-CREATE INDEX IF NOT EXISTS idx_member_credit_eligible_pool ON member_credit_profile (credit_eligible, pool_id);
+// -- Member credit profile indexes
+// CREATE INDEX IF NOT EXISTS idx_member_credit_profile_lookup ON member_credit_profile (member_id, pool_id);
+// CREATE INDEX IF NOT EXISTS idx_member_credit_eligible_pool ON member_credit_profile (credit_eligible, pool_id);
 
 -- Credit payments indexes
 CREATE INDEX IF NOT EXISTS idx_credit_payments_loan_paid ON credit_payments (loan_id, paid_at);
@@ -36,5 +36,5 @@ export const RECOMMENDED_QUERIES_TO_OPTIMIZE = [
   'SELECT * FROM events WHERE status = $1 AND occurred_at > $2',
   'SELECT SUM(amount) FROM journal_entries WHERE account_id = $1 AND posted_at > $2',
   'SELECT * FROM credit_loans WHERE member_id = $1 AND status IN ($2, $3)',
-  'SELECT * FROM member_credit_profile WHERE credit_eligible = true AND pool_id = $1',
+  // 'SELECT * FROM member_credit_profile WHERE credit_eligible = true AND pool_id = $1',
 ];

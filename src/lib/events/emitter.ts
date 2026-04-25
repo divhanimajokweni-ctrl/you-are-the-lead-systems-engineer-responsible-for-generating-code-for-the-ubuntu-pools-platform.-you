@@ -46,12 +46,12 @@ import {
 
 /**
  * Base class for all event emission errors.
- * All errors include the original input for debugging.
+ // * All errors include the original input for debugging.
  */
 export class EventEmissionError extends Error {
   constructor(
     message: string,
-    public readonly input: Partial<CreateEventInput>,
+    // public readonly input: Partial<CreateEventInput>,
     public readonly cause?: unknown
   ) {
     super(message);
@@ -60,17 +60,17 @@ export class EventEmissionError extends Error {
 }
 
 /**
- * Thrown when the event input fails schema validation.
+ // * Thrown when the event input fails schema validation.
  * No DB write has occurred.
  */
 export class EventValidationError extends EventEmissionError {
   constructor(
     public readonly validationErrors: Array<{ path: string; message: string }>,
-    input: Partial<CreateEventInput>
+    // input: Partial<CreateEventInput>
   ) {
     super(
       `Event validation failed: ${validationErrors.map((e) => `${e.path}: ${e.message}`).join("; ")}`,
-      input
+      // input
     );
     this.name = "EventValidationError";
   }
@@ -84,11 +84,11 @@ export class EventDuplicateError extends EventEmissionError {
   constructor(
     public readonly existingEventId: string,
     public readonly hash: string,
-    input: Partial<CreateEventInput>
+    // input: Partial<CreateEventInput>
   ) {
     super(
       `Duplicate event detected: hash ${hash} already exists as event ${existingEventId}`,
-      input
+      // input
     );
     this.name = "EventDuplicateError";
   }
@@ -102,11 +102,11 @@ export class EventSequenceError extends EventEmissionError {
   constructor(
     public readonly entityId: string,
     public readonly attemptedSequenceNo: number,
-    input: Partial<CreateEventInput>
+    // input: Partial<CreateEventInput>
   ) {
     super(
       `Sequence conflict for entity ${entityId} at sequence ${attemptedSequenceNo}. Retry required.`,
-      input
+      // input
     );
     this.name = "EventSequenceError";
   }
@@ -135,7 +135,7 @@ export interface EmitResult {
  *
  * Design principles:
  *   1. Validate before write — schema errors never reach the DB.
- *   2. Hash before write — hash is computed from validated input.
+ // *   2. Hash before write — hash is computed from validated input.
  *   3. Sequence atomically — sequence_no assigned in a transaction.
  *   4. Idempotent — duplicate hashes return the existing event.
  *   5. No deletes, no updates — append only.
@@ -147,7 +147,7 @@ export class EventEmitter {
    * Emits a new event to the append-only event log.
    *
    * Steps:
-   *   1. Validate input schema.
+   // *   1. Validate input schema.
    *   2. Validate payload against event type schema.
    *   3. Acquire next sequence number for the entity (in transaction).
    *   4. Compute deterministic hash.
@@ -155,28 +155,28 @@ export class EventEmitter {
    *   6. Insert event row.
    *   7. Return the persisted event.
    *
-   * @param input - Event input (eventType, actorId, entityId, entityType, payload, occurredAt)
+   // * @param input - Event input (eventType, actorId, entityId, entityType, payload, occurredAt)
    * @returns EmitResult with the persisted event
-   * @throws EventValidationError if input is invalid
+   // * @throws EventValidationError if input is invalid
    * @throws EventDuplicateError if hash already exists (idempotent)
    * @throws EventSequenceError if sequence conflict (retry)
    * @throws EventEmissionError for other DB errors
    */
-  async emit(input: CreateEventInput): Promise<EmitResult> {
+  // async emit(input: CreateEventInput): Promise<EmitResult> {
     // -------------------------------------------------------------------------
-    // Step 1: Validate base input schema
+   //  // Step 1: Validate base input schema
     // -------------------------------------------------------------------------
-    const inputValidation = validateEventInput(input);
-    if (!inputValidation.success) {
+    // const inputValidation = validateEventInput(input);
+    // if (!inputValidation.success) {
       // Zod v4 uses .issues (path is PropertyKey[] which includes symbol)
-      const errors = inputValidation.error.issues.map((e) => ({
+      // const errors = inputValidation.error.issues.map((e) => ({
         path: Array.from(e.path).map(String).join("."),
         message: e.message,
       }));
-      throw new EventValidationError(errors, input);
+      // throw new EventValidationError(errors, input);
     }
 
-    const validInput = inputValidation.data;
+    // const validInput = inputValidation.data;
 
     // -------------------------------------------------------------------------
     // Step 2: Validate payload against event type schema
@@ -191,7 +191,7 @@ export class EventEmitter {
         path: `payload.${Array.from(e.path).map(String).join(".")}`,
         message: e.message,
       }));
-      throw new EventValidationError(errors, input);
+      // throw new EventValidationError(errors, input);
     }
 
     // -------------------------------------------------------------------------
@@ -232,7 +232,7 @@ export class EventEmitter {
           .limit(1);
 
         if (existing.length > 0) {
-          throw new EventDuplicateError(existing[0].id, hash, input);
+          // throw new EventDuplicateError(existing[0].id, hash, input);
         }
 
         // Step 6: Insert the event
@@ -257,7 +257,7 @@ export class EventEmitter {
         if (!inserted) {
           throw new EventEmissionError(
             "Event insert returned no rows",
-            input
+            // input
           );
         }
 
@@ -281,14 +281,14 @@ export class EventEmitter {
         throw new EventSequenceError(
           validInput.entityId,
           -1, // sequence not known at this point
-          input
+          // input
         );
       }
 
       // Wrap unknown DB errors
       throw new EventEmissionError(
         `Failed to emit event: ${error instanceof Error ? error.message : String(error)}`,
-        input,
+        // input,
         error
       );
     }
@@ -301,28 +301,28 @@ export class EventEmitter {
    * Events are emitted in the order provided.
    * Each event's sequence number is assigned sequentially.
    *
-   * @param inputs - Array of event inputs
+   // * @param inputs - Array of event inputs
    * @returns Array of EmitResults in the same order
    */
-  async emitBatch(inputs: CreateEventInput[]): Promise<EmitResult[]> {
-    if (inputs.length === 0) return [];
+  // async emitBatch(inputs: CreateEventInput[]): Promise<EmitResult[]> {
+    // if (inputs.length === 0) return [];
 
-    const results: EmitResult[] = [];
+    // const results: EmitResult[] = [];
 
     await this.db.transaction(async (tx) => {
-      for (const input of inputs) {
-        // Validate each input
-        const inputValidation = validateEventInput(input);
-        if (!inputValidation.success) {
+      // for (const input of inputs) {
+       //  // Validate each input
+        // const inputValidation = validateEventInput(input);
+        // if (!inputValidation.success) {
           // Zod v4 uses .issues (path is PropertyKey[] which includes symbol)
-          const errors = inputValidation.error.issues.map((e) => ({
+          // const errors = inputValidation.error.issues.map((e) => ({
             path: Array.from(e.path).map(String).join("."),
             message: e.message,
           }));
-          throw new EventValidationError(errors, input);
+          // throw new EventValidationError(errors, input);
         }
 
-        const validInput = inputValidation.data;
+        // const validInput = inputValidation.data;
 
         // Get next sequence number
         const sequenceNo = await this.getNextSequenceNo(
@@ -369,14 +369,14 @@ export class EventEmitter {
           .returning();
 
         if (!inserted) {
-          throw new EventEmissionError("Batch event insert returned no rows", input);
+          // throw new EventEmissionError("Batch event insert returned no rows", input);
         }
 
-        results.push({ event: inserted, wasNew: true });
+        // results.push({ event: inserted, wasNew: true });
       }
     });
 
-    return results;
+    // return results;
   }
 
   /**
@@ -446,12 +446,12 @@ export class EventEmitter {
     tx: Database,
     entityId: string
   ): Promise<number> {
-    const result = await tx
+    // const result = await tx
       .select({ maxSeq: max(events.sequenceNo) })
       .from(events)
       .where(eq(events.entityId, entityId));
 
-    const currentMax = result[0]?.maxSeq ?? 0;
+    // const currentMax = result[0]?.maxSeq ?? 0;
     return (currentMax as number) + 1;
   }
 
@@ -468,7 +468,7 @@ export class EventEmitter {
   ): Promise<string | null> {
     if (nextSequenceNo === 1) return null;
 
-    const result = await tx
+    // const result = await tx
       .select({ hash: events.hash })
       .from(events)
       .where(
@@ -479,7 +479,7 @@ export class EventEmitter {
       )
       .limit(1);
 
-    return result[0]?.hash ?? null;
+    // return result[0]?.hash ?? null;
   }
 }
 

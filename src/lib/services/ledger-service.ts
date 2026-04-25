@@ -14,7 +14,7 @@
  * Usage:
  *   const service = new LedgerService(db, eventService);
  *   const account = await service.openAccount({ ... });
- *   const result = await service.postEvent(eventId);
+ // *   const result = await service.postEvent(eventId);
  */
 
 import { eq } from "drizzle-orm";
@@ -108,30 +108,30 @@ export class LedgerService {
    *   1. Emit 'ledger.account_opened' event.
    *   2. Insert ledger_accounts row referencing the event.
    *
-   * @param input - Account creation input
+   // * @param input - Account creation input
    * @returns The created LedgerAccount
    * @throws If account code already exists or event emission fails
    */
-  async openAccount(input: OpenAccountInput): Promise<LedgerAccount> {
+  // async openAccount(input: OpenAccountInput): Promise<LedgerAccount> {
     // Validate currency format
-    if (!/^[A-Z]{3}$/.test(input.currency)) {
+    // if (!/^[A-Z]{3}$/.test(input.currency)) {
       throw new Error(
-        `Invalid currency code '${input.currency}'. Must be 3 uppercase letters.`
+        // `Invalid currency code '${input.currency}'. Must be 3 uppercase letters.`
       );
     }
 
     // Validate account code format
-    if (!/^[A-Z0-9_-]+$/.test(input.code)) {
+    // if (!/^[A-Z0-9_-]+$/.test(input.code)) {
       throw new Error(
-        `Invalid account code '${input.code}'. Must be uppercase alphanumeric with hyphens/underscores.`
+        // `Invalid account code '${input.code}'. Must be uppercase alphanumeric with hyphens/underscores.`
       );
     }
 
     // Check for duplicate code
-    const existing = await this.queries.getAccountByCode(input.code);
+    // const existing = await this.queries.getAccountByCode(input.code);
     if (existing) {
       throw new Error(
-        `Ledger account with code '${input.code}' already exists (ID: ${existing.id})`
+        // `Ledger account with code '${input.code}' already exists (ID: ${existing.id})`
       );
     }
 
@@ -140,28 +140,28 @@ export class LedgerService {
     // We use a deterministic approach: emit event, then insert account with event ID
     const { event } = await this.eventService.emit({
       eventType: "ledger.account_opened",
-      actorId: input.actorId,
+      // actorId: input.actorId,
       entityId: crypto.randomUUID(), // account's entity ID (will be the account ID)
       entityType: "ledger_account",
       payload: {
-        accountCode: input.code,
-        accountName: input.name,
-        accountType: input.accountType,
-        currency: input.currency,
-        ...(input.entityId ? { entityId: input.entityId } : {}),
-        ...(input.entityType ? { entityType: input.entityType } : {}),
+        // accountCode: input.code,
+        // accountName: input.name,
+        // accountType: input.accountType,
+        // currency: input.currency,
+        // ...(input.entityId ? { entityId: input.entityId } : {}),
+        // ...(input.entityType ? { entityType: input.entityType } : {}),
       },
       occurredAt: new Date().toISOString(),
     });
 
     // Insert the ledger account, referencing the event
     const newAccount: NewLedgerAccount = {
-      code: input.code,
-      name: input.name,
-      accountType: input.accountType,
-      currency: input.currency,
-      entityId: input.entityId ?? null,
-      entityType: input.entityType ?? null,
+      // code: input.code,
+      // name: input.name,
+      // accountType: input.accountType,
+      // currency: input.currency,
+      // entityId: input.entityId ?? null,
+      // entityType: input.entityType ?? null,
       createdByEventId: event.id,
     };
 
@@ -171,7 +171,7 @@ export class LedgerService {
       .returning();
 
     if (!account) {
-      throw new Error(`Failed to insert ledger account for code '${input.code}'`);
+      // throw new Error(`Failed to insert ledger account for code '${input.code}'`);
     }
 
     // Transition the event to 'posted' (account creation is immediate)
@@ -191,13 +191,13 @@ export class LedgerService {
    *   1. Emit 'ledger.posting_rule_created' event.
    *   2. Insert posting_rules row referencing the event.
    *
-   * @param input - Posting rule creation input
+   // * @param input - Posting rule creation input
    * @returns The created PostingRule
    */
-  async createPostingRule(input: CreatePostingRuleInput): Promise<PostingRule> {
+  // async createPostingRule(input: CreatePostingRuleInput): Promise<PostingRule> {
     // Determine version (increment if rule for this event type already exists)
     const existingRules = await this.queries.getPostingRules({
-      eventType: input.eventType,
+      // eventType: input.eventType,
     });
     const maxVersion = existingRules.reduce(
       (max, r) => Math.max(max, r.version),
@@ -222,17 +222,17 @@ export class LedgerService {
     // Emit the posting_rule_created event
     const { event } = await this.eventService.emit({
       eventType: "ledger.posting_rule_created",
-      actorId: input.actorId,
+      // actorId: input.actorId,
       entityId: crypto.randomUUID(),
       entityType: "posting_rule",
       payload: {
-        targetEventType: input.eventType,
-        ruleName: input.ruleName,
-        debitAccountCode: input.debitAccountCode,
-        creditAccountCode: input.creditAccountCode,
-        amountPayloadPath: input.amountPayloadPath,
-        currencyPayloadPath: input.currencyPayloadPath,
-        descriptionTemplate: input.descriptionTemplate ?? "",
+        // targetEventType: input.eventType,
+        // ruleName: input.ruleName,
+        // debitAccountCode: input.debitAccountCode,
+        // creditAccountCode: input.creditAccountCode,
+        // amountPayloadPath: input.amountPayloadPath,
+        // currencyPayloadPath: input.currencyPayloadPath,
+        // descriptionTemplate: input.descriptionTemplate ?? "",
         version: newVersion,
       },
       occurredAt: new Date().toISOString(),
@@ -240,13 +240,13 @@ export class LedgerService {
 
     // Insert the posting rule
     const newRule: NewPostingRule = {
-      eventType: input.eventType,
-      ruleName: input.ruleName,
-      debitAccountCode: input.debitAccountCode,
-      creditAccountCode: input.creditAccountCode,
-      amountPayloadPath: input.amountPayloadPath,
-      currencyPayloadPath: input.currencyPayloadPath,
-      descriptionTemplate: input.descriptionTemplate ?? "",
+      // eventType: input.eventType,
+      // ruleName: input.ruleName,
+      // debitAccountCode: input.debitAccountCode,
+      // creditAccountCode: input.creditAccountCode,
+      // amountPayloadPath: input.amountPayloadPath,
+      // currencyPayloadPath: input.currencyPayloadPath,
+      // descriptionTemplate: input.descriptionTemplate ?? "",
       isActive: true,
       createdByEventId: event.id,
       version: newVersion,
@@ -258,7 +258,7 @@ export class LedgerService {
       .returning();
 
     if (!rule) {
-      throw new Error(`Failed to insert posting rule for event type '${input.eventType}'`);
+      // throw new Error(`Failed to insert posting rule for event type '${input.eventType}'`);
     }
 
     // Transition the event to 'posted'

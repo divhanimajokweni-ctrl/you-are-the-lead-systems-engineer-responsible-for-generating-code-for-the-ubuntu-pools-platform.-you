@@ -32,7 +32,7 @@ export function TrustConstellation({ nodes, connections, currentUserId }: TrustC
             <stop offset="100%" stopColor="#10B981" stopOpacity={0.2} />
           </radialGradient>
           <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            // <feGaussianBlur stdDeviation="3" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
